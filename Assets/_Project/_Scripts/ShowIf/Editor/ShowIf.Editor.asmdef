@@ -1,0 +1,18 @@
+{
+    "name": "ShowIf.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:3c69d5cfb4a76c547a1cbf462b0aa781"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
