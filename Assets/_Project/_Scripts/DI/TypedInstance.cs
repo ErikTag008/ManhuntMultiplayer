@@ -1,4 +1,6 @@
-namespace Project.Assets._Project._Scripts.Player
+using UnityEngine;
+
+namespace Project.Assets._Project._Scripts.DI
 {
     public class TypedInstance<T>
     {
@@ -7,5 +9,8 @@ namespace Project.Assets._Project._Scripts.Player
         public static implicit operator T(TypedInstance<T> typedInstance) => typedInstance._value;
     }
 
-
+    public class GameplayCamera : TypedInstance<Camera>
+    {
+        public GameplayCamera(Camera value) : base(value) { }
+    }
 }

@@ -1,0 +1,39 @@
+using KBCore.Refs;
+using Project.Assets._Project._Scripts.Player;
+using Reflex.Attributes;
+using Unity.Cinemachine;
+using UnityEngine;
+
+namespace Project.Assets._Project._Scripts.CameraUtils
+{
+    public class FPCameraInstaller : ValidatedMonoBehaviour
+    {
+        [Inject] private readonly ICameraStats _cameraStats;
+        private InputReader _inputReader;
+        private const int XINDEX = 0;
+        private const int YINDEX = 1;
+        [SerializeField, Self] private CinemachineCamera _camera;
+        [SerializeField, Self] private CinemachineInputAxisController _cinemachineInputAxisController;
+        [SerializeField, Self] private CinemachinePanTilt _cinemachinePanTilt;
+
+        private void Start()
+        {
+            PlayerController.OnPlayerSpawned += BindCameraToPlayer;
+        }
+
+        private void BindCameraToPlayer(PlayerController player)
+        {
+            _camera.Target.TrackingTarget = player.CameraRoot;
+            _inputReader = player.InputReader;
+        }
+
+        private void Update()
+        {
+            if(_inputReader == null) return;
+            _cinemachineInputAxisController.Controllers[XINDEX].Input.Gain = _inputReader.IsUsingMouse ? _cameraStats.MouseLookXSensitivity : _cameraStats.GamepadLookXSensitivity;
+            _cinemachineInputAxisController.Controllers[YINDEX].Input.Gain = _inputReader.IsUsingMouse ? -_cameraStats.MouseLookYSensitivity : -_cameraStats.GamepadLookYSensitivity;
+            _cinemachinePanTilt.TiltAxis.Range = new Vector2(-_cameraStats.MaxPitch, _cameraStats.MaxPitch);
+
+        }
+    }
+}

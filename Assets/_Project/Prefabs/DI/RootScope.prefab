@@ -57,3 +57,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1a05e50793a45e4c9f218a9abcc51f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.DI.ProjectInstaller
+  _playerStats: {fileID: 11400000, guid: 799d547b8ea8ab345af7c0126502216c, type: 2}

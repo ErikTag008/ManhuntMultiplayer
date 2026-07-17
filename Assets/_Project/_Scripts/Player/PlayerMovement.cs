@@ -1,0 +1,202 @@
+using UnityEngine;
+
+namespace Project.Assets._Project._Scripts.Player
+{
+
+    public class PlayerMovement : IPlayerMovement
+    {
+        private readonly Rigidbody _rb;
+        private readonly IMovementStats _stats;
+        private readonly Transform _groundCheck;
+        private readonly UnityEngine.Camera _camera;
+        private readonly Transform _model;
+        private float _lastGroundedTime = -Mathf.Infinity;
+        private float _lastJumpPressedTime = -Mathf.Infinity;
+        private Vector3 _lastGroundNormal = Vector3.up;
+
+        public PlayerMovement(Rigidbody rb, IMovementStats stats, Transform groundCheck, UnityEngine.Camera camera, Transform model)
+        {
+            _rb = rb;
+            _stats = stats;
+            _groundCheck = groundCheck;
+            _camera = camera;
+            _model = model;
+        }
+
+
+        public void Start() 
+        {
+        }
+
+        public void HandleJump(bool isButtonDown = true)
+        {
+            if (isButtonDown)
+            {
+
+                _lastJumpPressedTime = Time.time;
+                if ((IsGrounded() || Time.time - _lastGroundedTime <= _stats.CoyoteTime) && GetVelocityAlongGroundNormal() < _stats.GroundCheckMaxYVelocity)
+                {
+                    PerformJump();
+                    _lastJumpPressedTime = -Mathf.Infinity;
+                    return;
+                }
+                //if (_canDoubleJump && !_doubleJumpUsed)
+                //{
+                //    PerformJump(isDoubleJump: true);
+                //    _doubleJumpUsed = true;
+                //    _lastJumpPressedTime = -Mathf.Infinity;
+                //}
+            }
+            else
+            {
+                if(_rb.linearVelocity.y > 0.1f)
+                {
+                    SlowDownVerticalVelocity();
+                }
+                _lastJumpPressedTime = -Mathf.Infinity;
+            }
+
+            void SlowDownVerticalVelocity()
+            {
+                var velocityVector = _rb.linearVelocity;
+                velocityVector.y *= _stats.JumpButtonUpVerticalVelocityMultiplier;
+                _rb.linearVelocity = velocityVector;
+            }
+        }
+
+        public bool IsGrounded()
+        {
+            if (_groundCheck == null) return false;
+            if (Physics.Raycast(_groundCheck.position, Vector3.down, out RaycastHit hitInfo, _stats.GroundCheckRadius, _stats.GroundCheckLayers))
+            {
+                _lastGroundNormal = hitInfo.normal;
+                float groundAngle = Vector3.Angle(_lastGroundNormal, _model.up);
+                return groundAngle <= _stats.MaxGroundAngle;
+            }
+            else
+            {
+                _lastGroundNormal = Vector3.up;
+                return false;
+            }
+        }
+
+        private float GetVelocityAlongGroundNormal()
+        {
+            return Vector3.Dot(_rb.linearVelocity, _lastGroundNormal);
+        }
+
+        public void HandleFixedMovement(Vector2 moveDirection)
+        {
+            bool grounded = IsGrounded();
+            HandleRotation();
+            HandleHorizontalMovement(moveDirection, grounded);
+            if (grounded)
+            {
+                _lastGroundedTime = Time.time;
+                //_doubleJumpUsed = false;
+                _rb.linearDamping = _stats.HorizontalDamping;
+            }
+            else
+            {
+                _rb.linearDamping = _stats.VerticalDamping;
+                if (_rb.linearVelocity.y < 0f)
+                    _rb.AddForce(Physics.gravity, ForceMode.Acceleration);
+            }
+
+            TryConsumeBufferedJump(grounded);
+
+        }
+
+        private void HandleRotation()
+        {
+            if (!_camera || !_camera.gameObject.activeInHierarchy) return;
+            Vector3 cameraForward = _camera.transform.forward;
+            cameraForward.y = 0f;
+            if (cameraForward != Vector3.zero)
+            {
+                Quaternion newRotation = Quaternion.LookRotation(cameraForward);
+                _model.rotation = newRotation;
+            }
+        }
+
+        private void HandleHorizontalMovement(Vector2 moveDirection, bool grounded)
+        {
+            if (!_camera || !_camera.gameObject.activeInHierarchy) return;
+            Vector3 moveVector = _camera.transform.forward * moveDirection.y +
+                                 _camera.transform.right * moveDirection.x;
+            float magnitude = moveDirection.magnitude;
+
+            moveVector.y = 0f;
+            if (moveVector.sqrMagnitude > 0f) moveVector.Normalize();
+
+            // project desired movement onto ground plane when grounded
+            Vector3 moveDir = grounded
+                            ? Vector3.ProjectOnPlane(moveVector, _lastGroundNormal)
+                            : moveVector;
+
+
+            if (moveDir.sqrMagnitude > 0f) moveDir.Normalize();
+
+            Vector3 velocity = _rb.linearVelocity;
+            Vector3 planarVelocity = grounded
+                                    ? Vector3.ProjectOnPlane(velocity, _lastGroundNormal)
+                                    : new Vector3(velocity.x, 0f, velocity.z);
+
+            float maxSpeed = _stats.MaxMoveSpeed;
+            float accel = grounded ? _stats.GroundAcceleration : _stats.AirAcceleration;
+
+            Vector3 targetVelocity = magnitude * maxSpeed * moveVector;
+            Vector3 velocityDelta = targetVelocity - planarVelocity;
+
+            velocityDelta = Vector3.ClampMagnitude(velocityDelta, accel * Time.fixedDeltaTime);
+            Vector3 applyDelta = grounded
+                                ? Vector3.ProjectOnPlane(velocityDelta, _lastGroundNormal)
+                                : velocityDelta;
+            _rb.AddForce(applyDelta, ForceMode.VelocityChange);
+        }
+
+        private void TryConsumeBufferedJump(bool grounded)
+        {
+            if (Time.time - _lastJumpPressedTime > _stats.JumpBuffer) return;
+
+            if ((grounded || Time.time - _lastGroundedTime <= _stats.CoyoteTime) && GetVelocityAlongGroundNormal() < _stats.GroundCheckMaxYVelocity)
+            {
+                PerformJump();
+                _lastJumpPressedTime = -Mathf.Infinity;
+                return;
+            }
+
+            //if (!_doubleJumpUsed && _canDoubleJump)
+            //{
+
+            //    PerformJump(isDoubleJump: true);
+            //    _doubleJumpUsed = true;
+            //    _lastJumpPressedTime = -Mathf.Infinity;
+            //}
+        }
+
+        private void PerformJump(bool isDoubleJump = false)
+        {
+            // remove any velocity component that points into the ground normal
+            float intoNormal = Vector3.Dot(_rb.linearVelocity, _lastGroundNormal);
+            if (intoNormal < 0f)
+            {
+                _rb.linearVelocity -= _lastGroundNormal * intoNormal;
+            }
+
+            // choose jump direction: along ground normal when grounded, otherwise world up
+            Vector3 jumpDir = IsGrounded() ? _lastGroundNormal : Vector3.up;
+
+            _rb.AddForce(jumpDir * _stats.JumpForce, ForceMode.VelocityChange);
+        }
+
+        public void DrawGizmos()
+        {
+            if (_groundCheck != null)
+            {
+                Gizmos.color = IsGrounded() ? Color.green : Color.red;
+                Gizmos.DrawWireSphere(_groundCheck.position, _stats.GroundCheckRadius);
+            }
+        }
+    }
+}

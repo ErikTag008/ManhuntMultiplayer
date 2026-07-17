@@ -948,11 +948,11 @@ PlayerSettings:
   activeInputHandler: 1
   windowsGamepadBackendHint: 0
   enableDirectStorage: 0
-  cloudProjectId: 
+  cloudProjectId: 7c0e6a7d-8e0b-4ad2-a6a9-48d15e52f8f1
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Unity6.5TemplateProj
-  organizationId: 
+  projectName: ManhuntMultiplayer 2026-07-17_17-40-20
+  organizationId: etag008
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}
