@@ -18,7 +18,7 @@ namespace Project.Assets._Project._Scripts.CameraUtils
 
         private void Start()
         {
-            PlayerController.OnPlayerSpawned += BindCameraToPlayer;
+            PlayerController.OnCameraBindingRequest += BindCameraToPlayer;
         }
 
         private void BindCameraToPlayer(PlayerController player)

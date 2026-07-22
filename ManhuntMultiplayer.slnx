@@ -2,11 +2,5 @@
   <Project Path="BetterHierarchy.csproj" />
   <Project Path="ProjectAssembly.csproj" />
   <Project Path="DOTween.Modules.csproj" />
-  <Project Path="SerializeMethod.csproj" />
   <Project Path="BetterHierarchyDemoScripts.csproj" />
-  <Project Path="SerializeMethod.Editor.csproj" />
-  <Project Path="ShowIf.csproj" />
-  <Project Path="SerializeInterface.Editor.csproj" />
-  <Project Path="SerializeInterface.csproj" />
-  <Project Path="ShowIf.Editor.csproj" />
 </Solution>

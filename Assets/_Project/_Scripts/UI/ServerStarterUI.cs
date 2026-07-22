@@ -7,6 +7,5 @@ namespace Project.Assets._Project._Scripts.UI
     {
         [field: SerializeField] public Button StartHostButton { get; private set; }
         [field: SerializeField] public Button StartClientButton { get; private set; }
-
     }
 }
