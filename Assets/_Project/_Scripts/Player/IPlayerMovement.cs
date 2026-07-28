@@ -9,5 +9,6 @@ namespace Project.Assets._Project._Scripts.Player
         void HandleFixedMovement(Vector2 moveDirection);
         bool IsGrounded();
         void DrawGizmos();
+        void ChangeCamera(Camera camera);
     }
 }

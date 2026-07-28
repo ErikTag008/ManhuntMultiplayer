@@ -13,6 +13,7 @@ namespace Project.Assets._Project._Scripts.DI
         [SerializeField, AssetsOnly] private GameLobbySettings _gameLobbySettings;
         public void InstallBindings(ContainerBuilder builder)
         {
+            builder.RegisterType(typeof(SceneLifecycleManager), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             builder.RegisterFactory(p => _playerStats, new Type[] { typeof(PlayerStats), typeof(IMovementStats), typeof(ICameraStats) },Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             builder.RegisterValue(_gameLobbySettings);
         }

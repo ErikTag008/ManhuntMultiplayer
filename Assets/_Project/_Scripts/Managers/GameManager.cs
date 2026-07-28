@@ -1,64 +1,114 @@
-using Alchemy.Inspector;
+using Assets._Project._Scripts.SceneReference;
 using Cysharp.Threading.Tasks;
-using Project.Assets._Project._Scripts.DI;
 using Project.Assets._Project._Scripts.Player;
 using Reflex.Attributes;
+using Reflex.Extensions;
+using Reflex.Injectors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Project.Assets._Project._Scripts.Managers
 {
-    [Serializable]
-    public class GameManager : NetworkBehaviour, IPlayerRegistry
+
+    public class GameManager : NetworkBehaviour, IPlayerRegistry, ISceneInitialized
     {
-        [Inject] private readonly UIManager _uiManager;
-        [Inject] private readonly Camera _mainCamera;
-        [Inject] private readonly GameplayCamera _gameplayCamera;
+        [SerializeField, SceneReference] private string _gameScene;
+        [SerializeField, SceneReference] private string _lobbyScene;
+        [SerializeField, SceneReference] private string _mainMenuScene;
+        [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
+        //[Inject] private readonly UIManager _uiManager;
         [Inject] private readonly GameLobbySettings _gameLobbySettings;
+        private PlayerSpawner _playerSpawner;
         private NetworkVariable<GameState> _state = new();
         private CancellationTokenSource _gameLoopCTS;
         [SerializeField] private List<PlayerController> _players = new(10);
-        private bool _isReady = false;
+        public static GameManager Instance { get; private set; }
 
         private void Awake()
-        {
-            ToggleCamera(false);
-            _uiManager.OnHostStart += HandleHostStart;
-            _uiManager.OnClientStart += HandleClientStart;
+        { 
+            Instance = this;
+            _lobbyScene = System.IO.Path.GetFileNameWithoutExtension(_lobbyScene);
+            _gameScene = System.IO.Path.GetFileNameWithoutExtension(_gameScene);
+            _mainMenuScene = System.IO.Path.GetFileNameWithoutExtension(_mainMenuScene);
             _state.OnValueChanged += OnStateChanged;
             OnStateChanged(_state.Value, _state.Value);
         }
 
-        public override void OnNetworkSpawn()
+        private void Start()
         {
-            
-            if (!IsServer) return;
-            foreach (var player in FindObjectsByType<PlayerController>())
-            {
-                print("Found Player: " + player);
-                RegisterPlayer(player);
-            }
-            Debug.Log($"GameManager ready. Players loaded: {_players.Count}");
-            _gameLoopCTS = new();
-            GameLoop(_gameLoopCTS.Token).Forget();
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
+            OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
         }
 
+        
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
+        {
+            switch (scene.name)
+            {
+                case var name when name == _lobbyScene:
+                    _sceneLifecycleManager.InitializeScene(SceneType.Lobby);
+                    break;
+
+                case var name when name == _gameScene:
+                    _sceneLifecycleManager.InitializeScene(SceneType.Gameplay);
+                    break;
+
+                case var name when name == _mainMenuScene:
+                    _sceneLifecycleManager.InitializeScene(SceneType.MainMenu);
+                    break;
+
+                default:
+                    Debug.LogError($"Unknown loaded scene: {scene.name}");
+                    break;
+            }
+        }
+
+        private void OnSceneUnloaded(Scene scene)
+        {
+            switch (scene.name)
+            {
+                case var name when name == _lobbyScene:
+                    _sceneLifecycleManager.ClearScene(SceneType.Lobby);
+                    break;
+
+                case var name when name == _gameScene:
+                    _sceneLifecycleManager.ClearScene(SceneType.Gameplay);
+                    break;
+
+                case var name when name == _mainMenuScene:
+                    _sceneLifecycleManager.ClearScene(SceneType.MainMenu);
+                    break;
+                default:
+                    Debug.LogError($"Unknown loaded scene: {scene.name}");
+                    break;
+            }
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            GameObjectInjector.InjectObject(gameObject, gameObject.scene.GetSceneContainer());
+            DontDestroyOnLoad(gameObject);
+            if (!IsServer) return;
+            _gameLoopCTS = new();
+            Debug.Log("[GameManager] Trying to Start Game Loop");
+            GameLoop(_gameLoopCTS.Token).Forget();
+        }
         public void RegisterPlayer(PlayerController player)
         {
-            if (!IsServer)
-                return;
-
+            if (!IsServer) return;
             RegisterPlayerInternal(player);
         }
         private void RegisterPlayerInternal(PlayerController player)
         {
-            if (_players.Contains(player))
-                return;
-
+            if (_players.Contains(player)) return;
             _players.Add(player);
             Debug.Log($"Registered player {player.OwnerClientId}. Total: {_players.Count}");
         }
@@ -67,6 +117,8 @@ namespace Project.Assets._Project._Scripts.Managers
             print($"Game State Changed to {current}");
             switch (current)
             {
+                case GameState.Lobby:
+                    break;
                 case GameState.WaitingForPlayers:
                     //_uiManager.ShowWaitingScreen();
                     break;
@@ -93,30 +145,33 @@ namespace Project.Assets._Project._Scripts.Managers
 
         public override void OnNetworkDespawn()
         {
-            
-
             if (IsServer)
             {
                 try
                 {
                     _gameLoopCTS?.Cancel();
                     _gameLoopCTS?.Dispose();
-                }
-                catch (ObjectDisposedException) { }
+                } catch (ObjectDisposedException) { }
             }
-            
         }
 
         public override void OnDestroy()
         {
             base.OnDestroy();
             _state.OnValueChanged -= OnStateChanged;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.sceneUnloaded -= OnSceneUnloaded;
         }
 
         private async UniTaskVoid GameLoop(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
+
+                _state.Value = GameState.Lobby;
+
+                await LoadLobby(token);
+
                 _state.Value = GameState.WaitingForPlayers;
                 await WaitForEnoughPlayers(token);
 
@@ -125,6 +180,12 @@ namespace Project.Assets._Project._Scripts.Managers
 
                 _state.Value = GameState.AssigningTeams;
                 AssignTeams();
+
+                _state.Value = GameState.LoadingGameplay;
+                await LoadGameplayScene(token);
+
+                _state.Value = GameState.WaitForRunnerHide;
+                await WaitForRunnerHide(token);
 
                 _state.Value = GameState.Playing;
                 await PlayRound(token);
@@ -135,14 +196,92 @@ namespace Project.Assets._Project._Scripts.Managers
                 _state.Value = GameState.Results;
                 await ShowResults(token);
 
-                ResetRound();
+                await ReturnToLobby(token);
             }
+        }
+
+        
+
+        private async UniTask<Scene> LoadNetworkScene(string sceneNameToLoad, CancellationToken token, LoadSceneMode loadSceneMode = LoadSceneMode.Additive, bool setActiveScene = true)
+        {
+            var loadedScene = SceneManager.GetSceneByName(sceneNameToLoad);
+            if (NetworkManager.Singleton == null || NetworkManager.Singleton.SceneManager == null)
+            {
+                Debug.LogError("[GameManager] NetworkManager or SceneManager is missing!");
+                return loadedScene;
+            }
+            if (loadedScene.isLoaded)
+            {
+                if (setActiveScene) SceneManager.SetActiveScene(loadedScene);
+                Debug.LogWarning($"The Scene you tried to load is already Loaded");
+                return loadedScene;
+            }
+            var status = NetworkManager.Singleton.SceneManager.LoadScene(sceneNameToLoad, loadSceneMode);
+
+            if (status != SceneEventProgressStatus.Started)
+            {
+                Debug.LogError($"Failed to load {sceneNameToLoad} scene");
+                return loadedScene;
+            }
+
+            await UniTask.WaitUntil(() => SceneManager.GetSceneByName(sceneNameToLoad).isLoaded, cancellationToken: token);
+
+            loadedScene = SceneManager.GetSceneByName(sceneNameToLoad);
+
+            if (setActiveScene) SceneManager.SetActiveScene(loadedScene);
+
+            return loadedScene;
+        }
+
+        private async UniTask<Scene> UnloadNetworkScene(string sceneNameToUnload, CancellationToken token)
+        {
+            
+            var unloadedScene = SceneManager.GetSceneByName(sceneNameToUnload);
+            if (NetworkManager.Singleton == null || NetworkManager.Singleton.SceneManager == null)
+            {
+                Debug.LogError("[GameManager] NetworkManager or SceneManager is missing!");
+                return unloadedScene;
+            }
+            if (unloadedScene.IsValid())
+            {
+                var status = NetworkManager.Singleton.SceneManager.UnloadScene(unloadedScene);
+                if (status != SceneEventProgressStatus.Started)
+                {
+                    Debug.LogError($"Failed to unload scene: {unloadedScene.name}");
+                    return unloadedScene;
+                }
+                await UniTask.WaitUntil(() => !unloadedScene.isLoaded, cancellationToken: token);
+            }
+            else
+            {
+                await UniTask.Yield(cancellationToken: token);
+            }
+            return unloadedScene;
+        }
+
+        private async UniTask LoadLobby(CancellationToken token)
+        {
+            await LoadNetworkScene(_lobbyScene, token);
+        }
+
+        private async UniTask ReturnToLobby(CancellationToken token)
+        {
+            await LoadNetworkScene(_lobbyScene, token);
+            await UnloadNetworkScene(_gameScene, token);
+        }
+
+        private async UniTask LoadGameplayScene(CancellationToken token)
+        {
+            await LoadNetworkScene(_gameScene, token);
+            await UnloadNetworkScene(_lobbyScene, token);
         }
 
         
 
         private async UniTask WaitForEnoughPlayers(CancellationToken token)
         {
+            await UniTask.WaitUntil(() => _players.Count >= _gameLobbySettings.MinRequiredPlayers, cancellationToken: token);
+            print("Enought Players Connected");
             await UniTask.WaitForSeconds(_gameLobbySettings.MaxWaitForPlayersTimeInSeconds, cancellationToken: token);
         }
 
@@ -156,25 +295,15 @@ namespace Project.Assets._Project._Scripts.Managers
         private void AssignTeams()
         {
             Debug.Log("Players Count: " + _players.Count);
-            var shuffled = _players
-                .OrderBy(_ => UnityEngine.Random.value)
-                .ToList();
+            var shuffled = _players.OrderBy(_ => UnityEngine.Random.value).ToList();
 
-            int catcherCount = Mathf.Min(
-                _gameLobbySettings.MaximumCatcherPlayers,
-                shuffled.Count - 1 // guarantees at least one runner
-            );
+            int catcherCount = Mathf.Min(_gameLobbySettings.MaxCatcherPlayers, shuffled.Count - 1);
 
-            _catcherIds = shuffled
-                .Take(catcherCount)
-                .Select(p => p.OwnerClientId)
-                .ToHashSet();
+            _catcherIds = shuffled.Take(catcherCount).Select(p => p.OwnerClientId).ToHashSet();
 
             foreach (var player in _players)
             {
-                var team = _catcherIds.Contains(player.OwnerClientId)
-                    ? Team.Catcher
-                    : Team.Runner;
+                var team = _catcherIds.Contains(player.OwnerClientId) ? Team.Catcher : Team.Runner;
 
                 player.SetTeam(team);
 
@@ -182,11 +311,16 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
+        private async UniTask WaitForRunnerHide(CancellationToken token)
+        {
+            PlayerGameSpawnDistributor.Instance.DistributePlayersToSpawns(_players);
+            await UniTask.WaitForSeconds(_gameLobbySettings.RunnersHideWaitTime, cancellationToken: token);
+        }
         private async UniTask PlayRound(CancellationToken token)
         {
-            await UniTask.WaitForEndOfFrame(cancellationToken: token);
-
+            await UniTask.WaitForSeconds(_gameLobbySettings.GameDurationInSeconds, cancellationToken: token);
         }
+
 
         private void DetermineWinner()
         {
@@ -199,50 +333,48 @@ namespace Project.Assets._Project._Scripts.Managers
 
         }
 
-        private void ResetRound()
+        public void InitializeSceneReferences(SceneType scene)
         {
-
-        }
-
-        [Button]
-        private void ToggleCamera(bool isGameplayCamera)
-        {
-            Camera gameplayCam = _gameplayCamera;
-            if (isGameplayCamera)
+            switch (scene)
             {
-                _mainCamera.gameObject.SetActive(false);
-                gameplayCam.gameObject.SetActive(true);
-            }
-            else
-            {
-                gameplayCam.gameObject.SetActive(false);
-                _mainCamera.gameObject.SetActive(true);
+                case SceneType.MainMenu:
+                    break;
+                case SceneType.Lobby:
+                    break;
+                case SceneType.Gameplay:
+                    break;
             }
         }
 
-        private void HandleClientStart()
+        public void ClearSceneReferences(SceneType scene)
         {
-            NetworkManager.Singleton.StartClient();
-            _uiManager.ToggleServerStarterUI(false);
+            switch (scene)
+            {
+                case SceneType.MainMenu:
+                    break;
+                case SceneType.Lobby:
+                    break;
+                case SceneType.Gameplay:
+                    break;
+            }
         }
 
-        private void HandleHostStart()
+        public void SetActiveSpawner(PlayerSpawner playerSpawner)
         {
-            NetworkManager.Singleton.StartHost();
-            _uiManager.ToggleServerStarterUI(false);
+            _playerSpawner = playerSpawner;
         }
-
-        
     }
 
     public enum GameState
     {
+        Lobby,
         WaitingForPlayers,
         Countdown,
         AssigningTeams,
+        LoadingGameplay,
+        WaitForRunnerHide,
         Playing,
         DeterminingWinner,
-        Results,
-        ResetingRound
+        Results
     }
 }

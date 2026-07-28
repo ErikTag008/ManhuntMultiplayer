@@ -236,7 +236,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   <InScenePlaced>k__BackingField: 0
-  ActiveSceneSynchronization: 0
+  ActiveSceneSynchronization: 1
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
@@ -262,6 +262,11 @@ MonoBehaviour:
   _model: {fileID: 5711959362786639010}
   _groundCheck: {fileID: 7460693758395271466}
   _cameraRoot: {fileID: 4853491123650079907}
+  _team:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
 --- !u!114 &1578966875271402114
 MonoBehaviour:
   m_ObjectHideFlags: 0

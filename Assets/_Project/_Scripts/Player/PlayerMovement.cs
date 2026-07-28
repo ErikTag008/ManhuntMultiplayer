@@ -8,13 +8,13 @@ namespace Project.Assets._Project._Scripts.Player
         private readonly Rigidbody _rb;
         private readonly IMovementStats _stats;
         private readonly Transform _groundCheck;
-        private readonly UnityEngine.Camera _camera;
+        private Camera _camera;
         private readonly Transform _model;
         private float _lastGroundedTime = -Mathf.Infinity;
         private float _lastJumpPressedTime = -Mathf.Infinity;
         private Vector3 _lastGroundNormal = Vector3.up;
 
-        public PlayerMovement(Rigidbody rb, IMovementStats stats, Transform groundCheck, UnityEngine.Camera camera, Transform model)
+        public PlayerMovement(Rigidbody rb, IMovementStats stats, Transform groundCheck, Camera camera, Transform model)
         {
             _rb = rb;
             _stats = stats;
@@ -26,6 +26,11 @@ namespace Project.Assets._Project._Scripts.Player
 
         public void Start() 
         {
+        }
+
+        public void ChangeCamera(Camera camera)
+        {
+            _camera = camera;
         }
 
         public void HandleJump(bool isButtonDown = true)
@@ -66,10 +71,12 @@ namespace Project.Assets._Project._Scripts.Player
 
         public bool IsGrounded()
         {
-            if (_groundCheck == null) return false;
+            if (_groundCheck == null || _stats == null) return false;
+
             if (Physics.Raycast(_groundCheck.position, Vector3.down, out RaycastHit hitInfo, _stats.GroundCheckRadius, _stats.GroundCheckLayers))
             {
                 _lastGroundNormal = hitInfo.normal;
+                if (_model == null) return false;
                 float groundAngle = Vector3.Angle(_lastGroundNormal, _model.up);
                 return groundAngle <= _stats.MaxGroundAngle;
             }
@@ -87,6 +94,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         public void HandleFixedMovement(Vector2 moveDirection)
         {
+            if(_stats == null) return;
             bool grounded = IsGrounded();
             HandleRotation();
             HandleHorizontalMovement(moveDirection, grounded);
@@ -109,7 +117,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void HandleRotation()
         {
-            if (!_camera || !_camera.gameObject.activeInHierarchy) return;
+            if (!_camera || !_camera.gameObject.activeInHierarchy || _stats == null) return;
             Vector3 cameraForward = _camera.transform.forward;
             cameraForward.y = 0f;
             if (cameraForward != Vector3.zero)
@@ -121,7 +129,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void HandleHorizontalMovement(Vector2 moveDirection, bool grounded)
         {
-            if (!_camera || !_camera.gameObject.activeInHierarchy) return;
+            if (!_camera || !_camera.gameObject.activeInHierarchy || _stats == null) return;
             Vector3 moveVector = _camera.transform.forward * moveDirection.y +
                                  _camera.transform.right * moveDirection.x;
             float magnitude = moveDirection.magnitude;
@@ -192,7 +200,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         public void DrawGizmos()
         {
-            if (_groundCheck != null)
+            if (_groundCheck != null && _stats != null)
             {
                 Gizmos.color = IsGrounded() ? Color.green : Color.red;
                 Gizmos.DrawWireSphere(_groundCheck.position, _stats.GroundCheckRadius);
