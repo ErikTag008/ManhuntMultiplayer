@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using Project.Assets._Project._Scripts.Player;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +11,11 @@ namespace Project.Assets._Project._Scripts.Managers
         [SerializeField] private Transform[] _waitingRoomSpawns;
         [SerializeField] private Transform[] _gameRoomSpawns;
 
-        public void DistributePlayersToSpawns(List<PlayerController> players)
+        
+
+        public async UniTask DistributePlayersToSpawns(List<PlayerController> players)
         {
+            Debug.Log("Distributing players to spawns...");
             var waitingSpawns = _waitingRoomSpawns.OrderBy(_ => Random.value).ToList();
             var gameSpawns = _gameRoomSpawns.OrderBy(_ => Random.value).ToList();
 
@@ -21,7 +25,7 @@ namespace Project.Assets._Project._Scripts.Managers
             foreach (var player in players)
             {
                 Transform spawn;
-
+               
                 if (player.Team == Team.Catcher)
                 {
                     if (waitingIndex >= waitingSpawns.Count)
@@ -29,7 +33,7 @@ namespace Project.Assets._Project._Scripts.Managers
                         Debug.LogError("Not enough waiting room spawn points!");
                         return;
                     }
-
+                    Debug.Log($"Spawning player {player.OwnerClientId} (Catcher) at waiting room spawn point {waitingIndex}");
                     spawn = waitingSpawns[waitingIndex++];
                 }
                 else
@@ -40,10 +44,12 @@ namespace Project.Assets._Project._Scripts.Managers
                         return;
                     }
 
+                    Debug.Log($"Spawning player {player.OwnerClientId} (Runner) at game room spawn point {gameIndex}");
                     spawn = gameSpawns[gameIndex++];
                 }
 
-                player.transform.SetPositionAndRotation(spawn.position, spawn.rotation);
+                player.TeleportServerRpc(spawn.position, spawn.rotation);
+                await UniTask.Yield();
             }
         }
 

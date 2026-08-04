@@ -1,74 +1,35 @@
-using Project.Assets._Project._Scripts.UI;
-using Reflex.Attributes;
 using System;
-using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Managers
 {
-    public class UIManager : MonoBehaviour, ISceneInitialized
+    public class UIManager : Singleton<UIManager>
     {
-        [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
-        [Inject] private readonly ServerStarterUI _serverStarterUI;
-        private Canvas _serverStarterUICanvas;
+
         public event Action OnHostStart;
         public event Action OnClientStart;
+        public event Action<string> OnJoinedPlayerAmountChanged;
+        public event Action<string> OnLobbyStatusTextChanged;
+        public event Action<string> OnCountdownTextChanged;
+        public event Action<string> OnPlayerTeamTextChanged; 
+        public event Action<bool> OnStartGameButtonAvailabilityChanged;
+        public event Action OnRequestLobbyUIInitialization;
+        public event Action OnRequestGameUIInitialization;
+        public event Action OnRequestGameStart;
 
-        
-
-        private void Awake()
+        protected override void Awake()
         {
-            _sceneLifecycleManager.Register(this);
+            base.Awake();
         }
 
-        private void InitializeMainMenuReferences()
-        {
-            _serverStarterUICanvas = _serverStarterUI.GetComponent<Canvas>();
-            _serverStarterUI.StartHostButton.onClick.AddListener(() => OnHostStart?.Invoke());
-            _serverStarterUI.StartClientButton.onClick.AddListener(() => OnClientStart?.Invoke());
-        }
-        private void ClearMainMenuReferences()
-        {
-            _serverStarterUI?.StartHostButton.onClick.RemoveAllListeners();
-            _serverStarterUI?.StartClientButton.onClick.RemoveAllListeners();
-            _serverStarterUICanvas = null;
-        }
-
-        public void InitializeSceneReferences(SceneType scene)
-        {
-            switch (scene)
-            {
-                case SceneType.MainMenu:
-                    InitializeMainMenuReferences();
-                    break;
-                case SceneType.Lobby:
-                    break;
-                case SceneType.Gameplay:
-                    break;
-            }
-        }
-
-        public void ClearSceneReferences(SceneType scene)
-        {
-            switch (scene)
-            {
-                case SceneType.MainMenu:
-                    ClearMainMenuReferences();
-                    break;
-                case SceneType.Lobby:
-                    break;
-                case SceneType.Gameplay:
-                    break;
-            }
-        }
-
-        public void ToggleServerStarterUI(bool enabled)
-        {
-            _serverStarterUICanvas.enabled = enabled;
-        }
-
-        private void OnDestroy()
-        {
-            _sceneLifecycleManager.Unregister(this);
-        }
+        public void RaiseHostStart() => OnHostStart?.Invoke();
+        public void RaiseClientStart() => OnClientStart?.Invoke();
+        public void StartGame() => OnRequestGameStart?.Invoke();
+        public void ChangeJoinedPlayerAmount(string text) => OnJoinedPlayerAmountChanged?.Invoke(text);
+        public void ChangeLobbyStatusText(string text) => OnLobbyStatusTextChanged?.Invoke(text);
+        public void ChangeCountdownText(string text) => OnCountdownTextChanged?.Invoke(text);
+        public void ChangePlayerTeamText(string text) => OnPlayerTeamTextChanged?.Invoke(text);
+        public void ChangeStartGameButtonAvailability(bool isActive) => OnStartGameButtonAvailabilityChanged?.Invoke(isActive);
+        public void RequestLobbyUIInitialization() => OnRequestLobbyUIInitialization?.Invoke(); 
+        public void RequestGameUIInitialization() => OnRequestGameUIInitialization?.Invoke();
     }
 }

@@ -259,6 +259,7 @@ MonoBehaviour:
   _playerInput: {fileID: 5189175634887361945}
   _inputReader: {fileID: 4851020409925496502}
   _rb: {fileID: 4515986925934261871}
+  _networkRb: {fileID: 7914716674521843450}
   _model: {fileID: 5711959362786639010}
   _groundCheck: {fileID: 7460693758395271466}
   _cameraRoot: {fileID: 4853491123650079907}
@@ -413,6 +414,23 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: df7913d1-a33c-4a0d-b0bc-a82b77d30214
     m_ActionName: 'Player/UsePotion[/Keyboard/h]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4851020409925496502}
+        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Player.InputReader,
+          ProjectAssembly
+        m_MethodName: StartButton
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: a9a8af69-d8e0-4c88-afa6-b22a0722e900
+    m_ActionName: 'Player/StartButton[/Keyboard/p]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player

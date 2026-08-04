@@ -2,11 +2,14 @@ using Alchemy.Inspector;
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.DI;
 using Project.Assets._Project._Scripts.Managers;
+using Project.Assets._Project._Scripts.UI;
 using Reflex.Attributes;
 using Reflex.Extensions;
 using Reflex.Injectors;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -15,6 +18,7 @@ namespace Project.Assets._Project._Scripts.Player
 {
     public enum Team
     {
+        None,
         Catcher,
         Runner
     }
@@ -25,10 +29,11 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerInput _playerInput;
         [SerializeField, Self] private InputReader _inputReader;
         [SerializeField, Self] private Rigidbody _rb;
+        [SerializeField, Self] private NetworkRigidbody _networkRb; 
         [SerializeField] private Transform _model;
         [SerializeField] private Transform _groundCheck;
         [SerializeField] private Transform _cameraRoot;
-        [SerializeField] private NetworkVariable<Team> _team;
+        [SerializeField] private NetworkVariable<Team> _team = new();
         [Inject] private readonly PlayerStats _playerStats;
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
         public Team Team => _team.Value;
@@ -53,7 +58,14 @@ namespace Project.Assets._Project._Scripts.Player
             }
         }
 
-        
+        [Rpc(SendTo.Owner)]
+        public void TeleportServerRpc(Vector3 position, Quaternion rotation)
+        {
+            _movement?.ToggleMovement(false);
+            _networkRb.SetPosition(position);
+            _networkRb.SetRotation(rotation);
+            _movement?.ToggleMovement(true);
+        }
 
         private void InjectDependencies() => GameObjectInjector.InjectObject(gameObject, SceneManager.GetActiveScene().GetSceneContainer());
 
@@ -62,7 +74,6 @@ namespace Project.Assets._Project._Scripts.Player
             switch (scene)
             {
                 case SceneType.Lobby:
-                    //InjectDependencies();
                     var lobbyRef = LobbyReferenceHolder.Instance;
                     Debug.Assert(lobbyRef != null);
                     if (IsOwner)
@@ -78,6 +89,10 @@ namespace Project.Assets._Project._Scripts.Player
                             _movement.ChangeCamera(lobbyRef.GameplayCamera);
                         }
                         _inputReader.OnJump += _movement.HandleJump;
+                        if (IsHost)
+                        {
+                            _inputReader.OnStartButtonKeyPressed += LobbyUI.Instance.InvokeGameStartButtonPress;
+                        }
                     }
                     if (IsServer)
                     {
@@ -85,13 +100,13 @@ namespace Project.Assets._Project._Scripts.Player
                     }
                     break;
                 case SceneType.Gameplay:
-                    //InjectDependencies();
                     var gameplayRef = GameplayReferenceHolder.Instance;
                     Debug.Assert(gameplayRef != null);
                     if (IsOwner)
                     {
                         gameplayRef.FPCameraInstaller.BindCameraToPlayer(this);
                         _movement.ChangeCamera(gameplayRef.GameplayCamera);
+
                     }
                     break;
             }
@@ -100,7 +115,18 @@ namespace Project.Assets._Project._Scripts.Player
 
         public void ClearSceneReferences(SceneType scene)
         {
-            //noop
+            switch (scene)
+            {
+                case SceneType.Lobby:
+                    if (IsOwner)
+                    {
+                        if (IsHost)
+                        {
+                            _inputReader.OnStartButtonKeyPressed -= LobbyUI.Instance.InvokeGameStartButtonPress;
+                        }
+                    }
+                    break;
+            }
         }
 
 
@@ -136,6 +162,5 @@ namespace Project.Assets._Project._Scripts.Player
             _movement?.DrawGizmos();
         }
 
-        
     }
 }

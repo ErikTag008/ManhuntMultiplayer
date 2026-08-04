@@ -8,15 +8,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Unity.Netcode;
+using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Project.Assets._Project._Scripts.Managers
 {
 
-    public class GameManager : NetworkBehaviour, IPlayerRegistry, ISceneInitialized
+    public class GameManager : NetworkBehaviour, IPlayerRegistry
     {
         [SerializeField, SceneReference] private string _gameScene;
         [SerializeField, SceneReference] private string _lobbyScene;
@@ -27,7 +27,13 @@ namespace Project.Assets._Project._Scripts.Managers
         private PlayerSpawner _playerSpawner;
         private NetworkVariable<GameState> _state = new();
         private CancellationTokenSource _gameLoopCTS;
-        [SerializeField] private List<PlayerController> _players = new(10);
+        [SerializeField] private List<PlayerController> _players = new();
+        [SerializeField] private NetworkList<PlayerInfo> _playerInfos = new();
+        private NetworkVariable<int> _playerCount = new();
+        private NetworkVariable<double> _countdownEndTime = new();
+        private CancellationTokenSource _countdownCTS = new();
+        private bool _gameStartRequested = false;
+
         public static GameManager Instance { get; private set; }
 
         private void Awake()
@@ -36,8 +42,6 @@ namespace Project.Assets._Project._Scripts.Managers
             _lobbyScene = System.IO.Path.GetFileNameWithoutExtension(_lobbyScene);
             _gameScene = System.IO.Path.GetFileNameWithoutExtension(_gameScene);
             _mainMenuScene = System.IO.Path.GetFileNameWithoutExtension(_mainMenuScene);
-            _state.OnValueChanged += OnStateChanged;
-            OnStateChanged(_state.Value, _state.Value);
         }
 
         private void Start()
@@ -95,12 +99,145 @@ namespace Project.Assets._Project._Scripts.Managers
         public override void OnNetworkSpawn()
         {
             GameObjectInjector.InjectObject(gameObject, gameObject.scene.GetSceneContainer());
-            DontDestroyOnLoad(gameObject);
+            //DontDestroyOnLoad(gameObject);
+            Debug.Log(EUtils.Logger.Colorize($"[GameManager] Called OnNetworkSpawn for Client {NetworkManager.Singleton.LocalClientId}...", "yellow"));
+            Debug.Log(EUtils.Logger.Colorize($"[GameManager] IsHost = {IsHost}...", "yellow"));
+            Debug.Log(EUtils.Logger.Colorize($"[GameManager] IsClient = {IsClient}...", "yellow"));
+            UIManager.Instance.OnRequestLobbyUIInitialization += HandleLobbyUIInitialization;
+            UIManager.Instance.OnRequestGameUIInitialization += HandleGameUIInitialization;
+            Debug.Log($"Spawn: State={_state.Value}, PlayerCount={_playerCount.Value}");
             if (!IsServer) return;
+            
             _gameLoopCTS = new();
             Debug.Log("[GameManager] Trying to Start Game Loop");
             GameLoop(_gameLoopCTS.Token).Forget();
         }
+
+        private void HandleGameUIInitialization()
+        {
+            Debug.Log(EUtils.Logger.Colorize($"[GameManager] Initializing Game UI for Client {NetworkManager.Singleton.LocalClientId}...", "yellow"));
+            Debug.Log(EUtils.Logger.Colorize($"[GameManager] IsHost = {IsHost}...", "yellow"));
+            Debug.Log(EUtils.Logger.Colorize($"[GameManager] IsClient = {IsClient}...", "yellow"));
+            UIManager.Instance.ChangePlayerTeamText(GetPlayerTeam(NetworkManager.Singleton.LocalClientId).ToString());
+        }
+
+        private Team GetPlayerTeam(ulong clientId)
+        {
+            foreach (var playerInfo in _playerInfos)
+            {
+                if (playerInfo.ClientId == clientId)
+                {
+                    UIManager.Instance.ChangePlayerTeamText(playerInfo.Team.ToString());
+                    return playerInfo.Team;
+                }
+            }
+
+            Debug.LogError($"[GameManager] Player info not found for client ID: {clientId}");
+            return Team.None;
+        }
+
+        private void HandleLobbyUIInitialization()
+        {
+            Debug.Log(EUtils.Logger.Colorize($"[GameManager] Initializing Lobby UI for Client {NetworkManager.Singleton.LocalClientId}...", "yellow"));
+            Debug.Log(EUtils.Logger.Colorize($"[GameManager] IsHost = {IsHost}...", "yellow"));
+            Debug.Log(EUtils.Logger.Colorize($"[GameManager] IsClient = {IsClient}...", "yellow"));
+
+            UIManager.Instance.ChangeStartGameButtonAvailability(IsHost);
+            if (IsHost)
+            {
+                EmptyLobbyUI();
+                SubscribeToServerChanges();
+                OnStateChanged(_state.Value, _state.Value);
+                OnPlayerCountChanged(_playerCount.Value, _playerCount.Value);
+                
+                UIManager.Instance.OnRequestGameStart += HandleGameStartRequest;
+            }
+            if (IsClient)
+            {
+                InitializeGameState();
+                
+
+            }
+        }
+
+        private void HandleGameStartRequest()
+        {
+            if (!IsHost) return;
+            if (_state.Value == GameState.WaitingForPlayers && _playerCount.Value >= _gameLobbySettings.MinRequiredPlayers)
+            {
+                _gameStartRequested = true;
+            }
+            else
+            {
+                Debug.LogWarning($"Cannot start game. Current state: {_state.Value}, Player count: {_playerCount.Value}");
+            }
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            UnsubscribeFromServerChanges();
+            if (IsServer)
+            {
+                try
+                {
+                    _gameLoopCTS?.Cancel();
+                    _gameLoopCTS?.Dispose();
+                }
+                catch (ObjectDisposedException) { }
+            }
+        }
+
+        private void InitializeGameState()
+        {
+            EmptyLobbyUI();
+            SubscribeToServerChanges();
+            OnStateChanged(_state.Value, _state.Value);
+            OnPlayerCountChanged(_playerCount.Value, _playerCount.Value);
+        }
+
+        private void SubscribeToServerChanges()
+        {
+            _state.OnValueChanged += OnStateChanged;
+            _playerCount.OnValueChanged += OnPlayerCountChanged;
+            _countdownEndTime.OnValueChanged += StartCountdown;
+        }
+
+        private void UnsubscribeFromServerChanges()
+        {
+            _state.OnValueChanged -= OnStateChanged;
+            _playerCount.OnValueChanged -= OnPlayerCountChanged;
+            _countdownEndTime.OnValueChanged -= StartCountdown;
+        }
+
+        private static void EmptyLobbyUI()
+        {
+            UIManager.Instance.ChangeLobbyStatusText("");
+            UIManager.Instance.ChangeJoinedPlayerAmount("");
+            UIManager.Instance.ChangeCountdownText("");
+        }
+
+        public void StartCountdown(double _, double endTime)
+        {
+            _countdownCTS?.Cancel();
+            _countdownCTS = new();
+            CountdownLoop(endTime, _countdownCTS.Token).Forget();
+        }
+
+        private async UniTaskVoid CountdownLoop(double endTime, CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                var remaining = endTime - NetworkManager.Singleton.ServerTime.Time;
+
+                if (remaining <= 0)
+                    break;
+
+                UIManager.Instance.ChangeCountdownText(Mathf.CeilToInt((float)remaining).ToString());
+                await UniTask.Yield(cancellationToken: token);
+            }
+
+        }
+
         public void RegisterPlayer(PlayerController player)
         {
             if (!IsServer) return;
@@ -110,24 +247,39 @@ namespace Project.Assets._Project._Scripts.Managers
         {
             if (_players.Contains(player)) return;
             _players.Add(player);
+            UpdatePlayerCount();
             Debug.Log($"Registered player {player.OwnerClientId}. Total: {_players.Count}");
         }
+
+        private void UpdatePlayerCount() => _playerCount.Value = _players.Count;
+
+        private void OnPlayerCountChanged(int previousCount, int newCount)
+        {
+            if(_state.Value == GameState.Lobby || _state.Value == GameState.WaitingForPlayers || _state.Value == GameState.Countdown)
+            {
+                UIManager.Instance.ChangeJoinedPlayerAmount($"{newCount}/{_gameLobbySettings.MaxConnectedPlayers} players joined");
+            }
+        }
+
         private void OnStateChanged(GameState previous, GameState current)
         {
             print($"Game State Changed to {current}");
             switch (current)
             {
                 case GameState.Lobby:
+                    UIManager.Instance.ChangeLobbyStatusText("Initializing Lobby...");
                     break;
                 case GameState.WaitingForPlayers:
-                    //_uiManager.ShowWaitingScreen();
+                    UIManager.Instance.ChangeLobbyStatusText($"Waiting for players... ({_gameLobbySettings.MinRequiredPlayers} required)");
                     break;
 
                 case GameState.Countdown:
-                    //_uiManager.ShowCountdown();
+                    UIManager.Instance.ChangeLobbyStatusText($"Game starting in");
+                    StartCountdown(0.0, _countdownEndTime.Value);
                     break;
 
-                case GameState.AssigningTeams: 
+                case GameState.AssigningTeams:
+                    UIManager.Instance.ChangeLobbyStatusText($"Assigning teams...");
                     break;
 
                 case GameState.Playing:
@@ -143,17 +295,7 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
-        public override void OnNetworkDespawn()
-        {
-            if (IsServer)
-            {
-                try
-                {
-                    _gameLoopCTS?.Cancel();
-                    _gameLoopCTS?.Dispose();
-                } catch (ObjectDisposedException) { }
-            }
-        }
+        
 
         public override void OnDestroy()
         {
@@ -175,6 +317,7 @@ namespace Project.Assets._Project._Scripts.Managers
                 _state.Value = GameState.WaitingForPlayers;
                 await WaitForEnoughPlayers(token);
 
+                _countdownEndTime.Value = NetworkManager.ServerTime.Time + _gameLobbySettings.GameStartWaitTimeInSeconds;
                 _state.Value = GameState.Countdown;
                 await CountdownToGameStart(token);
 
@@ -262,6 +405,7 @@ namespace Project.Assets._Project._Scripts.Managers
         private async UniTask LoadLobby(CancellationToken token)
         {
             await LoadNetworkScene(_lobbyScene, token);
+
         }
 
         private async UniTask ReturnToLobby(CancellationToken token)
@@ -280,14 +424,14 @@ namespace Project.Assets._Project._Scripts.Managers
 
         private async UniTask WaitForEnoughPlayers(CancellationToken token)
         {
-            await UniTask.WaitUntil(() => _players.Count >= _gameLobbySettings.MinRequiredPlayers, cancellationToken: token);
-            print("Enought Players Connected");
-            await UniTask.WaitForSeconds(_gameLobbySettings.MaxWaitForPlayersTimeInSeconds, cancellationToken: token);
+            await UniTask.WaitUntil(() => _gameStartRequested, cancellationToken: token);
+            _gameStartRequested = false;
+            print("Enough Players Connected");
         }
 
         private async UniTask CountdownToGameStart(CancellationToken token)
         {
-            await UniTask.WaitForSeconds(_gameLobbySettings.GameStartWaitTimeInSeconds, cancellationToken: token);
+            await UniTask.WaitUntil(() => NetworkManager.ServerTime.Time >= _countdownEndTime.Value, cancellationToken: token);
         }
 
         private HashSet<ulong> _catcherIds;
@@ -306,14 +450,14 @@ namespace Project.Assets._Project._Scripts.Managers
                 var team = _catcherIds.Contains(player.OwnerClientId) ? Team.Catcher : Team.Runner;
 
                 player.SetTeam(team);
-
+                _playerInfos.Add(new PlayerInfo { ClientId = player.OwnerClientId, Team = team });
                 Debug.Log($"Player {player.OwnerClientId} -> {team}");
             }
         }
 
         private async UniTask WaitForRunnerHide(CancellationToken token)
         {
-            PlayerGameSpawnDistributor.Instance.DistributePlayersToSpawns(_players);
+            await PlayerGameSpawnDistributor.Instance.DistributePlayersToSpawns(_players);
             await UniTask.WaitForSeconds(_gameLobbySettings.RunnersHideWaitTime, cancellationToken: token);
         }
         private async UniTask PlayRound(CancellationToken token)
@@ -333,32 +477,6 @@ namespace Project.Assets._Project._Scripts.Managers
 
         }
 
-        public void InitializeSceneReferences(SceneType scene)
-        {
-            switch (scene)
-            {
-                case SceneType.MainMenu:
-                    break;
-                case SceneType.Lobby:
-                    break;
-                case SceneType.Gameplay:
-                    break;
-            }
-        }
-
-        public void ClearSceneReferences(SceneType scene)
-        {
-            switch (scene)
-            {
-                case SceneType.MainMenu:
-                    break;
-                case SceneType.Lobby:
-                    break;
-                case SceneType.Gameplay:
-                    break;
-            }
-        }
-
         public void SetActiveSpawner(PlayerSpawner playerSpawner)
         {
             _playerSpawner = playerSpawner;
@@ -367,14 +485,14 @@ namespace Project.Assets._Project._Scripts.Managers
 
     public enum GameState
     {
-        Lobby,
-        WaitingForPlayers,
-        Countdown,
-        AssigningTeams,
-        LoadingGameplay,
-        WaitForRunnerHide,
-        Playing,
-        DeterminingWinner,
-        Results
+        Lobby = 1 << 0,
+        WaitingForPlayers = 1<<1,
+        Countdown = 1<<2,
+        AssigningTeams = 1<<3,
+        LoadingGameplay = 1 << 4,
+        WaitForRunnerHide = 1 << 5,
+        Playing = 1 << 6,
+        DeterminingWinner = 1 << 7,
+        Results = 1 << 8
     }
 }

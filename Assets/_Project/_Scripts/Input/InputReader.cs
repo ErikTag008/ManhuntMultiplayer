@@ -17,6 +17,8 @@ namespace Project.Assets._Project._Scripts.Player
         public event Action PrimaryWeaponSwitch;
         public event Action SecondaryWeaponSwitch;
         public event Action OnHealthPotionUsed;
+
+        public event Action OnStartButtonKeyPressed;
         public bool IsUsingMouse => _playerInput.currentControlScheme == "Keyboard&Mouse";
 
         private void Awake()
@@ -112,6 +114,14 @@ namespace Project.Assets._Project._Scripts.Player
             if (context.performed)
             {
                 OnHealthPotionUsed?.Invoke();
+            }
+        }
+
+        public void StartButton(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                OnStartButtonKeyPressed?.Invoke();
             }
         }
     }

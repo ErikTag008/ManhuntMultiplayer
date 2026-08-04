@@ -1,6 +1,7 @@
 using Alchemy.Inspector;
 using Assets._Project._Scripts.SceneReference;
 using Cysharp.Threading.Tasks;
+using Project.Assets._Project._Scripts.UI;
 using Reflex.Attributes;
 using System.Threading;
 using Unity.Netcode;
@@ -13,9 +14,11 @@ namespace Project.Assets._Project._Scripts.Managers
     {
         [SerializeField, AssetsOnly] private NetworkObject _gameManager;
         [SerializeField, SceneReference] private string _mainMenuScene;
+        [Inject] private ServerStarterUI _serverStarterUI;
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
         [Inject] private readonly UIManager _uiManager;
         private readonly CancellationTokenSource _unloadCTS = new();
+
         private Scene _currentScene;
 
         private void Start()
@@ -29,7 +32,7 @@ namespace Project.Assets._Project._Scripts.Managers
         private void HandleClientStart()
         {
             NetworkManager.Singleton.StartClient();
-            _uiManager.ToggleServerStarterUI(false);
+            _serverStarterUI.ToggleServerStarterUI(false);
             //UnloadMainMenu().Forget();
         }
 
@@ -37,7 +40,7 @@ namespace Project.Assets._Project._Scripts.Managers
         {
             NetworkManager.Singleton.StartHost();
             SpawnGameManager();
-            _uiManager.ToggleServerStarterUI(false);
+            _serverStarterUI.ToggleServerStarterUI(false);
             UnloadMainMenu().Forget();
         }
 

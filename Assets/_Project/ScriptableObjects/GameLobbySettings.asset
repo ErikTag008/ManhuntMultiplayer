@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 283f674daebb1394aabd730001ffa7a5, type: 3}
   m_Name: GameLobbySettings
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.Managers.GameLobbySettings
-  <MinimumRequiredPlayers>k__BackingField: 2
-  <MaximumConnectePlayers>k__BackingField: 10
-  <MaximumCatcherPlayers>k__BackingField: 2
+  <MinRequiredPlayers>k__BackingField: 3
+  <MaxConnectedPlayers>k__BackingField: 10
+  <MaxCatcherPlayers>k__BackingField: 2
   <MaxWaitForPlayersTimeInSeconds>k__BackingField: 5
   <GameStartWaitTimeInSeconds>k__BackingField: 5
+  <RunnersHideWaitTime>k__BackingField: 15
   <GameDurationInSeconds>k__BackingField: 120
   <ResultsDurationInSeconds>k__BackingField: 15
