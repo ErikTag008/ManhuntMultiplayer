@@ -14,4 +14,4 @@ namespace Project.Assets._Project._Scripts.Managers
         [field: SerializeField] public float GameDurationInSeconds { get; private set; } = 120f;
         [field: SerializeField] public float ResultsDurationInSeconds { get; private set; } = 15f;
     }
-}
+    }

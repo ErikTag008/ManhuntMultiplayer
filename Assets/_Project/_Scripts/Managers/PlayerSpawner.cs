@@ -1,25 +1,17 @@
-using Alchemy.Inspector;
-using Project.Assets._Project._Scripts.CameraUtils;
 using Project.Assets._Project._Scripts.Player;
-using Reflex.Attributes;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Managers
 {
-    public class PlayerSpawner : MonoBehaviour, ISceneInitialized
+    public class PlayerSpawner : MonoBehaviour
     {
         [SerializeField] private NetworkObject _playerPrefab;
         [SerializeField] private Transform[] _spawnPoints;
-        [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
+        private IPlayerRegistry _playerRegistry;
         private readonly HashSet<ulong> _spawnedClients = new();
 
-
-        private void Awake()
-        {
-            _sceneLifecycleManager.Register(this);
-        }
 
         private void Start()
         {
@@ -50,19 +42,6 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
-        public void InitializeSceneReferences(SceneType scene)
-        {
-            if (scene == SceneType.Lobby)
-            {
-                GameManager.Instance?.SetActiveSpawner(this);
-            }
-        }
-
-        public void ClearSceneReferences(SceneType scene)
-        {
-        }
-
-
         public void SpawnPlayer(ulong clientId)
         {
             Debug.Log($"Spawning player for client {clientId}");
@@ -84,7 +63,18 @@ namespace Project.Assets._Project._Scripts.Managers
             player.SpawnAsPlayerObject(clientId);
 
             var playerController = player.GetComponent<PlayerController>();
-            GameManager.Instance?.RegisterPlayer(playerController);
+
+            // Resolve the registry dynamically instead of relying on injection
+            _playerRegistry ??= FindAnyObjectByType<PlayerRegistry>();
+
+            if (_playerRegistry != null)
+            {
+                _playerRegistry.RegisterPlayer(playerController);
+            }
+            else
+            {
+                Debug.LogError("[PlayerSpawner] IPlayerRegistry not found in scene! Cannot register player.");
+            }
             Debug.Log($"Spawned OwnerClientId = {player.OwnerClientId}");
         }
     }

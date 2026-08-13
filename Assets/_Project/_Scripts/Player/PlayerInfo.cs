@@ -8,7 +8,7 @@ namespace Project.Assets._Project._Scripts.Player
         public ulong ClientId;
         public Team Team;
 
-        public bool Equals(PlayerInfo other)
+        public readonly bool Equals(PlayerInfo other)
         {
             return ClientId == other.ClientId && Team == other.Team;
         }

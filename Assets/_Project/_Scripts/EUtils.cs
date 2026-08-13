@@ -8,9 +8,10 @@ using TMPro;
 using System.Runtime.CompilerServices;
 using System;
 using DG.Tweening;
+using System.Threading;
 
 
-namespace Project
+namespace Project.Assets._Project._Scripts
 {
     public static class EUtils
     {
@@ -199,6 +200,51 @@ namespace Project
 
                 public void Stop() => _timeRemaining = 0f;
                 public void Tick(float deltaTime) { if (_timeRemaining > 0f) _timeRemaining -= deltaTime; }
+            }
+        }
+
+        public class TimerSeconds
+        {
+            private readonly CancellationTokenSource _cts;
+            public TimerSeconds(float duration, Action onUpdate, Action onDone) 
+            {
+                _cts?.Cancel();
+                _cts = new CancellationTokenSource();
+                StartTimerAsync(duration, onUpdate, onDone).Forget();
+            }
+
+            private async UniTaskVoid StartTimerAsync(float duration, Action onUpdate, Action onDone)
+            {
+                float timeRemaining = duration;
+                while (!_cts.IsCancellationRequested && timeRemaining > 0f)
+                {
+                    onUpdate?.Invoke();
+                    await UniTask.Delay(TimeSpan.FromSeconds(1), cancellationToken: _cts.Token);
+                    timeRemaining -= 1f;
+                }
+                onDone?.Invoke();
+            }
+        }
+
+        public class TimerFrames
+        {
+            private readonly CancellationTokenSource _cts;
+            public TimerFrames(int frameCount, Action onUpdate, Action onDone)
+            {
+                _cts?.Cancel();
+                _cts = new CancellationTokenSource();
+                StartTimerAsync(frameCount, onUpdate, onDone).Forget();
+            }
+            private async UniTaskVoid StartTimerAsync(int frameCount, Action onUpdate, Action onDone)
+            {
+                int framesRemaining = frameCount;
+                while (!_cts.IsCancellationRequested && framesRemaining > 0)
+                {
+                    onUpdate?.Invoke();
+                    await UniTask.NextFrame(cancellationToken: _cts.Token);
+                    framesRemaining--;
+                }
+                onDone?.Invoke();
             }
         }
 

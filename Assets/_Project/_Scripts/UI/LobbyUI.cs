@@ -1,26 +1,27 @@
 using Project.Assets._Project._Scripts.Managers;
+using Reflex.Attributes;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Project.Assets._Project._Scripts.UI
 {
-    public class LobbyUI : Singleton<LobbyUI>
+    public class LobbyUI : MonoBehaviour, ILobbyUI
     {
         [SerializeField] private TMP_Text _joinedPlayerAmountText;
         [SerializeField] private TMP_Text _lobbyStatusText;
         [SerializeField] private TMP_Text _countdownText;
         [SerializeField] private Button _gameStartButton;
+        [Inject] private readonly IUIManager _uiManager;
 
         private void Start()
         {
-            var uiManager = UIManager.Instance;
-            uiManager.OnJoinedPlayerAmountChanged += HandleJoinedPlayerAmountChange;
-            uiManager.OnLobbyStatusTextChanged += HandleLobbyStatusChange;
-            uiManager.OnCountdownTextChanged += HandleCountdownChange;
-            uiManager.OnStartGameButtonAvailabilityChanged += HandleGameStartButtonAvailabilityChange;
-            uiManager.RequestLobbyUIInitialization();
-            _gameStartButton.onClick.AddListener(uiManager.StartGame);
+            _uiManager.OnJoinedPlayerAmountChanged += HandleJoinedPlayerAmountChange;
+            _uiManager.OnLobbyStatusTextChanged += HandleLobbyStatusChange;
+            _uiManager.OnCountdownTextChanged += HandleCountdownChange;
+            _uiManager.OnStartGameButtonAvailabilityChanged += HandleGameStartButtonAvailabilityChange;
+            _uiManager.RequestLobbyUIInitialization();
+            _gameStartButton.onClick.AddListener(_uiManager.StartGame);
         }
 
         public void InvokeGameStartButtonPress()
@@ -51,7 +52,7 @@ namespace Project.Assets._Project._Scripts.UI
 
         private void OnDestroy()
         {
-            var uiManager = UIManager.Instance;
+            var uiManager = _uiManager;
             uiManager.OnJoinedPlayerAmountChanged -= HandleJoinedPlayerAmountChange;
             uiManager.OnLobbyStatusTextChanged -= HandleLobbyStatusChange;
             uiManager.OnCountdownTextChanged -= HandleCountdownChange;

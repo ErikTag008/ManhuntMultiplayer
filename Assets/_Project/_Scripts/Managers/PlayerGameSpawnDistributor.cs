@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Managers
 {
-    public class PlayerGameSpawnDistributor : Singleton<PlayerGameSpawnDistributor>
+    public class PlayerGameSpawnDistributor : MonoBehaviour, ISpawnDistributor
     {
         [SerializeField] private Transform[] _waitingRoomSpawns;
         [SerializeField] private Transform[] _gameRoomSpawns;
@@ -48,7 +48,7 @@ namespace Project.Assets._Project._Scripts.Managers
                     spawn = gameSpawns[gameIndex++];
                 }
 
-                player.TeleportServerRpc(spawn.position, spawn.rotation);
+                player.TeleportRpc(spawn.position, spawn.rotation);
                 await UniTask.Yield();
             }
         }

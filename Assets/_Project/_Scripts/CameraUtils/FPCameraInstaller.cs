@@ -1,4 +1,5 @@
 using KBCore.Refs;
+using Project.Assets._Project._Scripts.Input;
 using Project.Assets._Project._Scripts.Player;
 using Reflex.Attributes;
 using Unity.Cinemachine;

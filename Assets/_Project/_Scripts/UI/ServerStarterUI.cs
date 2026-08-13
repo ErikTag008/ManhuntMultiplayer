@@ -1,4 +1,5 @@
 using Project.Assets._Project._Scripts.Managers;
+using Reflex.Attributes;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +10,7 @@ namespace Project.Assets._Project._Scripts.UI
     {
         [field: SerializeField] public Button StartHostButton { get; private set; }
         [field: SerializeField] public Button StartClientButton { get; private set; }
+        [Inject] private readonly IUIManager _uiManager;
         private Canvas _serverStarterCanvas;
         private void Awake()
         {
@@ -17,15 +19,15 @@ namespace Project.Assets._Project._Scripts.UI
         private void Start()
         {
 
-            StartHostButton.onClick.AddListener(UIManager.Instance.RaiseHostStart);
-            StartClientButton.onClick.AddListener(UIManager.Instance.RaiseClientStart);
+            StartHostButton.onClick.AddListener(_uiManager.RaiseHostStart);
+            StartClientButton.onClick.AddListener(_uiManager.RaiseClientStart);
         }
 
 
         private void OnDestroy()
         {
-            StartHostButton.onClick.RemoveListener(UIManager.Instance.RaiseHostStart);
-            StartClientButton.onClick.RemoveListener(UIManager.Instance.RaiseClientStart);
+            StartHostButton.onClick.RemoveListener(_uiManager.RaiseHostStart);
+            StartClientButton.onClick.RemoveListener(_uiManager.RaiseClientStart);
         }
 
         public void ToggleServerStarterUI(bool enabled)

@@ -1,8 +1,9 @@
 using System;
+using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Managers
 {
-    public class UIManager : Singleton<UIManager>
+    public class UIManager : IUIManager
     {
 
         public event Action OnHostStart;
@@ -16,10 +17,6 @@ namespace Project.Assets._Project._Scripts.Managers
         public event Action OnRequestGameUIInitialization;
         public event Action OnRequestGameStart;
 
-        protected override void Awake()
-        {
-            base.Awake();
-        }
 
         public void RaiseHostStart() => OnHostStart?.Invoke();
         public void RaiseClientStart() => OnClientStart?.Invoke();

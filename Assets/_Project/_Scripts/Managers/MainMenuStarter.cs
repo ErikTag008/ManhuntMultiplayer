@@ -12,20 +12,14 @@ namespace Project.Assets._Project._Scripts.Managers
 {
     public class MainMenuStarter : MonoBehaviour
     {
-        [SerializeField, AssetsOnly] private NetworkObject _gameManager;
-        [SerializeField, SceneReference] private string _mainMenuScene;
-        [Inject] private ServerStarterUI _serverStarterUI;
+        [Inject] private readonly ServerStarterUI _serverStarterUI;
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
-        [Inject] private readonly UIManager _uiManager;
-        private readonly CancellationTokenSource _unloadCTS = new();
-
-        private Scene _currentScene;
-
+        [Inject] private readonly IUIManager _uiManager;
+        [Inject] private readonly GameScenes _gameScenes;
+        [SerializeField, AssetsOnly] private NetworkObject _gameSystemsPrefab;
         private void Start()
         {
             _sceneLifecycleManager.InitializeScene(SceneType.MainMenu);
-            _mainMenuScene = System.IO.Path.GetFileNameWithoutExtension(_mainMenuScene);
-            _currentScene = SceneManager.GetActiveScene();
             _uiManager.OnHostStart += HandleHostStart;
             _uiManager.OnClientStart += HandleClientStart;
         }
@@ -39,40 +33,38 @@ namespace Project.Assets._Project._Scripts.Managers
         private void HandleHostStart()
         {
             NetworkManager.Singleton.StartHost();
-            SpawnGameManager();
+            SpawnGameSystems();
             _serverStarterUI.ToggleServerStarterUI(false);
             UnloadMainMenu().Forget();
         }
 
         private async UniTaskVoid UnloadMainMenu()
         {
-            await UniTask.WaitUntil(() => SceneManager.GetActiveScene().name != _mainMenuScene);
+            await UniTask.WaitUntil(() => SceneManager.GetActiveScene().name != _gameScenes.MainMenuSceneName);
 
-            var scene = SceneManager.GetSceneByName(_mainMenuScene);
+            var scene = SceneManager.GetSceneByName(_gameScenes.MainMenuSceneName);
 
             if (!scene.IsValid())
             {
-                Debug.LogWarning($"Scene '{_mainMenuScene}' is no longer valid.");
+                Debug.LogWarning($"Scene '{_gameScenes.MainMenuSceneName}' is no longer valid.");
                 return;
             }
 
             if (!scene.isLoaded)
             {
-                Debug.LogWarning($"Scene '{_mainMenuScene}' is already unloaded.");
+                Debug.LogWarning($"Scene '{_gameScenes.MainMenuSceneName}' is already unloaded.");
                 return;
             }
 
             await SceneManager.UnloadSceneAsync(scene);
         }
 
-
-        private void SpawnGameManager()
+        private void SpawnGameSystems()
         {
-            if (!NetworkManager.Singleton.IsServer)
-                return;
-
-            NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(_gameManager);
+            if (!NetworkManager.Singleton.IsServer) return;
+            NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(_gameSystemsPrefab);
         }
+        
 
         private void OnDestroy()
         {

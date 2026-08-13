@@ -1,9 +1,12 @@
 using Alchemy.Inspector;
 using KBCore.Refs;
+using Project.Assets._Project._Scripts.CameraUtils;
 using Project.Assets._Project._Scripts.DI;
+using Project.Assets._Project._Scripts.Input;
 using Project.Assets._Project._Scripts.Managers;
 using Project.Assets._Project._Scripts.UI;
 using Reflex.Attributes;
+using Reflex.Core;
 using Reflex.Extensions;
 using Reflex.Injectors;
 using System;
@@ -29,18 +32,22 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerInput _playerInput;
         [SerializeField, Self] private InputReader _inputReader;
         [SerializeField, Self] private Rigidbody _rb;
-        [SerializeField, Self] private NetworkRigidbody _networkRb; 
+        [SerializeField, Self] private NetworkRigidbody _networkRb;
         [SerializeField] private Transform _model;
         [SerializeField] private Transform _groundCheck;
         [SerializeField] private Transform _cameraRoot;
         [SerializeField] private NetworkVariable<Team> _team = new();
         [Inject] private readonly PlayerStats _playerStats;
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
+        [Inject] private readonly GameScenes _gameScenes;
+        private ILobbyUI _lobbyUI;
+        [Inject] private readonly IPlayerRegistry _playerRegistry;
+        private Camera _gameplayCamera;
+        private FPCameraInstaller _fpCameraInstaller;
         public Team Team => _team.Value;
         private IPlayerMovement _movement;
         public Transform CameraRoot => _cameraRoot;
         public InputReader InputReader => _inputReader;
-
 
         private void Awake()
         {
@@ -49,7 +56,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         public override void OnNetworkSpawn()
         {
-            InjectDependencies();
+            InjectGlobalDependencies();
             Debug.Assert(_sceneLifecycleManager != null, "SceneLifecycleManager wasn't injected!");
             _sceneLifecycleManager.Register(this);
             if (IsOwner)
@@ -59,7 +66,7 @@ namespace Project.Assets._Project._Scripts.Player
         }
 
         [Rpc(SendTo.Owner)]
-        public void TeleportServerRpc(Vector3 position, Quaternion rotation)
+        public void TeleportRpc(Vector3 position, Quaternion rotation)
         {
             _movement?.ToggleMovement(false);
             _networkRb.SetPosition(position);
@@ -67,50 +74,124 @@ namespace Project.Assets._Project._Scripts.Player
             _movement?.ToggleMovement(true);
         }
 
-        private void InjectDependencies() => GameObjectInjector.InjectObject(gameObject, SceneManager.GetActiveScene().GetSceneContainer());
+        private void InjectGlobalDependencies()
+        {
+            var container = SceneManager.GetActiveScene().GetSceneContainer();
+            if (container == null)
+            {
+                Debug.LogWarning("[PlayerController] Scene container not found during global injection. Retrying in next frame...");
+                return;
+            }
+            GameObjectInjector.InjectObject(gameObject, container);
+        }
+
+        private void InjectLobbyDependencies()
+        {
+            
+            var container = SceneManager.GetSceneByName(_gameScenes.LobbySceneName).GetSceneContainer();
+            if (container == null) return;
+            try
+            {
+                _gameplayCamera = container.Resolve<Camera>();
+                _fpCameraInstaller = container.Resolve<FPCameraInstaller>();
+                _lobbyUI = container.Resolve<ILobbyUI>();
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[PlayerController] Could not resolve ILobbyUI: {e.Message}");
+            }
+        }
+
+        private void InjectGameDependencies()
+        {
+            var container = SceneManager.GetSceneByName(_gameScenes.GameSceneName).GetSceneContainer();
+            if (container == null) return;
+
+            try
+            {
+                _gameplayCamera = container.Resolve<Camera>();
+                _fpCameraInstaller = container.Resolve<FPCameraInstaller>();
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[PlayerController] Could not resolve Gameplay dependencies: {e.Message}");
+            }
+        }
 
         public void InitializeSceneReferences(SceneType scene)
         {
             switch (scene)
             {
                 case SceneType.Lobby:
-                    var lobbyRef = LobbyReferenceHolder.Instance;
-                    Debug.Assert(lobbyRef != null);
                     if (IsOwner)
                     {
+                        InjectLobbyDependencies();
                         Debug.Log("Creating movement");
-                        lobbyRef.FPCameraInstaller.BindCameraToPlayer(this);
-                        if(_movement == null)
+                        if (_fpCameraInstaller != null)
                         {
-                            _movement = new PlayerMovement(_rb, _playerStats, _groundCheck, lobbyRef.GameplayCamera, _model);
+                            _fpCameraInstaller.BindCameraToPlayer(this);
                         }
                         else
                         {
-                            _movement.ChangeCamera(lobbyRef.GameplayCamera);
+                            Debug.LogError("[PlayerController] FPCameraInstaller is NULL! Dependency resolution failed.");
                         }
-                        _inputReader.OnJump += _movement.HandleJump;
+
+                        if(_movement == null)
+                        {
+                            if (_playerStats == null || _gameplayCamera == null)
+                            {
+                                Debug.LogError($"[PlayerController] Missing dependencies for Movement! Stats: {_playerStats == null}, Camera: {_gameplayCamera == null}");
+                            }
+                            else
+                            {
+                                _movement = new PlayerMovement(_rb, _playerStats, _groundCheck, _gameplayCamera, _model);
+                            }
+                        }
+                        else
+                        {
+                            if (_gameplayCamera != null)
+                            {
+                                _movement.ChangeCamera(_gameplayCamera);
+                            }
+                        }
+
+                        if (_movement != null)
+                        {
+                            _inputReader.OnJump += _movement.HandleJump;
+                        }
+
                         if (IsHost)
                         {
-                            _inputReader.OnStartButtonKeyPressed += LobbyUI.Instance.InvokeGameStartButtonPress;
+                            if (_lobbyUI != null)
+                            {
+                                _inputReader.OnStartButtonKeyPressed += _lobbyUI.InvokeGameStartButtonPress;
+                            }
+                            else
+                            {
+                                Debug.LogError("[PlayerController] LobbyUI is NULL! Cannot bind Start Button.");
+                            }
                         }
                     }
                     if (IsServer)
                     {
-                        GameManager.Instance?.RegisterPlayer(this);
+                        _playerRegistry?.RegisterPlayer(this);
                     }
                     break;
                 case SceneType.Gameplay:
-                    var gameplayRef = GameplayReferenceHolder.Instance;
-                    Debug.Assert(gameplayRef != null);
                     if (IsOwner)
                     {
-                        gameplayRef.FPCameraInstaller.BindCameraToPlayer(this);
-                        _movement.ChangeCamera(gameplayRef.GameplayCamera);
-
+                        InjectGameDependencies();
+                        if (_fpCameraInstaller != null)
+                        {
+                            _fpCameraInstaller.BindCameraToPlayer(this);
+                        }
+                        if (_movement != null && _gameplayCamera != null)
+                        {
+                            _movement.ChangeCamera(_gameplayCamera);
+                        }
                     }
                     break;
             }
-
         }
 
         public void ClearSceneReferences(SceneType scene)
@@ -122,21 +203,21 @@ namespace Project.Assets._Project._Scripts.Player
                     {
                         if (IsHost)
                         {
-                            _inputReader.OnStartButtonKeyPressed -= LobbyUI.Instance.InvokeGameStartButtonPress;
+                            _inputReader.OnStartButtonKeyPressed -= _lobbyUI.InvokeGameStartButtonPress;
                         }
                     }
                     break;
             }
         }
 
-
         public override void OnNetworkDespawn()
         {
             _sceneLifecycleManager.Unregister(this);
             if (!IsOwner) return;
             if(_movement != null)
-            _inputReader.OnJump -= _movement.HandleJump;
+                _inputReader.OnJump -= _movement.HandleJump;
         }
+
         public void SetTeam(Team team)
         {
             if (!IsServer)
@@ -161,6 +242,5 @@ namespace Project.Assets._Project._Scripts.Player
             if(!IsOwner) return;
             _movement?.DrawGizmos();
         }
-
     }
 }
