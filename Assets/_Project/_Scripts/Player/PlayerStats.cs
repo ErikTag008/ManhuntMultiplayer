@@ -1,9 +1,10 @@
+using Project.Assets._Project._Scripts.Weapons;
 using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player
 {
     [CreateAssetMenu(fileName = "PlayerStats", menuName = "Project/Player Stats", order = 0)]
-    public class PlayerStats : ScriptableObject, IMovementStats, ICameraStats, IInteractionStats, ICombatStats, IHealthStats
+    public class PlayerStats : ScriptableObject, IMovementStats, ICameraStats, IInteractionStats, ICombatStats, IHealthStats, IModelStats
     {
         [field: Header("Movement Stats")]
         [field: SerializeField] public float MaxMoveSpeed { get; private set; } = 25f;
@@ -13,6 +14,8 @@ namespace Project.Assets._Project._Scripts.Player
         [field: SerializeField] public float JumpButtonUpVerticalVelocityMultiplier { get; private set; } = 0.3f;
         [field: SerializeField] public float GroundCheckRadius { get; private set; } = 0.2f;
         [field: SerializeField] public float GroundCheckMaxYVelocity { get; private set; } = 0.5f;
+        [field: SerializeField] public float NetworkVariableDetectionMinMagnitude { get; private set; } = 3f;
+        [field: SerializeField] public float NetworkVariableSmoothingSpeed { get; private set; } = 15f;
 
         [field: SerializeField, Range(0f, 90f)] public float MaxGroundAngle { get; private set; } = 30f;
         [field: SerializeField] public float HorizontalDamping { get; private set; } = 5f;
@@ -34,11 +37,16 @@ namespace Project.Assets._Project._Scripts.Player
 
         [field: Header("Combat Stats")]
         [field: SerializeField] public float MaxHitDistance { get; private set; } = 500f;
-        [field: SerializeField] public LayerMask ShootRaycastLayer { get; private set; }
+        [field: SerializeField] public LayerMask AttackRaycastLayer { get; private set; }
+        [field: SerializeField] public MeleeWeaponBase WeaponPrefab { get; private set; }
+        [field: SerializeField] public Vector3 WeaponPivotLocalPos { get; private set; } = new Vector3(0.4f, 1f, 0.6f);
 
         [field: Header("Health Stats")]
         [field: SerializeField] public int MaxHealth { get; private set; } = 100;
         [field: SerializeField] public int PotionHealAmount { get; private set; } = 50;
+
+        [field: Header("Model Stats")]
+        [field: SerializeField] public Transform Model { get; private set; }
     }
 
     public interface ICameraStats
@@ -65,6 +73,8 @@ namespace Project.Assets._Project._Scripts.Player
         public float GroundAcceleration { get; }
         public float AirAcceleration { get; }   
         public LayerMask GroundCheckLayers { get; }
+        public float NetworkVariableDetectionMinMagnitude { get; }
+        public float NetworkVariableSmoothingSpeed { get; } 
     }    
 
     public interface IInteractionStats
@@ -76,13 +86,18 @@ namespace Project.Assets._Project._Scripts.Player
     public interface ICombatStats
     {
         public float MaxHitDistance { get; }
-        public LayerMask ShootRaycastLayer { get; }
+        public LayerMask AttackRaycastLayer { get; }
+        public MeleeWeaponBase WeaponPrefab { get; }
     }
 
     public interface IHealthStats
     {
         public int MaxHealth { get; }
         public int PotionHealAmount { get; }
-    }   
+    }
 
+    public interface IModelStats
+    {
+        public Transform Model { get; }
+    }
 }

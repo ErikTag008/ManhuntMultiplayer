@@ -19,6 +19,8 @@ MonoBehaviour:
   <JumpButtonUpVerticalVelocityMultiplier>k__BackingField: 0.5
   <GroundCheckRadius>k__BackingField: 0.15
   <GroundCheckMaxYVelocity>k__BackingField: 0.3
+  <NetworkVariableDetectionMinMagnitude>k__BackingField: 0.1
+  <NetworkVariableSmoothingSpeed>k__BackingField: 5
   <MaxGroundAngle>k__BackingField: 45
   <HorizontalDamping>k__BackingField: 5
   <VerticalDamping>k__BackingField: 1
@@ -37,8 +39,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   <MaxHitDistance>k__BackingField: 500
-  <ShootRaycastLayer>k__BackingField:
+  <AttackRaycastLayer>k__BackingField:
     serializedVersion: 2
     m_Bits: 0
+  <WeaponPrefab>k__BackingField: {fileID: 0}
+  <WeaponPivotLocalPos>k__BackingField: {x: 0.4, y: 1, z: 0.6}
   <MaxHealth>k__BackingField: 100
   <PotionHealAmount>k__BackingField: 50
+  <Model>k__BackingField: {fileID: 8515208621651819804, guid: d719e7bb4b9b9da46970ca84bfda5a22, type: 3}

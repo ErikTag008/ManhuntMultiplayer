@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player
@@ -7,8 +8,14 @@ namespace Project.Assets._Project._Scripts.Player
         void ToggleMovement(bool isEnabled);
         void HandleJump(bool isButtonDown = true);
         void HandleFixedMovement(Vector2 moveDirection);
+        void HandleRotation();
         bool IsGrounded();
         void DrawGizmos();
         void ChangeCamera(Camera camera);
+        void ChangeStats(IMovementStats stats);
+        void ChangeModel(Transform model);
+        void ChangeCameraFollower(Transform cameraFollower);
+        event Action<float> ModelRotationChanged;
+        event Action<Quaternion> CameraFollowerRotationChanged;
     }
 }

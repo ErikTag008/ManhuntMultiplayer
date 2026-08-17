@@ -1,3 +1,5 @@
+using DG.Tweening;
+using System;
 using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player
@@ -6,22 +8,28 @@ namespace Project.Assets._Project._Scripts.Player
     public class PlayerMovement : IPlayerMovement
     {
         private readonly Rigidbody _rb;
-        private readonly IMovementStats _stats;
+        private IMovementStats _stats;
         private readonly Transform _groundCheck;
         private Camera _camera;
-        private readonly Transform _model;
+        private Transform _model;
+        private Transform _cameraFollower;
         private float _lastGroundedTime = -Mathf.Infinity;
         private float _lastJumpPressedTime = -Mathf.Infinity;
         private Vector3 _lastGroundNormal = Vector3.up;
+        private float _lastModelYaw = 0f;
+        private Quaternion _lastCameraFollowerRotation = Quaternion.identity;
         private bool _isEnabled = true;
+        public event Action<float> ModelRotationChanged;
+        public event Action<Quaternion> CameraFollowerRotationChanged;
 
-        public PlayerMovement(Rigidbody rb, IMovementStats stats, Transform groundCheck, Camera camera, Transform model)
+        public PlayerMovement(Rigidbody rb, IMovementStats stats, Transform groundCheck, Camera camera, Transform model, Transform cameraFollower)
         {
             _rb = rb;
             _stats = stats;
             _groundCheck = groundCheck;
             _camera = camera;
             _model = model;
+            _cameraFollower = cameraFollower;
         }
 
         public void ToggleMovement(bool isEnabled)
@@ -39,7 +47,21 @@ namespace Project.Assets._Project._Scripts.Player
         {
             _camera = camera;
         }
-
+        public void ChangeStats(IMovementStats stats)
+        {
+            if (stats == null) return;
+            _stats = stats;
+        }
+        public void ChangeModel(Transform model)
+        {
+            if (model == null) return;
+            _model = model;
+        }
+        public void ChangeCameraFollower(Transform cameraFollower)
+        {
+            if (cameraFollower == null) return;
+            _cameraFollower = cameraFollower;
+        }
         public void HandleJump(bool isButtonDown = true)
         {
             if (!_isEnabled) return;
@@ -105,7 +127,6 @@ namespace Project.Assets._Project._Scripts.Player
         {
             if(_stats == null || !_isEnabled) return;
             bool grounded = IsGrounded();
-            HandleRotation();
             HandleHorizontalMovement(moveDirection, grounded);
             if (grounded)
             {
@@ -124,15 +145,39 @@ namespace Project.Assets._Project._Scripts.Player
 
         }
 
-        private void HandleRotation()
+        public void HandleRotation()
+        {
+            HandleModelRotation();
+            HandleCameraFollowerRotation();
+        }
+
+        private void HandleCameraFollowerRotation()
+        {
+            if (!_cameraFollower || !_cameraFollower.gameObject.activeInHierarchy || _stats == null || !_isEnabled) return;
+            Quaternion newRotation = _camera.transform.rotation;
+            _cameraFollower.rotation = newRotation;
+            if (Mathf.Abs(newRotation.eulerAngles.magnitude - _lastCameraFollowerRotation.eulerAngles.magnitude) > _stats.NetworkVariableDetectionMinMagnitude)
+            {
+                _lastCameraFollowerRotation = newRotation;
+                CameraFollowerRotationChanged?.Invoke(newRotation);
+            }
+        }
+
+        private void HandleModelRotation()
         {
             if (!_camera || !_camera.gameObject.activeInHierarchy || _stats == null || !_isEnabled) return;
+
             Vector3 cameraForward = _camera.transform.forward;
             cameraForward.y = 0f;
-            if (cameraForward != Vector3.zero)
+            if (cameraForward == Vector3.zero) return;
+
+            Quaternion newRotation = Quaternion.LookRotation(cameraForward);
+            _model.rotation = newRotation;
+
+            if (Mathf.Abs(newRotation.eulerAngles.y - _lastModelYaw) > _stats.NetworkVariableDetectionMinMagnitude)
             {
-                Quaternion newRotation = Quaternion.LookRotation(cameraForward);
-                _model.rotation = newRotation;
+                _lastModelYaw = newRotation.eulerAngles.y; // Update last sent value
+                ModelRotationChanged?.Invoke(_lastModelYaw); // Send raw value to network
             }
         }
 

@@ -10,7 +10,7 @@ namespace Project.Assets._Project._Scripts.Input
         [SerializeField, Self] private PlayerInput _playerInput;
         public Vector2 MoveDirection { get; private set; }
         public Vector2 LookDirection { get; private set; }
-        public event Action<bool> OnShoot;
+        public event Action OnAttack;
         public event Action<bool> OnJump;
         public event Action OnInteract;
         public event Action OnReload;
@@ -51,16 +51,13 @@ namespace Project.Assets._Project._Scripts.Input
             }
         }
 
-        public void Shoot(InputAction.CallbackContext context)
+        public void Attack(InputAction.CallbackContext context)
         {
             if (context.performed)
             {
-                OnShoot?.Invoke(true);
+                OnAttack?.Invoke();
             }
-            else if (context.canceled)
-            {
-                OnShoot?.Invoke(false);
-            }
+            
         }
 
         public void Jump(InputAction.CallbackContext context)

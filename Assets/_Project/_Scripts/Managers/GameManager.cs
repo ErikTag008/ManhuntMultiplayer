@@ -1,15 +1,8 @@
-using Assets._Project._Scripts.SceneReference;
-using Cysharp.Threading.Tasks;
 using Project.Assets._Project._Scripts.Player;
 using Reflex.Attributes;
 using Reflex.Extensions;
 using Reflex.Injectors;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using Unity.Netcode;
-using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -196,6 +189,7 @@ namespace Project.Assets._Project._Scripts.Managers
             {
                 case GameState.Lobby:
                     _uiManager.ChangeLobbyStatusText("Initializing Lobby...");
+                    
                     break;
                 case GameState.WaitingForPlayers:
                     _uiManager.ChangeLobbyStatusText($"Waiting for players... ({_gameLobbySettings.MinRequiredPlayers} required)");
@@ -208,9 +202,15 @@ namespace Project.Assets._Project._Scripts.Managers
                 case GameState.AssigningTeams:
                     _uiManager.ChangeLobbyStatusText($"Assigning teams...");
                     break;
-
+                case GameState.WaitForRunnerHide:
+                    foreach (var player in _playerRegistry.GetPlayers())
+                    {
+                        player.Health.ResetHealth();
+                    }
+                    break;
                 case GameState.Playing:
                     //_uiManager.ShowGameplayUI();
+                    
                     break;
 
                 case GameState.DeterminingWinner:

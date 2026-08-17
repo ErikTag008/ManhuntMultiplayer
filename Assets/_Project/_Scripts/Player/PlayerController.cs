@@ -5,6 +5,7 @@ using Project.Assets._Project._Scripts.DI;
 using Project.Assets._Project._Scripts.Input;
 using Project.Assets._Project._Scripts.Managers;
 using Project.Assets._Project._Scripts.UI;
+using Project.Assets._Project._Scripts.Weapons;
 using Reflex.Attributes;
 using Reflex.Core;
 using Reflex.Extensions;
@@ -33,36 +34,128 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private InputReader _inputReader;
         [SerializeField, Self] private Rigidbody _rb;
         [SerializeField, Self] private NetworkRigidbody _networkRb;
+        [SerializeField, Self] private Health _health;
+        public Health Health => _health;
+
         [SerializeField] private Transform _model;
         [SerializeField] private Transform _groundCheck;
-        [SerializeField] private Transform _cameraRoot;
+        [SerializeField] private Transform _cameraTarget;
+        [SerializeField] private Transform _weaponPivot;
+        [SerializeField] private Transform _cameraFollower;
         [SerializeField] private NetworkVariable<Team> _team = new();
-        [Inject] private readonly PlayerStats _playerStats;
+
+        public Team Team => _team.Value;
+        public Transform CameraTarget => _cameraTarget;
+        public InputReader InputReader => _inputReader;
+
+        [Inject] private PlayerStats _playerStats;
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
         [Inject] private readonly GameScenes _gameScenes;
-        private ILobbyUI _lobbyUI;
         [Inject] private readonly IPlayerRegistry _playerRegistry;
+
+        private NetworkVariable<float> _modelRotation = new(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        private NetworkVariable<Quaternion> _cameraFollowerRotation = new(Quaternion.identity, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        private NetworkVariable<Vector3> _weaponPosition = new(Vector3.zero, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner); 
+        private NetworkVariable<Quaternion> _weaponRotation = new(Quaternion.identity, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
         private Camera _gameplayCamera;
         private FPCameraInstaller _fpCameraInstaller;
-        public Team Team => _team.Value;
+        private MeleeWeaponBase _currentWeapon;
+        private ILobbyUI _lobbyUI;
         private IPlayerMovement _movement;
-        public Transform CameraRoot => _cameraRoot;
-        public InputReader InputReader => _inputReader;
+
+        private float _targetModelRotation;
+        private Quaternion _targetCameraFollowerRotation;
+        private Vector3 _targetWeaponPosition;
+        private Quaternion _targetWeaponRotation;
 
         private void Awake()
         {
             _playerInput.enabled = false;
         }
 
+        
+
         public override void OnNetworkSpawn()
         {
             InjectGlobalDependencies();
             Debug.Assert(_sceneLifecycleManager != null, "SceneLifecycleManager wasn't injected!");
+            UpdateModelRpc();
+            BindNetworkVariable(_modelRotation, OnModelRotationNetworkVarChanged);
+            BindNetworkVariable(_cameraFollowerRotation, OnCameraFollowerRotationNetworkVarChanged);
+            BindNetworkVariable(_weaponPosition, OnWeaponPositionNetworkVarChanged);
+            BindNetworkVariable(_weaponRotation, OnWeaponRotationNetworkVarChanged);
             _sceneLifecycleManager.Register(this);
             if (IsOwner)
             {
                 _playerInput.enabled = true;
             }
+        }
+
+        private void Update()
+        {
+            if (!IsOwner)
+            {
+                SmoothOutNetworkSyncedObjects();
+                return;
+            }
+            if (_movement == null)
+            {
+                Debug.LogWarning("Movement Is NULL!!!");
+                return;
+            }
+            //_movement.HandleUpdate();
+        }
+
+        private void SmoothOutNetworkSyncedObjects()
+        {
+            _model.rotation = EUtils.Math.Slerp(_model.rotation, Quaternion.Euler(0f, _targetModelRotation, 0f), Time.deltaTime * _playerStats.NetworkVariableSmoothingSpeed);
+            _cameraFollower.rotation = EUtils.Math.Slerp(_cameraFollower.rotation, _targetCameraFollowerRotation, Time.deltaTime * _playerStats.NetworkVariableSmoothingSpeed);
+            _currentWeapon?.transform.SetLocalPositionAndRotation(
+                EUtils.Math.Lerp(_currentWeapon.transform.localPosition, _targetWeaponPosition, Time.deltaTime * _playerStats.NetworkVariableSmoothingSpeed),
+                EUtils.Math.Slerp(_currentWeapon.transform.localRotation, _targetWeaponRotation, Time.deltaTime * _playerStats.NetworkVariableSmoothingSpeed));
+        }
+
+        private void FixedUpdate()
+        {
+            if (!IsOwner) return;
+            if (_movement == null)
+            {
+                Debug.LogWarning("Movement Is NULL!!!");
+                return;
+            }
+            _movement.HandleFixedMovement(_inputReader.MoveDirection);
+        }
+
+        private void BindNetworkVariable<T>(NetworkVariable<T> networkVar, Action<T, T> onChangedCallback)
+        {
+            networkVar.OnValueChanged += (oldValue, newValue) =>
+            {
+                if (!IsOwner)
+                {
+                    onChangedCallback?.Invoke(oldValue, newValue);
+                }
+            };
+        }
+
+        private void OnModelRotationNetworkVarChanged(float oldValue, float newValue)
+        {
+            _model.rotation = Quaternion.Euler(0f, newValue, 0f);
+        }
+
+        private void OnCameraFollowerRotationNetworkVarChanged(Quaternion oldValue, Quaternion newValue)
+        {
+            _cameraFollower.rotation = newValue;
+        }
+
+        private void OnWeaponPositionNetworkVarChanged(Vector3 oldValue, Vector3 newValue)
+        {
+            _currentWeapon.transform.position = newValue;
+        }
+
+        private void OnWeaponRotationNetworkVarChanged(Quaternion oldValue, Quaternion newValue)
+        {
+            _currentWeapon.transform.rotation = newValue;
         }
 
         [Rpc(SendTo.Owner)]
@@ -93,12 +186,12 @@ namespace Project.Assets._Project._Scripts.Player
             try
             {
                 _gameplayCamera = container.Resolve<Camera>();
-                _fpCameraInstaller = container.Resolve<FPCameraInstaller>();
                 _lobbyUI = container.Resolve<ILobbyUI>();
+                _fpCameraInstaller = container.Resolve<FPCameraInstaller>();
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[PlayerController] Could not resolve ILobbyUI: {e.Message}");
+                Debug.LogWarning($"[PlayerController] Could not resolve Lobby Dependencies: {e.Message}");
             }
         }
 
@@ -138,13 +231,16 @@ namespace Project.Assets._Project._Scripts.Player
 
                         if(_movement == null)
                         {
-                            if (_playerStats == null || _gameplayCamera == null)
+                            if (_playerStats && _gameplayCamera)
                             {
-                                Debug.LogError($"[PlayerController] Missing dependencies for Movement! Stats: {_playerStats == null}, Camera: {_gameplayCamera == null}");
+                                _movement = new PlayerMovement(_rb, _playerStats, _groundCheck, _gameplayCamera, _model, _cameraFollower);
+                                _fpCameraInstaller.OnCameraRotationChanged += _movement.HandleRotation;
+                                _movement.ModelRotationChanged += val => OnVariableChanged(_modelRotation, val);
+                                _movement.CameraFollowerRotationChanged += val => OnVariableChanged(_cameraFollowerRotation, val);
                             }
                             else
                             {
-                                _movement = new PlayerMovement(_rb, _playerStats, _groundCheck, _gameplayCamera, _model);
+                                Debug.LogError($"[PlayerController] Missing dependencies for Movement! Stats: {_playerStats == null}, Camera: {_gameplayCamera == null}");
                             }
                         }
                         else
@@ -152,13 +248,11 @@ namespace Project.Assets._Project._Scripts.Player
                             if (_gameplayCamera != null)
                             {
                                 _movement.ChangeCamera(_gameplayCamera);
+                                _fpCameraInstaller.OnCameraRotationChanged += _movement.HandleRotation;
                             }
                         }
+                        _inputReader.OnJump += _movement.HandleJump;
 
-                        if (_movement != null)
-                        {
-                            _inputReader.OnJump += _movement.HandleJump;
-                        }
 
                         if (IsHost)
                         {
@@ -188,10 +282,17 @@ namespace Project.Assets._Project._Scripts.Player
                         if (_movement != null && _gameplayCamera != null)
                         {
                             _movement.ChangeCamera(_gameplayCamera);
+                            _fpCameraInstaller.OnCameraRotationChanged += _movement.HandleRotation;
                         }
                     }
                     break;
             }
+        }
+
+        private void OnVariableChanged<T>(NetworkVariable<T> networkVar, T value)
+        {
+            if(!IsOwner) return;
+            networkVar.Value = value;
         }
 
         public void ClearSceneReferences(SceneType scene)
@@ -207,12 +308,19 @@ namespace Project.Assets._Project._Scripts.Player
                         }
                     }
                     break;
+                case SceneType.Gameplay:
+                    if (IsOwner)
+                    {
+                        _inputReader.OnJump -= _movement.HandleJump;
+                    }
+                    break;
             }
         }
 
         public override void OnNetworkDespawn()
         {
             _sceneLifecycleManager.Unregister(this);
+            _modelRotation.OnValueChanged -= OnModelRotationNetworkVarChanged;
             if (!IsOwner) return;
             if(_movement != null)
                 _inputReader.OnJump -= _movement.HandleJump;
@@ -224,17 +332,97 @@ namespace Project.Assets._Project._Scripts.Player
                 return;
 
             _team.Value = team;
+           
+            
+            UpdateGlobalRpc(team);
+            UpdateLocalRpc(team);
         }
 
-        private void FixedUpdate()
+        private void PerformAttack()
         {
-            if (!IsOwner) return;
-            if (_movement == null)
+            print(EUtils.Logger.Colorize($"[PlayerController] Performing attack for player {OwnerClientId} on team {Team}", "red"));
+            _currentWeapon?.Attack();
+        }
+
+        [Rpc(SendTo.Server)]
+        private void CheckDamageServerRpc(Vector3 hitOrigin, float radius)
+        {
+            Collider[] damaged = Physics.OverlapSphere(hitOrigin, radius, _playerStats.AttackRaycastLayer);
+            for (int i = 0; i < damaged.Length; i++)
             {
-                Debug.LogWarning("Movement Is NULL!!!");
-                return;
+                var damagedItem = damaged[i];
+                if (damagedItem == null) continue;
+                damagedItem.GetComponentInParent<Health>()?.TakeDamage(1);
+                print(EUtils.Logger.Colorize($"{damagedItem} received Damager", "red"));
+
             }
-            _movement.HandleFixedMovement(_inputReader.MoveDirection);
+        }
+
+        [Rpc(SendTo.Everyone)]
+        private void UpdateGlobalRpc(Team team)
+        {
+            var container = SceneManager.GetActiveScene().GetSceneContainer();
+            PlayerStats stats = null;
+            if (team == Team.Catcher)
+            {
+                stats = container.Resolve<CatcherStats>();
+                GetWeapon(stats.WeaponPrefab);
+            }
+            else if (team == Team.Runner)
+            {
+                stats = container.Resolve<RunnerStats>();
+                DestroyWeapon();
+            }
+            if (stats == null) return;
+            _playerStats = stats;
+            _movement?.ChangeStats(stats);
+            ChangeModel(stats.Model);
+
+        }
+
+        private void GetWeapon(MeleeWeaponBase weaponPrefab)
+        {
+            if (weaponPrefab == null) return;
+
+            _currentWeapon = Instantiate(weaponPrefab, _weaponPivot);
+            _currentWeapon.OnWeaponPositionChanged += val => OnVariableChanged(_weaponPosition, val);
+            _currentWeapon.OnWeaponRotationChanged += val => OnVariableChanged(_weaponRotation, val);
+            _currentWeapon.OnCheckDamageRequested += CheckDamageServerRpc;
+        }
+
+        private void DestroyWeapon()
+        {
+            if(_currentWeapon != null)
+            {
+                Destroy(_currentWeapon.gameObject);
+                _currentWeapon = null;
+            }
+        }
+
+        [Rpc(SendTo.Owner)]
+        private void UpdateLocalRpc(Team team)
+        {
+            if (team == Team.Catcher)
+            {
+                _inputReader.OnAttack += PerformAttack;
+            }
+            else
+            {
+                _inputReader.OnAttack -= PerformAttack;
+            }
+        }
+
+        [Rpc(SendTo.Everyone)]
+        private void UpdateModelRpc()
+        {
+            ChangeModel(_playerStats.Model);
+        }
+
+        private void ChangeModel(Transform model)
+        {
+            Destroy(_model.gameObject);
+            _model = Instantiate(model, transform);
+            _movement?.ChangeModel(_model);
         }
 
         private void OnDrawGizmos()

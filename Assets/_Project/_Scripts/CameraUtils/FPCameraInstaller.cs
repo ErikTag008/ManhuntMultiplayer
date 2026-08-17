@@ -2,6 +2,7 @@ using KBCore.Refs;
 using Project.Assets._Project._Scripts.Input;
 using Project.Assets._Project._Scripts.Player;
 using Reflex.Attributes;
+using System;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -16,6 +17,25 @@ namespace Project.Assets._Project._Scripts.CameraUtils
         [SerializeField, Self] private CinemachineCamera _camera;
         [SerializeField, Self] private CinemachineInputAxisController _cinemachineInputAxisController;
         [SerializeField, Self] private CinemachinePanTilt _cinemachinePanTilt;
+        public event Action OnCameraRotationChanged;
+        private void Start()
+        {
+            CinemachineCore.CameraUpdatedEvent.AddListener(OnCameraUpdate);
+
+        }
+
+        private void OnDestroy()
+        {
+            CinemachineCore.CameraUpdatedEvent.RemoveListener(OnCameraUpdate);
+
+        }
+
+        private void OnCameraUpdate(CinemachineBrain brain)
+        {
+            if (brain.ActiveVirtualCamera != _camera as ICinemachineCamera)
+                return;
+            OnCameraRotationChanged?.Invoke();
+        }
 
         private void Update()
         {
@@ -33,7 +53,7 @@ namespace Project.Assets._Project._Scripts.CameraUtils
                 print(EUtils.Logger.Colorize("PLAYER IS NULL TO THE FPCAMERA", "red"));
                 return;
             }
-            _camera.Target.TrackingTarget = player.CameraRoot;
+            _camera.Target.TrackingTarget = player.CameraTarget;
             _inputReader = player.InputReader;
             print(EUtils.Logger.Colorize("Successfully Binded Camera To Player", "green"));
 

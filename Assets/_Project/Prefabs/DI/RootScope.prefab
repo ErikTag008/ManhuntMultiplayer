@@ -58,5 +58,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.DI.ProjectInstaller
   _playerStats: {fileID: 11400000, guid: 799d547b8ea8ab345af7c0126502216c, type: 2}
+  _catcherStats: {fileID: 11400000, guid: 47642887eafdda04aad515b5536aa95a, type: 2}
+  _runnerStats: {fileID: 11400000, guid: e89543acd784a644dbd2241835ad3c5e, type: 2}
   _gameLobbySettings: {fileID: 11400000, guid: 1cc4f7a43d581864c9d1bc4dc85a44f3, type: 2}
   _gameScenes: {fileID: 11400000, guid: 6835c07ecde91634f99b3872fc4a871d, type: 2}
