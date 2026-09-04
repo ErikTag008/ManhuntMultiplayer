@@ -221,7 +221,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MonoBehaviour__ctor_m592DB0105CA0BC97AA1
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 82261
+// Method Definition Index: 82363
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR MonoScriptData_t77CC0EA32557B804FA1B4DB02E836B4B6015B92C UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_m8A54E47E6A339AC34A54654B89A658E11DF40766 (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -256,7 +256,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR MonoScriptData_t77CC0EA32557B804FA1B4DB02E836
 		return L_6;
 	}
 }
-// Method Definition Index: 82262
+// Method Definition Index: 82364
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_mC3ECEBC52FE565F4002B22FB039278748170C73C (UnitySourceGeneratedAssemblyMonoScriptTypes_v1_t19A98D5EF05D94BCFA3DF4F7EA7D17A30CEA883F* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -343,7 +343,7 @@ IL2CPP_EXTERN_C void MonoScriptData_t77CC0EA32557B804FA1B4DB02E836B4B6015B92C_ma
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 82263
+// Method Definition Index: 82365
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UserScriptExample__ctor_m70B1E3DD881A9AA73BE396CA8821842FF8A11A26 (UserScriptExample_tD456F5AFDD0D05DC376B26E8523F420BAEF1496C* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -360,7 +360,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UserScriptExample__ctor_m70B1E3DD881A9AA
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 82264
+// Method Definition Index: 82366
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnityNamespaceScript__ctor_m107D414A0B23BC608E98BE33B92B1373346460B7 (UnityNamespaceScript_t9C4EA850281A5FB9DB3847BD03B653749A9B2261* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>

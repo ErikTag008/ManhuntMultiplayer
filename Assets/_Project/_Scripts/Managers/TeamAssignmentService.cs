@@ -21,7 +21,7 @@ namespace Project.Assets._Project._Scripts.Managers
         public void AssignTeams()
         {
             var players = _playerRegistry.GetPlayers();
-            Debug.Log($"Assigning teams for {players.Count} players");
+            EUtils.Logger.Log($"Assigning teams for {players.Count} players");
 
             var shuffled = players.OrderBy(_ => UnityEngine.Random.value).ToList();
             int catcherCount = Mathf.Min(_settings.MaxCatcherPlayers, shuffled.Count - 1);
@@ -34,7 +34,7 @@ namespace Project.Assets._Project._Scripts.Managers
                 player.SetTeam(team);
 
                 _playerRegistry.AddPlayerInfo(new PlayerInfo { ClientId = player.OwnerClientId, Team = team });
-                Debug.Log($"Player {player.OwnerClientId} -> {team}");
+                EUtils.Logger.Log($"Player {player.OwnerClientId} -> {team}");
             }
         }
 

@@ -31,7 +31,6 @@ namespace Project.Assets._Project._Scripts.Weapons
         [SerializeField] private int _attackDamage = 5;
         [SerializeField] private float _attackCooldown = 1f;
         [SerializeField] private Transform _hitDetectionCenter;
-        private readonly Collider[] _damageables = new Collider[10];
         private bool _canAttack = true;
         private Sequence _swingSequence, _thrustSequence, _slashSequence;
         public event Action<Vector3> OnWeaponPositionChanged;
@@ -47,18 +46,19 @@ namespace Project.Assets._Project._Scripts.Weapons
             _networkUpdateMinMagnitude = minMagnitude;
         }
 
+        [Alchemy.Inspector.Button]
         public override void Attack()
         {
             _isAttackDown = true;
             if (!_canAttack) return;
             AttackWithCooldown(this.destroyCancellationToken).Forget();
-            Debug.Log("Melee Attack");
+            EUtils.Logger.Log("Melee Attack");
         }
 
         public override void StopAttack()
         {
             _isAttackDown = false;
-            Debug.Log("Stop Melee Attack");
+            EUtils.Logger.Log("Stop Melee Attack");
         }
         public override void UpdateTarget(Vector3 target)
         {

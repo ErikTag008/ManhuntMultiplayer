@@ -299,6 +299,49 @@ namespace Project.Assets._Project._Scripts
             {
                 return $"<color={colorHexOrName}>{text}</color>";
             }
+
+            public static void Log(string text)
+            {
+#if(UNITY_EDITOR)
+                Debug.Log(text);
+#endif
+            }
+
+            public static void LogWarning(string text)
+            {
+#if(UNITY_EDITOR)
+                Debug.LogWarning(text);
+#endif
+            }
+
+            public static void LogError(string text)
+            {
+#if(UNITY_EDITOR)
+                Debug.LogError(text);
+#endif
+            }
+
+            public static void LogColorized(string text, string colorHexOrName)
+            {
+#if(UNITY_EDITOR)
+                Debug.Log(Colorize(text, colorHexOrName));
+#endif
+            }
+
+            public static void LogWarningColorized(string text, string colorHexOrName)
+            {
+#if(UNITY_EDITOR)
+                Debug.LogWarning(Colorize(text, colorHexOrName));
+#endif
+            }
+
+            public static void LogErrorColorized(string text, string colorHexOrName)
+            {
+#if(UNITY_EDITOR)
+                Debug.LogError(Colorize(text, colorHexOrName));
+#endif
+            }
+
         }
     }
 }

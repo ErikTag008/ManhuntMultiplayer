@@ -15,23 +15,23 @@ namespace Project.Assets._Project._Scripts.Weapons
     {
         public virtual void Attack()
         {
-            Debug.Log("Attack");
+            EUtils.Logger.Log("Attack");
         }
         public virtual void StopAttack()
         {
-            Debug.Log("StopAttack");
+            EUtils.Logger.Log("StopAttack");
         }
         public virtual void UpdateTarget(Vector3 target)
         {
-            Debug.Log("UpdateTarget: " + target);
+            EUtils.Logger.Log("UpdateTarget: " + target);
         }
         public virtual void Reload()
         {
-            Debug.Log("Reload");
+            EUtils.Logger.Log("Reload");
         }
         public virtual void SetNetworkUpdateMinMagnitude(float minMagnitude)
         {
-            Debug.Log("Set Network Update Min magnitude");
+            EUtils.Logger.Log("Set Network Update Min magnitude");
         }
 
        

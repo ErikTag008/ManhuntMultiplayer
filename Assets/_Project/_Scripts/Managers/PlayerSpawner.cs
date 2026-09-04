@@ -44,13 +44,13 @@ namespace Project.Assets._Project._Scripts.Managers
 
         public void SpawnPlayer(ulong clientId)
         {
-            Debug.Log($"Spawning player for client {clientId}");
+            EUtils.Logger.Log($"Spawning player for client {clientId}");
             if (!NetworkManager.Singleton.IsServer)
                 return;
 
             if (_spawnedClients.Contains(clientId))
                 return;
-            print(EUtils.Logger.Colorize("Trying to spawn" + clientId, "Yellow"));
+            EUtils.Logger.LogColorized("Trying to spawn" + clientId, "Yellow");
             _spawnedClients.Add(clientId);
 
             var spawnPoint = _spawnPoints[clientId % (ulong)_spawnPoints.Length];
@@ -73,9 +73,9 @@ namespace Project.Assets._Project._Scripts.Managers
             }
             else
             {
-                Debug.LogError("[PlayerSpawner] IPlayerRegistry not found in scene! Cannot register player.");
+                EUtils.Logger.LogError("[PlayerSpawner] IPlayerRegistry not found in scene! Cannot register player.");
             }
-            Debug.Log($"Spawned OwnerClientId = {player.OwnerClientId}");
+            EUtils.Logger.Log($"Spawned OwnerClientId = {player.OwnerClientId}");
         }
     }
 }

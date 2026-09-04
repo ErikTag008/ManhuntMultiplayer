@@ -13,20 +13,20 @@ namespace Project.Assets._Project._Scripts.Managers
             var loadedScene = SceneManager.GetSceneByName(sceneNameToLoad);
             if (NetworkManager.Singleton == null || NetworkManager.Singleton.SceneManager == null)
             {
-                Debug.LogError("[NetworkCoordinator] NetworkManager or SceneManager is missing!");
+                EUtils.Logger.LogError("[NetworkCoordinator] NetworkManager or SceneManager is missing!");
                 return loadedScene;
             }
             if (loadedScene.isLoaded)
             {
                 if (setActiveScene) SceneManager.SetActiveScene(loadedScene);
-                Debug.LogWarning($"The Scene you tried to load is already Loaded");
+                EUtils.Logger.LogWarning($"The Scene you tried to load is already Loaded");
                 return loadedScene;
             }
             var status = NetworkManager.Singleton.SceneManager.LoadScene(sceneNameToLoad, loadSceneMode);
 
             if (status != SceneEventProgressStatus.Started)
             {
-                Debug.LogError($"Failed to load {sceneNameToLoad} scene");
+                EUtils.Logger.LogError($"Failed to load {sceneNameToLoad} scene");
                 return loadedScene;
             }
 
@@ -44,7 +44,7 @@ namespace Project.Assets._Project._Scripts.Managers
             var unloadedScene = SceneManager.GetSceneByName(sceneNameToUnload);
             if (NetworkManager.Singleton == null || NetworkManager.Singleton.SceneManager == null)
             {
-                Debug.LogError("[NetworkCoordinator] NetworkManager or SceneManager is missing!");
+                EUtils.Logger.LogError("[NetworkCoordinator] NetworkManager or SceneManager is missing!");
                 return unloadedScene;
             }
             if (unloadedScene.IsValid())
@@ -52,7 +52,7 @@ namespace Project.Assets._Project._Scripts.Managers
                 var status = NetworkManager.Singleton.SceneManager.UnloadScene(unloadedScene);
                 if (status != SceneEventProgressStatus.Started)
                 {
-                    Debug.LogError($"Failed to unload scene: {unloadedScene.name}");
+                    EUtils.Logger.LogError($"Failed to unload scene: {unloadedScene.name}");
                     return unloadedScene;
                 }
                 await UniTask.WaitUntil(() => !unloadedScene.isLoaded, cancellationToken: token);

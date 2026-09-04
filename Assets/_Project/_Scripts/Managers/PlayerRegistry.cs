@@ -36,7 +36,7 @@ namespace Project.Assets._Project._Scripts.Managers
             {
                 UpdatePlayerCountDelayed().Forget();
             }
-            Debug.Log($"Registered player {player.OwnerClientId}. Total: {_players.Count}");
+            EUtils.Logger.Log($"Registered player {player.OwnerClientId}. Total: {_players.Count}");
         }
 
         private async UniTaskVoid UpdatePlayerCountDelayed()

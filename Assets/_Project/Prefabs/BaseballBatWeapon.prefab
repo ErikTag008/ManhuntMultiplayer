@@ -25,7 +25,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2407567261558946241}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -46,25 +46,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.Weapons.MeleeWeaponBase
   _meleeAttackType: 0
-  _attackCheckRadius: 2
-  _windupAnimationDuration: 0.2
-  _attackAnimationDuration: 0.5
+  _attackCheckRadius: 0.75
+  _windupAnimationDuration: 0
+  _attackAnimationDuration: 0.05
   _pullBackAniationDuration: 0.3
   _windupEase: 17
   _attackEase: 6
   _pullBackEase: 6
   _swingWindUpAngle: {x: -45, y: 0, z: 0}
-  _swingAttackAngle: {x: 90, y: 0, z: 0}
+  _swingAttackAngle: {x: 90, y: -15, z: 0}
   _thrustWindUpPos: {x: 0, y: 0, z: -0.5}
   _thrustAttackPos: {x: 0, y: 0, z: 1}
   _slashWindUpAngle: {x: 0, y: -45, z: 0}
   _slashAttackAngle: {x: 0, y: 135, z: 0}
   _attackDamage: 5
-  _attackCooldown: 1
+  _attackCooldown: 0.5
   _hitDetectionCenter: {fileID: 7876733166054061094}
-  _damageLayerMask:
-    serializedVersion: 2
-    m_Bits: 0
 --- !u!1 &7086058819647352901
 GameObject:
   m_ObjectHideFlags: 0

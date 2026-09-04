@@ -1,3 +1,4 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -7,7 +8,8 @@ namespace Project.Assets._Project._Scripts.Player
     {
         public NetworkVariable<int> MaxHealth = new();
         public NetworkVariable<int> CurrentHealth = new();
-
+        public bool IsDowned => CurrentHealth.Value <= 0;
+        public event Action OnDowned;
         public override void OnNetworkSpawn()
         {
             if (!IsServer)
@@ -43,6 +45,8 @@ namespace Project.Assets._Project._Scripts.Player
                 0,
                 CurrentHealth.Value - damage
             );
+
+            if (IsDowned) OnDowned?.Invoke();
         }
     }
 }

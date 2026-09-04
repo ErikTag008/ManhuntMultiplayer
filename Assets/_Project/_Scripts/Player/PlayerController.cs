@@ -11,7 +11,6 @@ using Reflex.Core;
 using Reflex.Extensions;
 using Reflex.Injectors;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
@@ -69,6 +68,8 @@ namespace Project.Assets._Project._Scripts.Player
         private Vector3 _targetWeaponPosition;
         private Quaternion _targetWeaponRotation;
 
+        private readonly Collider[] _damagables = new Collider[3];
+
         private void Awake()
         {
             _playerInput.enabled = false;
@@ -90,6 +91,24 @@ namespace Project.Assets._Project._Scripts.Player
             {
                 _playerInput.enabled = true;
             }
+            if (IsServer)
+            {
+                _health.OnDowned += HandleGettingDownedRpc;
+
+            }
+        }
+
+        [Rpc(SendTo.Owner)]
+        private void HandleGettingDownedRpc()
+        {
+
+            _movement?.ToggleMovement(false);
+        }
+
+        [Rpc(SendTo.Owner)]
+        private void HandleGettingResurrectedRpc()
+        {
+            _movement?.ToggleMovement(true);
         }
 
         private void Update()
@@ -99,11 +118,6 @@ namespace Project.Assets._Project._Scripts.Player
                 SmoothOutNetworkSyncedObjects();
                 return;
             }
-            if (_movement == null)
-            {
-                Debug.LogWarning("Movement Is NULL!!!");
-                return;
-            }
             //_movement.HandleUpdate();
         }
 
@@ -111,9 +125,13 @@ namespace Project.Assets._Project._Scripts.Player
         {
             _model.rotation = EUtils.Math.Slerp(_model.rotation, Quaternion.Euler(0f, _targetModelRotation, 0f), Time.deltaTime * _playerStats.NetworkVariableSmoothingSpeed);
             _cameraFollower.rotation = EUtils.Math.Slerp(_cameraFollower.rotation, _targetCameraFollowerRotation, Time.deltaTime * _playerStats.NetworkVariableSmoothingSpeed);
-            _currentWeapon?.transform.SetLocalPositionAndRotation(
-                EUtils.Math.Lerp(_currentWeapon.transform.localPosition, _targetWeaponPosition, Time.deltaTime * _playerStats.NetworkVariableSmoothingSpeed),
-                EUtils.Math.Slerp(_currentWeapon.transform.localRotation, _targetWeaponRotation, Time.deltaTime * _playerStats.NetworkVariableSmoothingSpeed));
+            if(_currentWeapon != null)
+            {
+                _currentWeapon.transform.SetLocalPositionAndRotation(
+                    EUtils.Math.Lerp(_currentWeapon.transform.localPosition, _targetWeaponPosition, Time.deltaTime * _playerStats.NetworkVariableSmoothingSpeed),
+                    EUtils.Math.Slerp(_currentWeapon.transform.localRotation, _targetWeaponRotation, Time.deltaTime * _playerStats.NetworkVariableSmoothingSpeed));
+            }
+            
         }
 
         private void FixedUpdate()
@@ -121,7 +139,7 @@ namespace Project.Assets._Project._Scripts.Player
             if (!IsOwner) return;
             if (_movement == null)
             {
-                Debug.LogWarning("Movement Is NULL!!!");
+                EUtils.Logger.LogWarning("Movement is NULL");
                 return;
             }
             _movement.HandleFixedMovement(_inputReader.MoveDirection);
@@ -150,12 +168,14 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void OnWeaponPositionNetworkVarChanged(Vector3 oldValue, Vector3 newValue)
         {
-            _currentWeapon.transform.position = newValue;
+            if(_currentWeapon != null)
+                _currentWeapon.transform.position = newValue;
         }
 
         private void OnWeaponRotationNetworkVarChanged(Quaternion oldValue, Quaternion newValue)
         {
-            _currentWeapon.transform.rotation = newValue;
+            if (_currentWeapon != null)
+                _currentWeapon.transform.rotation = newValue;
         }
 
         [Rpc(SendTo.Owner)]
@@ -172,7 +192,7 @@ namespace Project.Assets._Project._Scripts.Player
             var container = SceneManager.GetActiveScene().GetSceneContainer();
             if (container == null)
             {
-                Debug.LogWarning("[PlayerController] Scene container not found during global injection. Retrying in next frame...");
+                EUtils.Logger.LogWarning("[PlayerController] Scene container not found during global injection. Retrying in next frame...");
                 return;
             }
             GameObjectInjector.InjectObject(gameObject, container);
@@ -191,7 +211,7 @@ namespace Project.Assets._Project._Scripts.Player
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[PlayerController] Could not resolve Lobby Dependencies: {e.Message}");
+                EUtils.Logger.LogWarning($"[PlayerController] Could not resolve Lobby Dependencies: {e.Message}");
             }
         }
 
@@ -207,7 +227,7 @@ namespace Project.Assets._Project._Scripts.Player
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[PlayerController] Could not resolve Gameplay dependencies: {e.Message}");
+                EUtils.Logger.LogWarning($"[PlayerController] Could not resolve Gameplay dependencies: {e.Message}");
             }
         }
 
@@ -219,14 +239,14 @@ namespace Project.Assets._Project._Scripts.Player
                     if (IsOwner)
                     {
                         InjectLobbyDependencies();
-                        Debug.Log("Creating movement");
+                        EUtils.Logger.Log("Creating movement");
                         if (_fpCameraInstaller != null)
                         {
                             _fpCameraInstaller.BindCameraToPlayer(this);
                         }
                         else
                         {
-                            Debug.LogError("[PlayerController] FPCameraInstaller is NULL! Dependency resolution failed.");
+                            EUtils.Logger.LogError("[PlayerController] FPCameraInstaller is NULL! Dependency resolution failed.");
                         }
 
                         if(_movement == null)
@@ -234,13 +254,14 @@ namespace Project.Assets._Project._Scripts.Player
                             if (_playerStats && _gameplayCamera)
                             {
                                 _movement = new PlayerMovement(_rb, _playerStats, _groundCheck, _gameplayCamera, _model, _cameraFollower);
+                                _fpCameraInstaller.OnCameraRotationChanged -= _movement.HandleRotation;
                                 _fpCameraInstaller.OnCameraRotationChanged += _movement.HandleRotation;
                                 _movement.ModelRotationChanged += val => OnVariableChanged(_modelRotation, val);
                                 _movement.CameraFollowerRotationChanged += val => OnVariableChanged(_cameraFollowerRotation, val);
                             }
                             else
                             {
-                                Debug.LogError($"[PlayerController] Missing dependencies for Movement! Stats: {_playerStats == null}, Camera: {_gameplayCamera == null}");
+                                EUtils.Logger.LogError($"[PlayerController] Missing dependencies for Movement! Stats: {_playerStats == null}, Camera: {_gameplayCamera == null}");
                             }
                         }
                         else
@@ -248,6 +269,7 @@ namespace Project.Assets._Project._Scripts.Player
                             if (_gameplayCamera != null)
                             {
                                 _movement.ChangeCamera(_gameplayCamera);
+                                _fpCameraInstaller.OnCameraRotationChanged -= _movement.HandleRotation;
                                 _fpCameraInstaller.OnCameraRotationChanged += _movement.HandleRotation;
                             }
                         }
@@ -262,7 +284,7 @@ namespace Project.Assets._Project._Scripts.Player
                             }
                             else
                             {
-                                Debug.LogError("[PlayerController] LobbyUI is NULL! Cannot bind Start Button.");
+                                EUtils.Logger.LogError("[PlayerController] LobbyUI is NULL! Cannot bind Start Button.");
                             }
                         }
                     }
@@ -282,6 +304,7 @@ namespace Project.Assets._Project._Scripts.Player
                         if (_movement != null && _gameplayCamera != null)
                         {
                             _movement.ChangeCamera(_gameplayCamera);
+                            _fpCameraInstaller.OnCameraRotationChanged -= _movement.HandleRotation;
                             _fpCameraInstaller.OnCameraRotationChanged += _movement.HandleRotation;
                         }
                     }
@@ -341,16 +364,17 @@ namespace Project.Assets._Project._Scripts.Player
         private void PerformAttack()
         {
             print(EUtils.Logger.Colorize($"[PlayerController] Performing attack for player {OwnerClientId} on team {Team}", "red"));
-            _currentWeapon?.Attack();
+            if(_currentWeapon != null)
+                _currentWeapon.Attack();
         }
 
         [Rpc(SendTo.Server)]
         private void CheckDamageServerRpc(Vector3 hitOrigin, float radius)
         {
-            Collider[] damaged = Physics.OverlapSphere(hitOrigin, radius, _playerStats.AttackRaycastLayer);
-            for (int i = 0; i < damaged.Length; i++)
+            int damaged = Physics.OverlapSphereNonAlloc(hitOrigin, radius, _damagables, _playerStats.AttackRaycastLayer);
+            for (int i = 0; i < damaged; i++)
             {
-                var damagedItem = damaged[i];
+                var damagedItem = _damagables[i];
                 if (damagedItem == null) continue;
                 damagedItem.GetComponentInParent<Health>()?.TakeDamage(1);
                 print(EUtils.Logger.Colorize($"{damagedItem} received Damager", "red"));

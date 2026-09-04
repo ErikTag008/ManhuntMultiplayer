@@ -18,7 +18,7 @@ namespace Project.Assets._Project._Scripts.Player
         private Vector3 _lastGroundNormal = Vector3.up;
         private float _lastModelYaw = 0f;
         private Quaternion _lastCameraFollowerRotation = Quaternion.identity;
-        private bool _isEnabled = true;
+        private bool _movementEnabled = true;
         public event Action<float> ModelRotationChanged;
         public event Action<Quaternion> CameraFollowerRotationChanged;
 
@@ -34,8 +34,8 @@ namespace Project.Assets._Project._Scripts.Player
 
         public void ToggleMovement(bool isEnabled)
         {
-            _isEnabled = isEnabled;
-            if (!_isEnabled)
+            _movementEnabled = isEnabled;
+            if (!_movementEnabled)
             {
                 _rb.linearVelocity = Vector3.zero;
                 _rb.angularVelocity = Vector3.zero;
@@ -64,7 +64,7 @@ namespace Project.Assets._Project._Scripts.Player
         }
         public void HandleJump(bool isButtonDown = true)
         {
-            if (!_isEnabled) return;
+            if (!_movementEnabled) return;
 
             if (isButtonDown)
             {
@@ -125,7 +125,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         public void HandleFixedMovement(Vector2 moveDirection)
         {
-            if(_stats == null || !_isEnabled) return;
+            if(_stats == null || !_movementEnabled) return;
             bool grounded = IsGrounded();
             HandleHorizontalMovement(moveDirection, grounded);
             if (grounded)
@@ -153,7 +153,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void HandleCameraFollowerRotation()
         {
-            if (!_cameraFollower || !_cameraFollower.gameObject.activeInHierarchy || _stats == null || !_isEnabled) return;
+            if (!_cameraFollower || !_cameraFollower.gameObject.activeInHierarchy || _stats == null) return;
             Quaternion newRotation = _camera.transform.rotation;
             _cameraFollower.rotation = newRotation;
             if (Mathf.Abs(newRotation.eulerAngles.magnitude - _lastCameraFollowerRotation.eulerAngles.magnitude) > _stats.NetworkVariableDetectionMinMagnitude)
@@ -165,14 +165,15 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void HandleModelRotation()
         {
-            if (!_camera || !_camera.gameObject.activeInHierarchy || _stats == null || !_isEnabled) return;
+            if (!_camera || !_camera.gameObject.activeInHierarchy || _stats == null || !_movementEnabled) return;
 
             Vector3 cameraForward = _camera.transform.forward;
             cameraForward.y = 0f;
             if (cameraForward == Vector3.zero) return;
 
             Quaternion newRotation = Quaternion.LookRotation(cameraForward);
-            _model.rotation = newRotation;
+            if(_model != null)
+                _model.rotation = newRotation;
 
             if (Mathf.Abs(newRotation.eulerAngles.y - _lastModelYaw) > _stats.NetworkVariableDetectionMinMagnitude)
             {
@@ -183,7 +184,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void HandleHorizontalMovement(Vector2 moveDirection, bool grounded)
         {
-            if (!_camera || !_camera.gameObject.activeInHierarchy || _stats == null || !_isEnabled) return;
+            if (!_camera || !_camera.gameObject.activeInHierarchy || _stats == null || !_movementEnabled) return;
             Vector3 moveVector = _camera.transform.forward * moveDirection.y +
                                  _camera.transform.right * moveDirection.x;
             float magnitude = moveDirection.magnitude;
@@ -219,7 +220,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void TryConsumeBufferedJump(bool grounded)
         {
-            if (!_isEnabled) return;
+            if (!_movementEnabled) return;
 
             if (Time.time - _lastJumpPressedTime > _stats.JumpBuffer) return;
 
@@ -241,7 +242,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void PerformJump(bool isDoubleJump = false)
         {
-            if (!_isEnabled) return;
+            if (!_movementEnabled) return;
             // remove any velocity component that points into the ground normal
             float intoNormal = Vector3.Dot(_rb.linearVelocity, _lastGroundNormal);
             if (intoNormal < 0f)
@@ -257,7 +258,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         public void DrawGizmos()
         {
-            if (!_isEnabled) return;
+            if (!_movementEnabled) return;
 
             if (_groundCheck != null && _stats != null)
             {

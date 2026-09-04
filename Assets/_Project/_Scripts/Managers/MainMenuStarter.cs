@@ -46,13 +46,13 @@ namespace Project.Assets._Project._Scripts.Managers
 
             if (!scene.IsValid())
             {
-                Debug.LogWarning($"Scene '{_gameScenes.MainMenuSceneName}' is no longer valid.");
+                EUtils.Logger.LogWarning($"Scene '{_gameScenes.MainMenuSceneName}' is no longer valid.");
                 return;
             }
 
             if (!scene.isLoaded)
             {
-                Debug.LogWarning($"Scene '{_gameScenes.MainMenuSceneName}' is already unloaded.");
+                EUtils.Logger.LogWarning($"Scene '{_gameScenes.MainMenuSceneName}' is already unloaded.");
                 return;
             }
 

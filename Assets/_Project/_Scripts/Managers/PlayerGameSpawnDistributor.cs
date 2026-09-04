@@ -15,7 +15,7 @@ namespace Project.Assets._Project._Scripts.Managers
 
         public async UniTask DistributePlayersToSpawns(List<PlayerController> players)
         {
-            Debug.Log("Distributing players to spawns...");
+            EUtils.Logger.Log("Distributing players to spawns...");
             var waitingSpawns = _waitingRoomSpawns.OrderBy(_ => Random.value).ToList();
             var gameSpawns = _gameRoomSpawns.OrderBy(_ => Random.value).ToList();
 
@@ -30,21 +30,21 @@ namespace Project.Assets._Project._Scripts.Managers
                 {
                     if (waitingIndex >= waitingSpawns.Count)
                     {
-                        Debug.LogError("Not enough waiting room spawn points!");
+                        EUtils.Logger.LogError("Not enough waiting room spawn points!");
                         return;
                     }
-                    Debug.Log($"Spawning player {player.OwnerClientId} (Catcher) at waiting room spawn point {waitingIndex}");
+                    EUtils.Logger.Log($"Spawning player {player.OwnerClientId} (Catcher) at waiting room spawn point {waitingIndex}");
                     spawn = waitingSpawns[waitingIndex++];
                 }
                 else
                 {
                     if (gameIndex >= gameSpawns.Count)
                     {
-                        Debug.LogError("Not enough game room spawn points!");
+                        EUtils.Logger.LogError("Not enough game room spawn points!");
                         return;
                     }
 
-                    Debug.Log($"Spawning player {player.OwnerClientId} (Runner) at game room spawn point {gameIndex}");
+                    EUtils.Logger.Log($"Spawning player {player.OwnerClientId} (Runner) at game room spawn point {gameIndex}");
                     spawn = gameSpawns[gameIndex++];
                 }
 

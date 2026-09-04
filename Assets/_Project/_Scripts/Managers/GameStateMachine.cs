@@ -34,6 +34,13 @@ namespace Project.Assets._Project._Scripts.Managers
             _countdownEndTime.OnValueChanged += StartCountdown;
         }
 
+        public override void OnNetworkDespawn()
+        {
+            _state.OnValueChanged -= HandleStateChanged;
+            _countdownEndTime.OnValueChanged -= StartCountdown;
+        }
+
+
         public void StartGameLoop()
         {
             _gameLoopCTS = new();
@@ -71,9 +78,11 @@ namespace Project.Assets._Project._Scripts.Managers
                 _state.Value = GameState.AssigningTeams;
                 _teamAssignmentService.AssignTeams();
 
+
                 _state.Value = GameState.LoadingGameplay;
                 await _networkCoordinator.LoadGameplayScene(_gameScenes.GameSceneName, _gameScenes.LobbySceneName, token);
 
+                _countdownEndTime.Value = NetworkManager.ServerTime.Time + _settings.RunnersHideWaitTime;
                 _state.Value = GameState.WaitForRunnerHide;
                 await WaitForRunnerHide(token);
 
@@ -106,12 +115,13 @@ namespace Project.Assets._Project._Scripts.Managers
             var spawnDistributor = FindAnyObjectByType<PlayerGameSpawnDistributor>();
             if (spawnDistributor == null)
             {
-                Debug.LogError("[GameStateMachine] PlayerGameSpawnDistributor not found in scene!");
+                EUtils.Logger.LogError("[GameStateMachine] PlayerGameSpawnDistributor not found in scene!");
                 return;
             }
 
             await spawnDistributor.DistributePlayersToSpawns(_playerRegistry.GetPlayers());
-            await UniTask.WaitForSeconds(_settings.RunnersHideWaitTime, cancellationToken: token);
+            await UniTask.WaitUntil(() => NetworkManager.ServerTime.Time >= _countdownEndTime.Value, cancellationToken: token);
+
         }
 
         private async UniTask PlayRound(CancellationToken token)
@@ -126,26 +136,7 @@ namespace Project.Assets._Project._Scripts.Managers
             await UniTask.WaitForEndOfFrame(cancellationToken: token);
         }
 
-        private void HandleStateChanged(GameState prev, GameState curr)
-        {
-            OnStateChanged?.Invoke(prev, curr);
-
-            switch (curr)
-            {
-                case GameState.Lobby:
-                    _uiManager.ChangeLobbyStatusText("Initializing Lobby...");
-                    break;
-                case GameState.WaitingForPlayers:
-                    _uiManager.ChangeLobbyStatusText($"Waiting for players... ({_settings.MinRequiredPlayers} required)");
-                    break;
-                case GameState.Countdown:
-                    _uiManager.ChangeLobbyStatusText($"Game starting in");
-                    break;
-                case GameState.AssigningTeams:
-                    _uiManager.ChangeLobbyStatusText($"Assigning teams...");
-                    break;
-            }
-        }
+        private void HandleStateChanged(GameState prev, GameState curr) => OnStateChanged?.Invoke(prev, curr);
 
         private void StartCountdown(double _, double endTime)
         {
@@ -159,7 +150,11 @@ namespace Project.Assets._Project._Scripts.Managers
             while (!token.IsCancellationRequested)
             {
                 var remaining = endTime - NetworkManager.Singleton.ServerTime.Time;
-                if (remaining <= 0) break;
+                if (remaining <= 0) 
+                {
+                    _uiManager.ChangeCountdownText(string.Empty);
+                    break; 
+                }
                 _uiManager.ChangeCountdownText(Mathf.CeilToInt((float)remaining).ToString());
                 await UniTask.Yield(cancellationToken: token);
             }

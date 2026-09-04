@@ -43,8 +43,8 @@ namespace Project.Assets._Project._Scripts.Managers
                     break;
 
                 default:
-                    Debug.LogError($"Unknown loaded scene: {scene.name}");
-                    Debug.LogError($"Known scenes:   {_gameScenes.LobbySceneName}, {_gameScenes.GameSceneName}, {_gameScenes.MainMenuSceneName}");
+                    EUtils.Logger.LogError($"Unknown loaded scene: {scene.name}");
+                    EUtils.Logger.LogError($"Known scenes:   {_gameScenes.LobbySceneName}, {_gameScenes.GameSceneName}, {_gameScenes.MainMenuSceneName}");
                     break;
             }
         }
@@ -65,8 +65,8 @@ namespace Project.Assets._Project._Scripts.Managers
                     _sceneLifecycleManager.ClearScene(SceneType.MainMenu);
                     break;
                 default:
-                    Debug.LogError($"Unknown loaded scene: {scene.name}");
-                    Debug.LogError($"Known scenes: {_gameScenes.LobbySceneName}, {_gameScenes.GameSceneName}, {_gameScenes.MainMenuSceneName}");
+                    EUtils.Logger.LogError($"Unknown loaded scene: {scene.name}");
+                    EUtils.Logger.LogError($"Known scenes: {_gameScenes.LobbySceneName}, {_gameScenes.GameSceneName}, {_gameScenes.MainMenuSceneName}");
 
                     break;
             }
@@ -75,23 +75,23 @@ namespace Project.Assets._Project._Scripts.Managers
         public override void OnNetworkSpawn()
         {
             GameObjectInjector.InjectObject(gameObject, gameObject.scene.GetSceneContainer());
-            Debug.Log(EUtils.Logger.Colorize($"[GameManager] Called OnNetworkSpawn for Client {NetworkManager.Singleton.LocalClientId}...", "yellow"));
-            Debug.Log(EUtils.Logger.Colorize($"[GameManager] IsHost = {IsHost}...", "yellow"));
-            Debug.Log(EUtils.Logger.Colorize($"[GameManager] IsClient = {IsClient}...", "yellow"));
+            EUtils.Logger.LogColorized($"[GameManager] Called OnNetworkSpawn for Client {NetworkManager.Singleton.LocalClientId}...", "yellow");
+            EUtils.Logger.LogColorized($"[GameManager] IsHost = {IsHost}...", "yellow");
+            EUtils.Logger.LogColorized($"[GameManager] IsClient = {IsClient}...", "yellow");
             _uiManager.OnRequestLobbyUIInitialization += HandleLobbyUIInitialization;
             _uiManager.OnRequestGameUIInitialization += HandleGameUIInitialization;
-            Debug.Log($"Spawn: State={_gameStateMachine.CurrentState}, PlayerCount={_playerRegistry.PlayerCount}");
+            EUtils.Logger.Log($"Spawn: State={_gameStateMachine.CurrentState}, PlayerCount={_playerRegistry.PlayerCount}");
             if (!IsServer) return;
 
             _gameStateMachine.StartGameLoop();
-            Debug.Log("[GameManager] Triggered Game Loop in State Machine");
+            EUtils.Logger.Log("[GameManager] Triggered Game Loop in State Machine");
         }
 
         private void HandleGameUIInitialization()
         {
-            Debug.Log(EUtils.Logger.Colorize($"[GameManager] Initializing Game UI for Client {NetworkManager.Singleton.LocalClientId}...", "yellow"));
-            Debug.Log(EUtils.Logger.Colorize($"[GameManager] IsHost = {IsHost}...", "yellow"));
-            Debug.Log(EUtils.Logger.Colorize($"[GameManager] IsClient = {IsClient}...", "yellow"));
+            EUtils.Logger.LogColorized($"[GameManager] Initializing Game UI for Client {NetworkManager.Singleton.LocalClientId}...", "yellow");
+            EUtils.Logger.LogColorized($"[GameManager] IsHost = {IsHost}...", "yellow");
+            EUtils.Logger.LogColorized($"[GameManager] IsClient = {IsClient}...", "yellow");
             _uiManager.ChangePlayerTeamText(GetPlayerTeam(NetworkManager.Singleton.LocalClientId).ToString());
         }
 
@@ -106,15 +106,15 @@ namespace Project.Assets._Project._Scripts.Managers
                 }
             }
 
-            Debug.LogError($"[GameManager] Player info not found for client ID: {clientId}");
+            EUtils.Logger.LogError($"[GameManager] Player info not found for client ID: {clientId}");
             return Team.None;
         }
 
         private void HandleLobbyUIInitialization()
         {
-            Debug.Log(EUtils.Logger.Colorize($"[GameManager] Initializing Lobby UI for Client {NetworkManager.Singleton.LocalClientId}...", "yellow"));
-            Debug.Log(EUtils.Logger.Colorize($"[GameManager] IsHost = {IsHost}...", "yellow"));
-            Debug.Log(EUtils.Logger.Colorize($"[GameManager] IsClient = {IsClient}...", "yellow"));
+            EUtils.Logger.LogColorized($"[GameManager] Initializing Lobby UI for Client {NetworkManager.Singleton.LocalClientId}...", "yellow");
+            EUtils.Logger.LogColorized($"[GameManager] IsHost = {IsHost}...", "yellow");
+            EUtils.Logger.LogColorized($"[GameManager] IsClient = {IsClient}...", "yellow");
 
             _uiManager.ChangeStartGameButtonAvailability(IsHost);
             if (IsHost)

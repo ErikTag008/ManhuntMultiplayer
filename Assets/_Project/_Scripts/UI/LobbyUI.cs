@@ -24,6 +24,12 @@ namespace Project.Assets._Project._Scripts.UI
             _gameStartButton.onClick.AddListener(_uiManager.StartGame);
         }
 
+        private void HandleUITextChange(TMP_Text uiText, string text)
+        {
+            if (uiText.text == text) return;
+            uiText.text = text;
+        }
+
         public void InvokeGameStartButtonPress()
         {
             if(_gameStartButton.interactable)
@@ -35,20 +41,11 @@ namespace Project.Assets._Project._Scripts.UI
             _gameStartButton.interactable = isActive;
         }
 
-        private void HandleJoinedPlayerAmountChange(string text)
-        {
-            _joinedPlayerAmountText.text = text;
-        }
+        private void HandleJoinedPlayerAmountChange(string text) => HandleUITextChange(_joinedPlayerAmountText, text);
 
-        private void HandleLobbyStatusChange(string text)
-        {
-            _lobbyStatusText.text = text;
-        }
+        private void HandleLobbyStatusChange(string text) => HandleUITextChange(_lobbyStatusText, text);
 
-        private void HandleCountdownChange(string text)
-        {
-            _countdownText.text = text;
-        }
+        private void HandleCountdownChange(string text) => HandleUITextChange(_countdownText, text);
 
         private void OnDestroy()
         {
