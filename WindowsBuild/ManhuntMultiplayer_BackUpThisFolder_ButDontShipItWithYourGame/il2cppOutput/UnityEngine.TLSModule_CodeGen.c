@@ -16,6 +16,7 @@ extern void Binding_unitytls_client_create_mA830787311EBD55A7ACAA925541EE3A28F39
 extern void Binding_unitytls_client_destroy_m3454EE8424B3F530183F2FB04DE935EFA0D4CE0B (void);
 extern void Binding_unitytls_client_init_m4A2D0AEC37B2EEAFFF7793ECE1C27B52E718C9AA (void);
 extern void Binding_unitytls_client_handshake_mD90B620858219D8DF2E01747ED7DEFE6CF944F46 (void);
+extern void Binding_unitytls_client_set_cookie_info_mF05314AE268C13A32F3E0C8C39FD3AA5F6D1FD97 (void);
 extern void Binding_unitytls_client_get_handshake_state_m5DCB8B5E8841F1BCF2CC2E52310B30CCE0EB2199 (void);
 extern void Binding_unitytls_client_get_errorsState_m7452878361ADEBEC32111BC8087D2C61F370505F (void);
 extern void Binding_unitytls_client_get_state_mFA36FD1C48800D3B88D142ED9E1FFFC65F196B0F (void);
@@ -26,7 +27,7 @@ extern void unitytls_client_data_receive_callback__ctor_m856BA3CAF960B07B7C62FF0
 extern void unitytls_client_data_receive_callback_Invoke_m569CE992486A426475D923974F91171087AAE6B8 (void);
 extern void unitytls_client_log_callback__ctor_mF4D1B69EBBC1450CE50921B0C4E648F333BA9396 (void);
 extern void unitytls_client_log_callback_Invoke_m92876965C2CF1E3FEB2495C6E7FADC56AC5DBE3A (void);
-static Il2CppMethodPointer s_methodPointers[19] = 
+static Il2CppMethodPointer s_methodPointers[20] = 
 {
 	EmbeddedAttribute__ctor_m9758E4148A7658D11B9D2458EB2975967A392C77,
 	RefSafetyRulesAttribute__ctor_m9B3F2A9C1F772ABD62A0AFB10C4FC71137706521,
@@ -37,6 +38,7 @@ static Il2CppMethodPointer s_methodPointers[19] =
 	Binding_unitytls_client_destroy_m3454EE8424B3F530183F2FB04DE935EFA0D4CE0B,
 	Binding_unitytls_client_init_m4A2D0AEC37B2EEAFFF7793ECE1C27B52E718C9AA,
 	Binding_unitytls_client_handshake_mD90B620858219D8DF2E01747ED7DEFE6CF944F46,
+	Binding_unitytls_client_set_cookie_info_mF05314AE268C13A32F3E0C8C39FD3AA5F6D1FD97,
 	Binding_unitytls_client_get_handshake_state_m5DCB8B5E8841F1BCF2CC2E52310B30CCE0EB2199,
 	Binding_unitytls_client_get_errorsState_m7452878361ADEBEC32111BC8087D2C61F370505F,
 	Binding_unitytls_client_get_state_mFA36FD1C48800D3B88D142ED9E1FFFC65F196B0F,
@@ -48,43 +50,15 @@ static Il2CppMethodPointer s_methodPointers[19] =
 	unitytls_client_log_callback__ctor_mF4D1B69EBBC1450CE50921B0C4E648F333BA9396,
 	unitytls_client_log_callback_Invoke_m92876965C2CF1E3FEB2495C6E7FADC56AC5DBE3A,
 };
-static const int32_t s_InvokerIndices[19] = 
-{
-	16311,
-	12403,
-	19920,
-	18957,
-	23297,
-	20653,
-	23297,
-	22707,
-	23106,
-	23106,
-	21568,
-	23106,
-	23106,
-	5336,
-	1960,
-	5336,
-	1960,
-	5336,
-	550,
-};
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_UnityEngine_TLSModule_CodeGenModule;
 const Il2CppCodeGenModule g_UnityEngine_TLSModule_CodeGenModule = 
 {
 	"UnityEngine.TLSModule.dll",
-	19,
+	20,
 	s_methodPointers,
 	0,
 	NULL,
-	s_InvokerIndices,
 	0,
-	NULL,
-	0,
-	NULL,
-	0,
-	NULL,
 	NULL,
 	NULL,
 	NULL,

@@ -38,6 +38,10 @@
         "dependencies": []
       },
       {
+        "name": "Burst",
+        "dependencies": []
+      },
+      {
         "name": "Cloth",
         "dependencies": []
       },
@@ -126,6 +130,10 @@
         "dependencies": []
       },
       {
+        "name": "ManagedKernel",
+        "dependencies": []
+      },
+      {
         "name": "Marshalling",
         "dependencies": []
       },
@@ -186,10 +194,6 @@
         "dependencies": []
       },
       {
-        "name": "SharedInternals",
-        "dependencies": []
-      },
-      {
         "name": "SpriteMask",
         "dependencies": []
       },
@@ -222,6 +226,10 @@
         "dependencies": []
       },
       {
+        "name": "Tetgen",
+        "dependencies": []
+      },
+      {
         "name": "TextCoreFontEngine",
         "dependencies": []
       },
@@ -235,6 +243,10 @@
       },
       {
         "name": "Tilemap",
+        "dependencies": []
+      },
+      {
+        "name": "TimelineFoundation",
         "dependencies": []
       },
       {

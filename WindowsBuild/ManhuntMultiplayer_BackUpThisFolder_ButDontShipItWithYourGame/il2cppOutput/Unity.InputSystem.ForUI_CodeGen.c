@@ -7,8 +7,6 @@
 
 
 
-extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_mCD691173FEACF51DCB8D53B34BC6140B9BEB3A76 (void);
-extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_mA660CF8ABA574A485B1D54809512ED4EA57B669E (void);
 extern void InputSystemProvider__cctor_m1B2BFA7F3942CE7D68EEC2A06652C6C735660EF4 (void);
 extern void InputSystemProvider_Bootstrap_mF57FB7E3DF3C1AB59A2D4822BEC6ECEEA8C0FC59 (void);
 extern void InputSystemProvider_get_m_EventModifiers_m2D14FEBCDB24DF81613022ED674A7B8FD1E23484 (void);
@@ -54,11 +52,9 @@ extern void InputSystemProvider__ctor_mAD0ACD0FD13335A66C2F60AA9D5DAFD7D9C5775E 
 extern void Actions__cctor_m53FB77B02ADA0CC1D896B61377466B15993D7782 (void);
 extern void U3CU3Ec__cctor_m23871B7E94A81DCA5B54632B239F65BF95C2FD3E (void);
 extern void U3CU3Ec__ctor_m6BD3143DCD50739AFCB2155BC88628BBCC8AEACE (void);
-extern void U3CU3Ec_U3CUpdateU3Eb__33_0_mBB86435D4D8C58687960D1F7C09025E26EEE652A (void);
-static Il2CppMethodPointer s_methodPointers[48] = 
+extern void U3CU3Ec_U3CUpdateU3Eb__35_0_mAF1E24FDD0A36275AC0F451D516A5789F2538A08 (void);
+static Il2CppMethodPointer s_methodPointers[46] = 
 {
-	UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_mCD691173FEACF51DCB8D53B34BC6140B9BEB3A76,
-	UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_mA660CF8ABA574A485B1D54809512ED4EA57B669E,
 	InputSystemProvider__cctor_m1B2BFA7F3942CE7D68EEC2A06652C6C735660EF4,
 	InputSystemProvider_Bootstrap_mF57FB7E3DF3C1AB59A2D4822BEC6ECEEA8C0FC59,
 	InputSystemProvider_get_m_EventModifiers_m2D14FEBCDB24DF81613022ED674A7B8FD1E23484,
@@ -104,74 +100,17 @@ static Il2CppMethodPointer s_methodPointers[48] =
 	Actions__cctor_m53FB77B02ADA0CC1D896B61377466B15993D7782,
 	U3CU3Ec__cctor_m23871B7E94A81DCA5B54632B239F65BF95C2FD3E,
 	U3CU3Ec__ctor_m6BD3143DCD50739AFCB2155BC88628BBCC8AEACE,
-	U3CU3Ec_U3CUpdateU3Eb__33_0_mBB86435D4D8C58687960D1F7C09025E26EEE652A,
-};
-static const int32_t s_InvokerIndices[48] = 
-{
-	23945,
-	16311,
-	23890,
-	23890,
-	15838,
-	15816,
-	16311,
-	16311,
-	16311,
-	16311,
-	16311,
-	15772,
-	12290,
-	7964,
-	15704,
-	15937,
-	21181,
-	12241,
-	8854,
-	16272,
-	21626,
-	2996,
-	10685,
-	10175,
-	7964,
-	12198,
-	21168,
-	12886,
-	12886,
-	12886,
-	3667,
-	12886,
-	12886,
-	12886,
-	12886,
-	16311,
-	16311,
-	3721,
-	16311,
-	5294,
-	16311,
-	16311,
-	23297,
-	16311,
-	23890,
-	23890,
-	16311,
-	4710,
+	U3CU3Ec_U3CUpdateU3Eb__35_0_mAF1E24FDD0A36275AC0F451D516A5789F2538A08,
 };
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_Unity_InputSystem_ForUI_CodeGenModule;
 const Il2CppCodeGenModule g_Unity_InputSystem_ForUI_CodeGenModule = 
 {
 	"Unity.InputSystem.ForUI.dll",
-	48,
+	46,
 	s_methodPointers,
 	0,
 	NULL,
-	s_InvokerIndices,
 	0,
-	NULL,
-	0,
-	NULL,
-	0,
-	NULL,
 	NULL,
 	NULL,
 	NULL,

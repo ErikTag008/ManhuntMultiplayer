@@ -21,7 +21,7 @@ extern void XRSettings_get_eyeTextureDesc_m1581643C4A4C5D80173451213FA6C60C11B38
 extern void XRSettings_get_loadedDeviceName_m13388E5B7E13440842E14B51BE620BC23EC84566 (void);
 extern void XRSettings_get_supportedDevices_m96E9450990E50B846B123E80DBE861A891EFC707 (void);
 extern void XRSettings_get_eyeTextureDesc_Injected_m59C4165EEE6E5CB1D820794A08E52E4BDF4EC653 (void);
-extern void XRSettings_get_loadedDeviceName_Injected_mB3FB14252509C289B57DAB472B372B4CE474339E (void);
+extern void XRSettings_get_loadedDeviceName_Injected_m42423C40A8033EF8A0766B88EEC3C9DF53D3FC0F (void);
 extern void InputFeatureUsage_get_name_mA51C7B42F66E87B3527CBD061D1E6944058FE085 (void);
 extern void InputFeatureUsage_get_internalType_m39EE9801AA983980676998D910C3A906191F8810 (void);
 extern void InputFeatureUsage_Equals_m490288B62FC8FB23746E66937C85D8600BC150C0 (void);
@@ -153,7 +153,7 @@ static Il2CppMethodPointer s_methodPointers[130] =
 	XRSettings_get_loadedDeviceName_m13388E5B7E13440842E14B51BE620BC23EC84566,
 	XRSettings_get_supportedDevices_m96E9450990E50B846B123E80DBE861A891EFC707,
 	XRSettings_get_eyeTextureDesc_Injected_m59C4165EEE6E5CB1D820794A08E52E4BDF4EC653,
-	XRSettings_get_loadedDeviceName_Injected_mB3FB14252509C289B57DAB472B372B4CE474339E,
+	XRSettings_get_loadedDeviceName_Injected_m42423C40A8033EF8A0766B88EEC3C9DF53D3FC0F,
 	InputFeatureUsage_get_name_mA51C7B42F66E87B3527CBD061D1E6944058FE085,
 	InputFeatureUsage_get_internalType_m39EE9801AA983980676998D910C3A906191F8810,
 	InputFeatureUsage_Equals_m490288B62FC8FB23746E66937C85D8600BC150C0,
@@ -270,235 +270,54 @@ static Il2CppMethodPointer s_methodPointers[130] =
 	MeshTransformList_Dispose_m7655ACDE6BC605B30EF2BC387A7B9D0F4D9EED19,
 	XRMeshSubsystemDescriptor__ctor_mFD056F69A8BECE56819411D4CD84653B3B735A1B,
 };
-extern void XRNodeState_set_uniqueID_m1C42BE763CEB5BE66EECE54288DE28D30CCB085F_AdjustorThunk (void);
-extern void XRNodeState_set_nodeType_m17D747D9C558277596BD29F59FD8FDEE1A892FF4_AdjustorThunk (void);
-extern void XRNodeState_set_tracked_m5B448272E0E14001A16A150EE7B602ADE1D85A45_AdjustorThunk (void);
-extern void InputFeatureUsage_get_name_mA51C7B42F66E87B3527CBD061D1E6944058FE085_AdjustorThunk (void);
-extern void InputFeatureUsage_get_internalType_m39EE9801AA983980676998D910C3A906191F8810_AdjustorThunk (void);
 extern void InputFeatureUsage_Equals_m490288B62FC8FB23746E66937C85D8600BC150C0_AdjustorThunk (void);
 extern void InputFeatureUsage_Equals_m77BD3037164E49DCCFE7C912FD67B14D9A0A621D_AdjustorThunk (void);
 extern void InputFeatureUsage_GetHashCode_m823C86783F2394534F08BF9F56F4A23656D8E34D_AdjustorThunk (void);
-extern void InputDevice__ctor_mC7506750471891883425541E9DE3EB23D8FE4E34_AdjustorThunk (void);
-extern void InputDevice_get_deviceId_mF3FFF56432109EF58AC2EE178FA343261E950A19_AdjustorThunk (void);
 extern void InputDevice_Equals_m206193EDB0C7A69C0BDFC821CE87B887C7BE0CAC_AdjustorThunk (void);
 extern void InputDevice_Equals_mD6717F0B7B8605BB9F616947C1A3289C52ED41FC_AdjustorThunk (void);
 extern void InputDevice_GetHashCode_m4F8831F85A8646E52B12B5431BEC004AD1BAAD9D_AdjustorThunk (void);
-extern void Hand_get_deviceId_m3FD7DC0BD8EBE55A433CBDB6F3D9486D6491714A_AdjustorThunk (void);
-extern void Hand_get_featureIndex_mD4AFCDFAEE8471B59400FF25F84328FA17229775_AdjustorThunk (void);
 extern void Hand_Equals_m2BEF7EF009B595519DA0ADBE1912C197CEAD2E06_AdjustorThunk (void);
 extern void Hand_Equals_mA5FFEB3581A5E053717C0718AD68E596E801C864_AdjustorThunk (void);
 extern void Hand_GetHashCode_mC1EA0B4473AFA966324B32BAC552ADB9BA9D24EE_AdjustorThunk (void);
-extern void Eyes_get_deviceId_m673FE292832DCAB360282083381923052944EBFD_AdjustorThunk (void);
-extern void Eyes_get_featureIndex_mC4D34E37C0C008A69E75136C501F8907BC4F2EE8_AdjustorThunk (void);
 extern void Eyes_Equals_m4DC0E274FA64B59ED26E913BE0C95554476F228D_AdjustorThunk (void);
 extern void Eyes_Equals_mE463ABC100B9BDB2790A18804BAD09FA1F289969_AdjustorThunk (void);
 extern void Eyes_GetHashCode_m754EAF148F82A79A7DD39D5F0D294EC4ABC763C8_AdjustorThunk (void);
-extern void Bone_get_deviceId_mA75E5FA9A3288C5F5E4172D7632FE228487BE0F1_AdjustorThunk (void);
-extern void Bone_get_featureIndex_mF108AEAE50FFD1B908846717BBD95C59665925BE_AdjustorThunk (void);
 extern void Bone_Equals_mDC77AF51237B5937D83C048DF2734EB7162620F7_AdjustorThunk (void);
 extern void Bone_Equals_mB8585697810AA19D6DD257F9479F01993739020F_AdjustorThunk (void);
 extern void Bone_GetHashCode_mF14BB3AB7B7F52290CDF5D6A7C63AE11B3294F82_AdjustorThunk (void);
-extern void XRRenderPass_GetRenderParameter_m3526E26F8ABDA52C52BDF163F4EA74B7DE4B6A0B_AdjustorThunk (void);
-extern void XRRenderPass_GetRenderParameterCount_m8FECAAF96CD4DF45B0786CB19CD169C1C46BE10A_AdjustorThunk (void);
-extern void XRMirrorViewBlitDesc_GetBlitParameter_m3464A6CB2461B550C808BC4CF3B5AA2EDBCBD17C_AdjustorThunk (void);
 extern void MeshId_ToString_m8D2D9206A924A86FF28CF6499B7C66941FD0E7D4_AdjustorThunk (void);
 extern void MeshId_GetHashCode_mC6B6428EB5856505023C0D48879B92C2E3F062B0_AdjustorThunk (void);
 extern void MeshId_Equals_m1106B9A800E87442FE36125FD3EC3CB12FD778E9_AdjustorThunk (void);
 extern void MeshId_Equals_m3D0AC754FDC327819342797C38CF20C5F3D25818_AdjustorThunk (void);
-extern void MeshGenerationResult_get_MeshId_m2260BF3F7EB6ED4F2CF0A8F6BEFDD2CD82B6751D_AdjustorThunk (void);
-extern void MeshGenerationResult_get_Mesh_m95A022CCC5DDD8D0E8B9CEB3A2D3E06A0E7210F9_AdjustorThunk (void);
-extern void MeshGenerationResult_get_MeshCollider_m07210E3B1723B5BA535250E2012755AAC46FB180_AdjustorThunk (void);
-extern void MeshGenerationResult_get_Status_m392754927B1E28DB2E6078A212F8FCC013AC10C0_AdjustorThunk (void);
-extern void MeshGenerationResult_get_Attributes_m62E3E9EC74240C37D818481B1243B3EB40424C6B_AdjustorThunk (void);
-extern void MeshGenerationResult_get_Position_m72AE25CA3412AE3C653251095067B496CEC1617F_AdjustorThunk (void);
-extern void MeshGenerationResult_get_Rotation_mC27F07EC357E8B3EED94DBEE5365B33154941EE3_AdjustorThunk (void);
-extern void MeshGenerationResult_get_Scale_mA3CEB3EA848509F5B1A5525F40A45AA9CB8BD5D3_AdjustorThunk (void);
 extern void MeshGenerationResult_Equals_m7A6C6A94553E313F74FB2B44326CF32FC94E122F_AdjustorThunk (void);
 extern void MeshGenerationResult_Equals_mE32D058EBA520E8CC77A08119D82AE735CE0ACAC_AdjustorThunk (void);
 extern void MeshGenerationResult_GetHashCode_mA542C935FE2ABB8EC0A3CE001267176095F7DCBC_AdjustorThunk (void);
 extern void MeshTransformList_Dispose_m0F0B77B84E50F02EB1A48751831808F9C69E0636_AdjustorThunk (void);
-static Il2CppTokenAdjustorThunkPair s_adjustorThunks[47] = 
+static Il2CppTokenAdjustorThunkPair s_adjustorThunks[23] = 
 {
-	{ 0x06000004, XRNodeState_set_uniqueID_m1C42BE763CEB5BE66EECE54288DE28D30CCB085F_AdjustorThunk },
-	{ 0x06000005, XRNodeState_set_nodeType_m17D747D9C558277596BD29F59FD8FDEE1A892FF4_AdjustorThunk },
-	{ 0x06000006, XRNodeState_set_tracked_m5B448272E0E14001A16A150EE7B602ADE1D85A45_AdjustorThunk },
-	{ 0x06000010, InputFeatureUsage_get_name_mA51C7B42F66E87B3527CBD061D1E6944058FE085_AdjustorThunk },
-	{ 0x06000011, InputFeatureUsage_get_internalType_m39EE9801AA983980676998D910C3A906191F8810_AdjustorThunk },
 	{ 0x06000012, InputFeatureUsage_Equals_m490288B62FC8FB23746E66937C85D8600BC150C0_AdjustorThunk },
 	{ 0x06000013, InputFeatureUsage_Equals_m77BD3037164E49DCCFE7C912FD67B14D9A0A621D_AdjustorThunk },
 	{ 0x06000014, InputFeatureUsage_GetHashCode_m823C86783F2394534F08BF9F56F4A23656D8E34D_AdjustorThunk },
-	{ 0x06000015, InputDevice__ctor_mC7506750471891883425541E9DE3EB23D8FE4E34_AdjustorThunk },
-	{ 0x06000016, InputDevice_get_deviceId_mF3FFF56432109EF58AC2EE178FA343261E950A19_AdjustorThunk },
 	{ 0x06000017, InputDevice_Equals_m206193EDB0C7A69C0BDFC821CE87B887C7BE0CAC_AdjustorThunk },
 	{ 0x06000018, InputDevice_Equals_mD6717F0B7B8605BB9F616947C1A3289C52ED41FC_AdjustorThunk },
 	{ 0x06000019, InputDevice_GetHashCode_m4F8831F85A8646E52B12B5431BEC004AD1BAAD9D_AdjustorThunk },
-	{ 0x0600001A, Hand_get_deviceId_m3FD7DC0BD8EBE55A433CBDB6F3D9486D6491714A_AdjustorThunk },
-	{ 0x0600001B, Hand_get_featureIndex_mD4AFCDFAEE8471B59400FF25F84328FA17229775_AdjustorThunk },
 	{ 0x0600001C, Hand_Equals_m2BEF7EF009B595519DA0ADBE1912C197CEAD2E06_AdjustorThunk },
 	{ 0x0600001D, Hand_Equals_mA5FFEB3581A5E053717C0718AD68E596E801C864_AdjustorThunk },
 	{ 0x0600001E, Hand_GetHashCode_mC1EA0B4473AFA966324B32BAC552ADB9BA9D24EE_AdjustorThunk },
-	{ 0x0600001F, Eyes_get_deviceId_m673FE292832DCAB360282083381923052944EBFD_AdjustorThunk },
-	{ 0x06000020, Eyes_get_featureIndex_mC4D34E37C0C008A69E75136C501F8907BC4F2EE8_AdjustorThunk },
 	{ 0x06000021, Eyes_Equals_m4DC0E274FA64B59ED26E913BE0C95554476F228D_AdjustorThunk },
 	{ 0x06000022, Eyes_Equals_mE463ABC100B9BDB2790A18804BAD09FA1F289969_AdjustorThunk },
 	{ 0x06000023, Eyes_GetHashCode_m754EAF148F82A79A7DD39D5F0D294EC4ABC763C8_AdjustorThunk },
-	{ 0x06000024, Bone_get_deviceId_mA75E5FA9A3288C5F5E4172D7632FE228487BE0F1_AdjustorThunk },
-	{ 0x06000025, Bone_get_featureIndex_mF108AEAE50FFD1B908846717BBD95C59665925BE_AdjustorThunk },
 	{ 0x06000026, Bone_Equals_mDC77AF51237B5937D83C048DF2734EB7162620F7_AdjustorThunk },
 	{ 0x06000027, Bone_Equals_mB8585697810AA19D6DD257F9479F01993739020F_AdjustorThunk },
 	{ 0x06000028, Bone_GetHashCode_mF14BB3AB7B7F52290CDF5D6A7C63AE11B3294F82_AdjustorThunk },
-	{ 0x0600005A, XRRenderPass_GetRenderParameter_m3526E26F8ABDA52C52BDF163F4EA74B7DE4B6A0B_AdjustorThunk },
-	{ 0x0600005B, XRRenderPass_GetRenderParameterCount_m8FECAAF96CD4DF45B0786CB19CD169C1C46BE10A_AdjustorThunk },
-	{ 0x0600005D, XRMirrorViewBlitDesc_GetBlitParameter_m3464A6CB2461B550C808BC4CF3B5AA2EDBCBD17C_AdjustorThunk },
 	{ 0x06000066, MeshId_ToString_m8D2D9206A924A86FF28CF6499B7C66941FD0E7D4_AdjustorThunk },
 	{ 0x06000067, MeshId_GetHashCode_mC6B6428EB5856505023C0D48879B92C2E3F062B0_AdjustorThunk },
 	{ 0x06000068, MeshId_Equals_m1106B9A800E87442FE36125FD3EC3CB12FD778E9_AdjustorThunk },
 	{ 0x06000069, MeshId_Equals_m3D0AC754FDC327819342797C38CF20C5F3D25818_AdjustorThunk },
-	{ 0x06000071, MeshGenerationResult_get_MeshId_m2260BF3F7EB6ED4F2CF0A8F6BEFDD2CD82B6751D_AdjustorThunk },
-	{ 0x06000072, MeshGenerationResult_get_Mesh_m95A022CCC5DDD8D0E8B9CEB3A2D3E06A0E7210F9_AdjustorThunk },
-	{ 0x06000073, MeshGenerationResult_get_MeshCollider_m07210E3B1723B5BA535250E2012755AAC46FB180_AdjustorThunk },
-	{ 0x06000074, MeshGenerationResult_get_Status_m392754927B1E28DB2E6078A212F8FCC013AC10C0_AdjustorThunk },
-	{ 0x06000075, MeshGenerationResult_get_Attributes_m62E3E9EC74240C37D818481B1243B3EB40424C6B_AdjustorThunk },
-	{ 0x06000076, MeshGenerationResult_get_Position_m72AE25CA3412AE3C653251095067B496CEC1617F_AdjustorThunk },
-	{ 0x06000077, MeshGenerationResult_get_Rotation_mC27F07EC357E8B3EED94DBEE5365B33154941EE3_AdjustorThunk },
-	{ 0x06000078, MeshGenerationResult_get_Scale_mA3CEB3EA848509F5B1A5525F40A45AA9CB8BD5D3_AdjustorThunk },
 	{ 0x06000079, MeshGenerationResult_Equals_m7A6C6A94553E313F74FB2B44326CF32FC94E122F_AdjustorThunk },
 	{ 0x0600007A, MeshGenerationResult_Equals_mE32D058EBA520E8CC77A08119D82AE735CE0ACAC_AdjustorThunk },
 	{ 0x0600007B, MeshGenerationResult_GetHashCode_mA542C935FE2ABB8EC0A3CE001267176095F7DCBC_AdjustorThunk },
 	{ 0x06000080, MeshTransformList_Dispose_m0F0B77B84E50F02EB1A48751831808F9C69E0636_AdjustorThunk },
-};
-static const int32_t s_InvokerIndices[130] = 
-{
-	16311,
-	12403,
-	19154,
-	12733,
-	12403,
-	12241,
-	23663,
-	23663,
-	23724,
-	23724,
-	23805,
-	23643,
-	23643,
-	23297,
-	23297,
-	15732,
-	16272,
-	8660,
-	8843,
-	15937,
-	12733,
-	16273,
-	8660,
-	8839,
-	15937,
-	16273,
-	16272,
-	8660,
-	8819,
-	15937,
-	16273,
-	16272,
-	8660,
-	8768,
-	15937,
-	16273,
-	16272,
-	8660,
-	8700,
-	15937,
-	21860,
-	12241,
-	16182,
-	12640,
-	16182,
-	12640,
-	12640,
-	12241,
-	12403,
-	10175,
-	10175,
-	12403,
-	12241,
-	15937,
-	6069,
-	4093,
-	12198,
-	8660,
-	12198,
-	8660,
-	3169,
-	2753,
-	15937,
-	12403,
-	2741,
-	2746,
-	15732,
-	16311,
-	23890,
-	22974,
-	21824,
-	22974,
-	21824,
-	21824,
-	21819,
-	21822,
-	21195,
-	21195,
-	21822,
-	21819,
-	22721,
-	19570,
-	20844,
-	20844,
-	18458,
-	22721,
-	21822,
-	18456,
-	18457,
-	3169,
-	15937,
-	19095,
-	6069,
-	22769,
-	23643,
-	16311,
-	16311,
-	23316,
-	23316,
-	16311,
-	16311,
-	15732,
-	15937,
-	8660,
-	8910,
-	21185,
-	19756,
-	18844,
-	17992,
-	17174,
-	16982,
-	16865,
-	16002,
-	15732,
-	15732,
-	15937,
-	15937,
-	16300,
-	16103,
-	16300,
-	8660,
-	8909,
-	15937,
-	21817,
-	22811,
-	16311,
-	21817,
-	16311,
-	23316,
-	16311,
 };
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_UnityEngine_XRModule_CodeGenModule;
 const Il2CppCodeGenModule g_UnityEngine_XRModule_CodeGenModule = 
@@ -506,15 +325,9 @@ const Il2CppCodeGenModule g_UnityEngine_XRModule_CodeGenModule =
 	"UnityEngine.XRModule.dll",
 	130,
 	s_methodPointers,
-	47,
+	23,
 	s_adjustorThunks,
-	s_InvokerIndices,
 	0,
-	NULL,
-	0,
-	NULL,
-	0,
-	NULL,
 	NULL,
 	NULL,
 	NULL,

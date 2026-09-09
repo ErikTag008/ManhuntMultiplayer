@@ -18,13 +18,6 @@ static Il2CppMethodPointer s_methodPointers[4] =
 	RenderAs2DUtil_InitializeCanRenderAs2D_mE5CB68451AF6AE5EBC965EE700A067DA8CF5EEA5,
 	RenderAs2DUtil_DisposeCanRenderAs2D_mBCFB3191DF91EBE61CF3A915D17EA2B0121B2997,
 };
-static const int32_t s_InvokerIndices[4] = 
-{
-	16311,
-	12403,
-	23890,
-	23890,
-};
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_UnityEngine_RenderAs2DModule_CodeGenModule;
 const Il2CppCodeGenModule g_UnityEngine_RenderAs2DModule_CodeGenModule = 
 {
@@ -33,13 +26,7 @@ const Il2CppCodeGenModule g_UnityEngine_RenderAs2DModule_CodeGenModule =
 	s_methodPointers,
 	0,
 	NULL,
-	s_InvokerIndices,
 	0,
-	NULL,
-	0,
-	NULL,
-	0,
-	NULL,
 	NULL,
 	NULL,
 	NULL,

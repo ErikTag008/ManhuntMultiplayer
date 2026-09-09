@@ -48,28 +48,6 @@ static Il2CppMethodPointer s_methodPointers[19] =
 	BitConverterLE_GetBytes_mEEFE00015D501FBBD32225D9C45A2C2A0673E9C7,
 	CryptoConvert_ToHex_m1A0AD4D32CEEC47D3C60CB2E4D05A935C62F261A,
 };
-static const int32_t s_InvokerIndices[19] = 
-{
-	12241,
-	5529,
-	12198,
-	15937,
-	15772,
-	15732,
-	12198,
-	7945,
-	15732,
-	3131,
-	938,
-	7964,
-	15732,
-	22423,
-	22707,
-	22408,
-	22408,
-	22423,
-	22408,
-};
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_Mono_Security_CodeGenModule;
 const Il2CppCodeGenModule g_Mono_Security_CodeGenModule = 
 {
@@ -78,13 +56,7 @@ const Il2CppCodeGenModule g_Mono_Security_CodeGenModule =
 	s_methodPointers,
 	0,
 	NULL,
-	s_InvokerIndices,
 	0,
-	NULL,
-	0,
-	NULL,
-	0,
-	NULL,
 	NULL,
 	NULL,
 	NULL,

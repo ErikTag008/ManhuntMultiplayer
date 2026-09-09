@@ -19,7 +19,7 @@ MonoBehaviour:
   <JumpButtonUpVerticalVelocityMultiplier>k__BackingField: 0.5
   <GroundCheckRadius>k__BackingField: 0.15
   <GroundCheckMaxYVelocity>k__BackingField: 0.3
-  <NetworkVariableDetectionMinMagnitude>k__BackingField: 0.1
+  <NetworkVariableDetectionMinMagnitude>k__BackingField: 1
   <NetworkVariableSmoothingSpeed>k__BackingField: 5
   <MaxGroundAngle>k__BackingField: 45
   <HorizontalDamping>k__BackingField: 5

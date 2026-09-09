@@ -18,13 +18,6 @@ static Il2CppMethodPointer s_methodPointers[4] =
 	SpriteMaskUtility_HasSpriteMaskInLayerRange_m7E522D077F4992310FECE3D2911B0C1EE1F72F6B,
 	SpriteMaskUtility_HasSpriteMaskInLayerRange_Injected_m2C4AA54A7B3110F8F11DEEA22FBA36A1CC77B7CD,
 };
-static const int32_t s_InvokerIndices[4] = 
-{
-	16311,
-	12403,
-	22542,
-	22510,
-};
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_UnityEngine_SpriteMaskModule_CodeGenModule;
 const Il2CppCodeGenModule g_UnityEngine_SpriteMaskModule_CodeGenModule = 
 {
@@ -33,13 +26,7 @@ const Il2CppCodeGenModule g_UnityEngine_SpriteMaskModule_CodeGenModule =
 	s_methodPointers,
 	0,
 	NULL,
-	s_InvokerIndices,
 	0,
-	NULL,
-	0,
-	NULL,
-	0,
-	NULL,
 	NULL,
 	NULL,
 	NULL,

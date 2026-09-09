@@ -13,12 +13,22 @@ extern void RefSafetyRulesAttribute__ctor_mF59B6F847470EE8D3C2E0AC3F76D34B3F2E58
 extern void HierarchyNodeTypeHandlerBase_Initialize_mBCC2B7409E2EA40D1FF40BA2D9359F07D7E87E8A (void);
 extern void HierarchyNodeTypeHandlerBase_Dispose_m8D478D9F37EF17AD35A806D798C1307ED3FF7829 (void);
 extern void HierarchyNodeTypeHandlerBase_GetNodeTypeName_m241DDF39580C2AD29F9BBF6B39314799DACB0524 (void);
-extern void HierarchyNodeTypeHandlerBase_GetNodeHashCode_mEC233B40557A9307FB31F65B6D31ABEEE5071F6A (void);
 extern void HierarchyNodeTypeHandlerBase_GetDefaultNodeFlags_m47E9A691B588C6AC4270012A68BDB708D5D2398D (void);
+extern void HierarchyNodeTypeHandlerBase_GetNodeFromEntityId_m0661649D6041D33B9E0EB40064F18E8C89402C3B (void);
+extern void HierarchyNodeTypeHandlerBase_GetNodesFromEntityIds_mD482BEB889C1067A01B7828CB7A9C645C61D598A (void);
+extern void HierarchyNodeTypeHandlerBase_GetEntityIdFromNode_m28A97BBC02D08CB7F41B6C53B7F3FDA28B3A9E99 (void);
+extern void HierarchyNodeTypeHandlerBase_GetEntityIdsFromNodes_mD9012F7F13E3647FA397D89ACEC16EE7BA30EF7B (void);
 extern void HierarchyNodeTypeHandlerBase_SearchBegin_m421AF9A267AAD8CCD7F881AA6064A84213590BF9 (void);
 extern void HierarchyNodeTypeHandlerBase_SearchMatch_m699075573AC2EF98E0500AC25FB987FF952E4DFB (void);
 extern void HierarchyNodeTypeHandlerBase_SearchEnd_mADFAE1C0BCB7E5FEA7BC0D5438B5B3480D269B68 (void);
+extern void HierarchyNodeTypeHandlerBase_UpdateBegin_m241C88165C1B108A31CF8B365531DCE062C03A94 (void);
+extern void HierarchyNodeTypeHandlerBase_UpdateEnd_m43C30785CECC5C39335B538BAC73066AB143A9E2 (void);
 extern void HierarchyNodeTypeHandlerBase_ViewModelPostUpdate_m4054C0BDCF8A181029DF320B9DA9013CC71250F5 (void);
+extern void HierarchyNodeTypeHandlerBase_ViewModelPostSetState_mDD6619412D7F439544769B57F283B5C3E3A1653A (void);
+extern void HierarchyNodeTypeHandlerBase_GetUIDInfo_mA4CA39C85A518E6C5986ACD59400C5E7AC019B8E (void);
+extern void HierarchyNodeTypeHandlerBase_WriteUIDs_mA98BC419144D10624FF5092AEFDDFB6DB1C07353 (void);
+extern void HierarchyNodeTypeHandlerBase_ReadUIDs_mAB1F48A3F2D249FB39B64E2BD6393B7B3D796CAD (void);
+extern void HierarchyNodeTypeHandlerBase_UndoRedoSupported_m39C7A6E076A25F6F3407D06BFAD9B8F855378750 (void);
 extern void HierarchyNodeTypeHandlerBase_FromIntPtr_m267C97E11A9C666435EC622B34524D5C51040057 (void);
 extern void HierarchyNodeTypeHandlerBase_Internal_SearchBegin_m0DD5CECFE4A707872E0493EF6947E82FF83BD1FD (void);
 extern void HierarchyNodeTypeHandlerBase_CreateNodeTypeHandlerFromType_mCD0807A5478C9DB9602E575DF2018906059C8DCA (void);
@@ -28,19 +38,30 @@ extern void HierarchyNodeTypeHandlerBase_InvokeDispose_mD93A95E912C04DD3E2A4AB85
 extern void HierarchyNodeTypeHandlerBase_InvokeGetNodeTypeName_mDC3E4800AC4842DD651424CB4E6E44AE2BD08C41 (void);
 extern void HierarchyNodeTypeHandlerBase_InvokeGetNodeHashCode_m97B326346C98173699B0DEDA4E75DFBF4904A0FA (void);
 extern void HierarchyNodeTypeHandlerBase_InvokeGetDefaultNodeFlags_m7512DBD136EECC3382FDFCD48C4EC70225A2B122 (void);
-extern void HierarchyNodeTypeHandlerBase_InvokeChangesPending_mDDECBCDB826A8E14031FC2F68D17141B5998A990 (void);
-extern void HierarchyNodeTypeHandlerBase_InvokeIntegrateChanges_m69BCC2EF97E3DEAE019538B1FC2F42047652CE0F (void);
 extern void HierarchyNodeTypeHandlerBase_InvokeSearchMatch_mFE4B3E143D4B0B9AAC5EE7089A7B1F11BC95DAD5 (void);
 extern void HierarchyNodeTypeHandlerBase_InvokeSearchEnd_m52015ED0E86A21E98CAF84067CB86E3141E9B18E (void);
+extern void HierarchyNodeTypeHandlerBase_InvokeUpdateBegin_mFA5E7F241E221F44A83745CCBB323A06313467B2 (void);
+extern void HierarchyNodeTypeHandlerBase_InvokeUpdateEnd_mCC7A9ADBCCC8EB3F1FED2B5BCB13F46C1D6B9B72 (void);
 extern void HierarchyNodeTypeHandlerBase_InvokeViewModelPostUpdate_m35F97A0FC3A51E6E67756BB83DFFC34A42DD24AB (void);
-extern void HierarchyNodeTypeHandlerBase_ChangesPending_m37A728892FE051DD5A0F91ED4B7489BF3F27F530 (void);
-extern void HierarchyNodeTypeHandlerBase_IntegrateChanges_m96242FFEEAA20B9F642FCC1008B3ED4F7C92C096 (void);
+extern void HierarchyNodeTypeHandlerBase_InvokeViewModelPostSetState_mBB404F196201FFE3D7006D430AD747B8997BBA58 (void);
+extern void HierarchyNodeTypeHandlerBase_InvokeGetNodeFromEntityId_mF8B7CD389D4B4CCE6AE6550A8EC8CE0488149E0E (void);
+extern void HierarchyNodeTypeHandlerBase_InvokeGetNodesFromEntityIds_mD3AF33DECD23597AA726B427DC565BAC226B7222 (void);
+extern void HierarchyNodeTypeHandlerBase_InvokeGetEntityIdFromNode_m694DDEBAAF373586BA80DC447B013162DF5B8C9E (void);
+extern void HierarchyNodeTypeHandlerBase_InvokeGetEntityIdsFromNodes_mBFDE086FC7959151C3B79FC2E2090485EF45B5F1 (void);
+extern void HierarchyNodeTypeHandlerBase_InvokeGetUIDInfo_mB106DDDEE29E584DD0F3FE2469142785453D8FBB (void);
+extern void HierarchyNodeTypeHandlerBase_InvokeWriteUIDs_mE3F7A7A31E9A18DD3D5CA32E3BCCF08665289C10 (void);
+extern void HierarchyNodeTypeHandlerBase_InvokeReadUIDs_m99905FE74E924AF108F65CFDD30A9BA55C106D68 (void);
+extern void HierarchyNodeTypeHandlerBase_InvokeUndoRedoSupported_mE1AAC483EECDCDA4DA03981190D62166726A2112 (void);
+extern void HierarchyNodeTypeHandlerBase_GetNodeHashCode_mEC233B40557A9307FB31F65B6D31ABEEE5071F6A (void);
+extern void HierarchyNodeTypeHandlerBase___AutoStaticsCleanup_Unity_Scripting_LifecycleManagement_CodeLoadedScope_Exiting_m1A7658568F7D4C3072524FC78AA2DE1D512C5137 (void);
 extern void HierarchyNodeTypeHandlerBase__cctor_mC2F99B7C9238AF39EEDDA4F8B8F8DB6CD5DE8E04 (void);
-extern void HierarchyNodeTypeHandlerBase_GetNodeTypeName_Injected_m47338B91637B89723433E4D66B745645CDEBCF8D (void);
-extern void HierarchyNodeTypeHandlerBase_GetNodeHashCode_Injected_m3225A1BB25E5D7A7AF830A86EBBF7B2AAAE1DAD3 (void);
+extern void HierarchyNodeTypeHandlerBase_GetNodeTypeName_Injected_m6DE6382F51F965F311746F9362D009A8B34D060E (void);
 extern void HierarchyNodeTypeHandlerBase_GetDefaultNodeFlags_Injected_m4485DF09CD5C4F15C7FAE4C3FB935191B9BBE403 (void);
-extern void HierarchyNodeTypeHandlerBase_ChangesPending_Injected_m044E1FA0E5ADA90030391C5D7E2A94AACDB11A4D (void);
-extern void HierarchyNodeTypeHandlerBase_IntegrateChanges_Injected_mA46B56EC872E0A36F77BB2DC6589149A2D73C2E9 (void);
+extern void HierarchyNodeTypeHandlerBase_GetNodeFromEntityId_Injected_m593F8ABF78FAB458350348C743C04879CA8DA4C8 (void);
+extern void HierarchyNodeTypeHandlerBase_GetNodesFromEntityIds_Injected_m16506628E50170F34E371D8F6F74C18AA9143256 (void);
+extern void HierarchyNodeTypeHandlerBase_GetEntityIdFromNode_Injected_m6D059B6177B3C874B7C038277416A1DAC0AD25D4 (void);
+extern void HierarchyNodeTypeHandlerBase_GetEntityIdsFromNodes_Injected_m22E784A34D9254F817B86007A23BCC41E24465DC (void);
+extern void HierarchyNodeTypeHandlerBase_GetNodeHashCode_Injected_m3225A1BB25E5D7A7AF830A86EBBF7B2AAAE1DAD3 (void);
 extern void BindingsMarshaller_ConvertToUnmanaged_m9246A64428256DB379922AEDEBB6CC6DF65BDA06 (void);
 extern void ConstructorScope_set_Ptr_m8D6008088DEE97BDE40CE073816B08843054999E (void);
 extern void ConstructorScope_set_Hierarchy_m288E75AB12EA1E687120E6B4E982BDF0709F5414 (void);
@@ -67,7 +88,7 @@ extern void Hierarchy_GetNodeTypeHandlersBaseSpan_m1F0E2D06E09CE7C7FAFC9265E8026
 extern void Hierarchy_CreateHierarchy_m5D652213629F06002F238A103F87856DAEC9DECE (void);
 extern void Hierarchy_InvokeHandlerCreated_m362BDAD06C3212DC42C5A94A7AB31D1549C2D56B (void);
 extern void Hierarchy_GetNodeTypeHandlersBaseCount_Injected_mF3DB3C1CDB0AD663307E6618AAFB91210B86ECCD (void);
-extern void Hierarchy_GetNodeTypeHandlersBaseSpan_Injected_mDD8493B82887F376623407AB056CD64292A76CD7 (void);
+extern void Hierarchy_GetNodeTypeHandlersBaseSpan_Injected_m30ADCDBCA2810B25DB09D820710284013A67B240 (void);
 extern void BindingsMarshaller_ConvertToUnmanaged_mC3E475AD08E91CADD158522F66375780E9F0E6F0 (void);
 extern void HandlerCreatedEventHandler__ctor_m20EC8F8F94D606C04AA405DC2275FC90DF52218C (void);
 extern void HandlerCreatedEventHandler_Invoke_mB7854DC8A22AA8AD7667FA627F0CC27C11418A59 (void);
@@ -78,7 +99,6 @@ extern void HierarchyCommandList_Dispose_mFA65FE8E02BEE9CA04C626E68E4CD80EA891C0
 extern void HierarchyCommandList_FromIntPtr_m3FA698CC8809DA9CAC1571CE27AA2F5CBB404518 (void);
 extern void HierarchyCommandList_Destroy_mC8A8EBF8AA2C14819F9CAE01B2B2EA276606AA42 (void);
 extern void HierarchyCommandList_CreateCommandList_m3B3A1407ACE8093E22B8B7A13022DEB47AEEFA51 (void);
-extern void BindingsMarshaller_ConvertToUnmanaged_m8F9FB153B711F35FBEAD398E00EC9297553B34B9 (void);
 extern void HierarchyFlattened__ctor_m4323F7293F0FB0A013D78DF9BA4EA9367317F451 (void);
 extern void HierarchyFlattened_Finalize_mAF96882DFEB0B43F80BF842ABEA05931DA093EDA (void);
 extern void HierarchyFlattened_Dispose_m1314C20974F2460774D8DDD134A7F025E01F732F (void);
@@ -140,6 +160,7 @@ extern void U3CU3Ec__cctor_m9D4224C3FD337D1F8712605036E3BF92F37A3959 (void);
 extern void U3CU3Ec__ctor_m63E6DDFB1EC4295E0603D4F0CC0AA9365B345117 (void);
 extern void U3CU3Ec_U3C_ctorU3Eb__36_0_mEF6C3ED9361220C4A047FCA3C46C26096CE22942 (void);
 extern void U3CU3Ec_U3C_ctorU3Eb__36_1_m8ECFE68178B688EEA0352C2BDEAF2C77B7B0BF19 (void);
+extern void HierarchyUIDInfo_get_Size_m61DAD00A3BC8B9D1FD53A0AE1A95AAE7E7D86B6C (void);
 extern void HierarchyViewModel_set_QueryParser_mB43B16415C0D0208DD5C4CEDE4BFE5A7F9CFA708 (void);
 extern void HierarchyViewModel_get_Query_mDA3284F8F7587BB8F1EE1B4EB10649622DB51E8E (void);
 extern void HierarchyViewModel__ctor_m4CD694D1FCE33EE952164B20D6BAAEB72D55BDF1 (void);
@@ -156,7 +177,7 @@ extern void HierarchyViewModel_get_Query_Injected_m9E2068EA6BEFE23A6EBEB35728625
 extern void BindingsMarshaller_ConvertToUnmanaged_m52E096FAAF3CF5234E1AE512EAC1D27A08C42AD0 (void);
 extern void FlagsChangedEventHandler__ctor_m9647BB047C448CD989B6DC6300C4F4259D22475C (void);
 extern void FlagsChangedEventHandler_Invoke_mD1F44D210B32F0541EC40A3F4008D20DB122B293 (void);
-static Il2CppMethodPointer s_methodPointers[151] = 
+static Il2CppMethodPointer s_methodPointers[172] = 
 {
 	EmbeddedAttribute__ctor_mBEB579BA6CE1E5989F6BCD6A92FB20B1BE6CE1A9,
 	IsUnmanagedAttribute__ctor_m4900A280630A806FFA80D5A66584F13E382D47BD,
@@ -164,12 +185,22 @@ static Il2CppMethodPointer s_methodPointers[151] =
 	HierarchyNodeTypeHandlerBase_Initialize_mBCC2B7409E2EA40D1FF40BA2D9359F07D7E87E8A,
 	HierarchyNodeTypeHandlerBase_Dispose_m8D478D9F37EF17AD35A806D798C1307ED3FF7829,
 	HierarchyNodeTypeHandlerBase_GetNodeTypeName_m241DDF39580C2AD29F9BBF6B39314799DACB0524,
-	HierarchyNodeTypeHandlerBase_GetNodeHashCode_mEC233B40557A9307FB31F65B6D31ABEEE5071F6A,
 	HierarchyNodeTypeHandlerBase_GetDefaultNodeFlags_m47E9A691B588C6AC4270012A68BDB708D5D2398D,
+	HierarchyNodeTypeHandlerBase_GetNodeFromEntityId_m0661649D6041D33B9E0EB40064F18E8C89402C3B,
+	HierarchyNodeTypeHandlerBase_GetNodesFromEntityIds_mD482BEB889C1067A01B7828CB7A9C645C61D598A,
+	HierarchyNodeTypeHandlerBase_GetEntityIdFromNode_m28A97BBC02D08CB7F41B6C53B7F3FDA28B3A9E99,
+	HierarchyNodeTypeHandlerBase_GetEntityIdsFromNodes_mD9012F7F13E3647FA397D89ACEC16EE7BA30EF7B,
 	HierarchyNodeTypeHandlerBase_SearchBegin_m421AF9A267AAD8CCD7F881AA6064A84213590BF9,
 	HierarchyNodeTypeHandlerBase_SearchMatch_m699075573AC2EF98E0500AC25FB987FF952E4DFB,
 	HierarchyNodeTypeHandlerBase_SearchEnd_mADFAE1C0BCB7E5FEA7BC0D5438B5B3480D269B68,
+	HierarchyNodeTypeHandlerBase_UpdateBegin_m241C88165C1B108A31CF8B365531DCE062C03A94,
+	HierarchyNodeTypeHandlerBase_UpdateEnd_m43C30785CECC5C39335B538BAC73066AB143A9E2,
 	HierarchyNodeTypeHandlerBase_ViewModelPostUpdate_m4054C0BDCF8A181029DF320B9DA9013CC71250F5,
+	HierarchyNodeTypeHandlerBase_ViewModelPostSetState_mDD6619412D7F439544769B57F283B5C3E3A1653A,
+	HierarchyNodeTypeHandlerBase_GetUIDInfo_mA4CA39C85A518E6C5986ACD59400C5E7AC019B8E,
+	HierarchyNodeTypeHandlerBase_WriteUIDs_mA98BC419144D10624FF5092AEFDDFB6DB1C07353,
+	HierarchyNodeTypeHandlerBase_ReadUIDs_mAB1F48A3F2D249FB39B64E2BD6393B7B3D796CAD,
+	HierarchyNodeTypeHandlerBase_UndoRedoSupported_m39C7A6E076A25F6F3407D06BFAD9B8F855378750,
 	HierarchyNodeTypeHandlerBase_FromIntPtr_m267C97E11A9C666435EC622B34524D5C51040057,
 	HierarchyNodeTypeHandlerBase_Internal_SearchBegin_m0DD5CECFE4A707872E0493EF6947E82FF83BD1FD,
 	HierarchyNodeTypeHandlerBase_CreateNodeTypeHandlerFromType_mCD0807A5478C9DB9602E575DF2018906059C8DCA,
@@ -179,19 +210,30 @@ static Il2CppMethodPointer s_methodPointers[151] =
 	HierarchyNodeTypeHandlerBase_InvokeGetNodeTypeName_mDC3E4800AC4842DD651424CB4E6E44AE2BD08C41,
 	HierarchyNodeTypeHandlerBase_InvokeGetNodeHashCode_m97B326346C98173699B0DEDA4E75DFBF4904A0FA,
 	HierarchyNodeTypeHandlerBase_InvokeGetDefaultNodeFlags_m7512DBD136EECC3382FDFCD48C4EC70225A2B122,
-	HierarchyNodeTypeHandlerBase_InvokeChangesPending_mDDECBCDB826A8E14031FC2F68D17141B5998A990,
-	HierarchyNodeTypeHandlerBase_InvokeIntegrateChanges_m69BCC2EF97E3DEAE019538B1FC2F42047652CE0F,
 	HierarchyNodeTypeHandlerBase_InvokeSearchMatch_mFE4B3E143D4B0B9AAC5EE7089A7B1F11BC95DAD5,
 	HierarchyNodeTypeHandlerBase_InvokeSearchEnd_m52015ED0E86A21E98CAF84067CB86E3141E9B18E,
+	HierarchyNodeTypeHandlerBase_InvokeUpdateBegin_mFA5E7F241E221F44A83745CCBB323A06313467B2,
+	HierarchyNodeTypeHandlerBase_InvokeUpdateEnd_mCC7A9ADBCCC8EB3F1FED2B5BCB13F46C1D6B9B72,
 	HierarchyNodeTypeHandlerBase_InvokeViewModelPostUpdate_m35F97A0FC3A51E6E67756BB83DFFC34A42DD24AB,
-	HierarchyNodeTypeHandlerBase_ChangesPending_m37A728892FE051DD5A0F91ED4B7489BF3F27F530,
-	HierarchyNodeTypeHandlerBase_IntegrateChanges_m96242FFEEAA20B9F642FCC1008B3ED4F7C92C096,
+	HierarchyNodeTypeHandlerBase_InvokeViewModelPostSetState_mBB404F196201FFE3D7006D430AD747B8997BBA58,
+	HierarchyNodeTypeHandlerBase_InvokeGetNodeFromEntityId_mF8B7CD389D4B4CCE6AE6550A8EC8CE0488149E0E,
+	HierarchyNodeTypeHandlerBase_InvokeGetNodesFromEntityIds_mD3AF33DECD23597AA726B427DC565BAC226B7222,
+	HierarchyNodeTypeHandlerBase_InvokeGetEntityIdFromNode_m694DDEBAAF373586BA80DC447B013162DF5B8C9E,
+	HierarchyNodeTypeHandlerBase_InvokeGetEntityIdsFromNodes_mBFDE086FC7959151C3B79FC2E2090485EF45B5F1,
+	HierarchyNodeTypeHandlerBase_InvokeGetUIDInfo_mB106DDDEE29E584DD0F3FE2469142785453D8FBB,
+	HierarchyNodeTypeHandlerBase_InvokeWriteUIDs_mE3F7A7A31E9A18DD3D5CA32E3BCCF08665289C10,
+	HierarchyNodeTypeHandlerBase_InvokeReadUIDs_m99905FE74E924AF108F65CFDD30A9BA55C106D68,
+	HierarchyNodeTypeHandlerBase_InvokeUndoRedoSupported_mE1AAC483EECDCDA4DA03981190D62166726A2112,
+	HierarchyNodeTypeHandlerBase_GetNodeHashCode_mEC233B40557A9307FB31F65B6D31ABEEE5071F6A,
+	HierarchyNodeTypeHandlerBase___AutoStaticsCleanup_Unity_Scripting_LifecycleManagement_CodeLoadedScope_Exiting_m1A7658568F7D4C3072524FC78AA2DE1D512C5137,
 	HierarchyNodeTypeHandlerBase__cctor_mC2F99B7C9238AF39EEDDA4F8B8F8DB6CD5DE8E04,
-	HierarchyNodeTypeHandlerBase_GetNodeTypeName_Injected_m47338B91637B89723433E4D66B745645CDEBCF8D,
-	HierarchyNodeTypeHandlerBase_GetNodeHashCode_Injected_m3225A1BB25E5D7A7AF830A86EBBF7B2AAAE1DAD3,
+	HierarchyNodeTypeHandlerBase_GetNodeTypeName_Injected_m6DE6382F51F965F311746F9362D009A8B34D060E,
 	HierarchyNodeTypeHandlerBase_GetDefaultNodeFlags_Injected_m4485DF09CD5C4F15C7FAE4C3FB935191B9BBE403,
-	HierarchyNodeTypeHandlerBase_ChangesPending_Injected_m044E1FA0E5ADA90030391C5D7E2A94AACDB11A4D,
-	HierarchyNodeTypeHandlerBase_IntegrateChanges_Injected_mA46B56EC872E0A36F77BB2DC6589149A2D73C2E9,
+	HierarchyNodeTypeHandlerBase_GetNodeFromEntityId_Injected_m593F8ABF78FAB458350348C743C04879CA8DA4C8,
+	HierarchyNodeTypeHandlerBase_GetNodesFromEntityIds_Injected_m16506628E50170F34E371D8F6F74C18AA9143256,
+	HierarchyNodeTypeHandlerBase_GetEntityIdFromNode_Injected_m6D059B6177B3C874B7C038277416A1DAC0AD25D4,
+	HierarchyNodeTypeHandlerBase_GetEntityIdsFromNodes_Injected_m22E784A34D9254F817B86007A23BCC41E24465DC,
+	HierarchyNodeTypeHandlerBase_GetNodeHashCode_Injected_m3225A1BB25E5D7A7AF830A86EBBF7B2AAAE1DAD3,
 	BindingsMarshaller_ConvertToUnmanaged_m9246A64428256DB379922AEDEBB6CC6DF65BDA06,
 	ConstructorScope_set_Ptr_m8D6008088DEE97BDE40CE073816B08843054999E,
 	ConstructorScope_set_Hierarchy_m288E75AB12EA1E687120E6B4E982BDF0709F5414,
@@ -219,7 +261,7 @@ static Il2CppMethodPointer s_methodPointers[151] =
 	Hierarchy_CreateHierarchy_m5D652213629F06002F238A103F87856DAEC9DECE,
 	Hierarchy_InvokeHandlerCreated_m362BDAD06C3212DC42C5A94A7AB31D1549C2D56B,
 	Hierarchy_GetNodeTypeHandlersBaseCount_Injected_mF3DB3C1CDB0AD663307E6618AAFB91210B86ECCD,
-	Hierarchy_GetNodeTypeHandlersBaseSpan_Injected_mDD8493B82887F376623407AB056CD64292A76CD7,
+	Hierarchy_GetNodeTypeHandlersBaseSpan_Injected_m30ADCDBCA2810B25DB09D820710284013A67B240,
 	BindingsMarshaller_ConvertToUnmanaged_mC3E475AD08E91CADD158522F66375780E9F0E6F0,
 	HandlerCreatedEventHandler__ctor_m20EC8F8F94D606C04AA405DC2275FC90DF52218C,
 	HandlerCreatedEventHandler_Invoke_mB7854DC8A22AA8AD7667FA627F0CC27C11418A59,
@@ -230,7 +272,6 @@ static Il2CppMethodPointer s_methodPointers[151] =
 	HierarchyCommandList_FromIntPtr_m3FA698CC8809DA9CAC1571CE27AA2F5CBB404518,
 	HierarchyCommandList_Destroy_mC8A8EBF8AA2C14819F9CAE01B2B2EA276606AA42,
 	HierarchyCommandList_CreateCommandList_m3B3A1407ACE8093E22B8B7A13022DEB47AEEFA51,
-	BindingsMarshaller_ConvertToUnmanaged_m8F9FB153B711F35FBEAD398E00EC9297553B34B9,
 	HierarchyFlattened__ctor_m4323F7293F0FB0A013D78DF9BA4EA9367317F451,
 	HierarchyFlattened_Finalize_mAF96882DFEB0B43F80BF842ABEA05931DA093EDA,
 	HierarchyFlattened_Dispose_m1314C20974F2460774D8DDD134A7F025E01F732F,
@@ -293,6 +334,7 @@ static Il2CppMethodPointer s_methodPointers[151] =
 	U3CU3Ec__ctor_m63E6DDFB1EC4295E0603D4F0CC0AA9365B345117,
 	U3CU3Ec_U3C_ctorU3Eb__36_0_mEF6C3ED9361220C4A047FCA3C46C26096CE22942,
 	U3CU3Ec_U3C_ctorU3Eb__36_1_m8ECFE68178B688EEA0352C2BDEAF2C77B7B0BF19,
+	HierarchyUIDInfo_get_Size_m61DAD00A3BC8B9D1FD53A0AE1A95AAE7E7D86B6C,
 	HierarchyViewModel_set_QueryParser_mB43B16415C0D0208DD5C4CEDE4BFE5A7F9CFA708,
 	HierarchyViewModel_get_Query_mDA3284F8F7587BB8F1EE1B4EB10649622DB51E8E,
 	HierarchyViewModel__ctor_m4CD694D1FCE33EE952164B20D6BAAEB72D55BDF1,
@@ -310,268 +352,48 @@ static Il2CppMethodPointer s_methodPointers[151] =
 	FlagsChangedEventHandler__ctor_m9647BB047C448CD989B6DC6300C4F4259D22475C,
 	FlagsChangedEventHandler_Invoke_mD1F44D210B32F0541EC40A3F4008D20DB122B293,
 };
-extern void ConstructorScope__ctor_m5206FF1B0BC7B354ADDBB032498DECC069DCBF60_AdjustorThunk (void);
 extern void ConstructorScope_Dispose_m6C9839EFB1F77810EA89AB6FA98CE076D508889C_AdjustorThunk (void);
-extern void HierarchyNodeTypeHandlerBaseEnumerable__ctor_m74A6F14CF8E83EF2018C457BDD801C6BCCC0BCBF_AdjustorThunk (void);
-extern void HierarchyNodeTypeHandlerBaseEnumerable_GetEnumerator_mC4238937FE4C1B682BC937ECDF43E8B55C3A5782_AdjustorThunk (void);
-extern void Enumerator__ctor_m483CE9122BDCE84FCD5256E925C0F2B760524683_AdjustorThunk (void);
 extern void Enumerator_Dispose_m4279DC1C5317D178525B7AC9A0768DE254C547F5_AdjustorThunk (void);
-extern void Enumerator_get_Current_m7D70CAF47D0A1020791233A20ED007CBC386DD64_AdjustorThunk (void);
-extern void Enumerator_MoveNext_mF41149CF855F3F56B56FACE2CE8AB69C6393DC1A_AdjustorThunk (void);
-extern void HierarchyFlattenedNode_get_Node_m3300E071E1C9AE0841FF14B78F87529A3F0270A7_AdjustorThunk (void);
-extern void HierarchyFlattenedNode__ctor_m2E635590F8550F10E6C52FBB7EB37BAAA983F3B3_AdjustorThunk (void);
 extern void HierarchyFlattenedNode_Equals_m84AF827EDEE1DF08FB68E4A246E13D2D6E49FFCC_AdjustorThunk (void);
 extern void HierarchyFlattenedNode_ToString_m5DB9A1AE3A137B8A693A65BF67E4629000833560_AdjustorThunk (void);
 extern void HierarchyFlattenedNode_Equals_mD7CCECE4687CAB017FF646FB26A63118B3E8EF1F_AdjustorThunk (void);
 extern void HierarchyFlattenedNode_GetHashCode_mC788C5FBAEA281CB55C888350D7F74B8FA4ACE55_AdjustorThunk (void);
-extern void HierarchyNode_get_Id_mF2B5D36F53FAD484A8B5BCF36BB70BD85B0D06C8_AdjustorThunk (void);
-extern void HierarchyNode_get_Version_m0A17AB68CE616656EFF72AB94A5B02824CCD0DEF_AdjustorThunk (void);
-extern void HierarchyNode__ctor_mD501006228CB122DDF2CAA27F940D1BAADB000B9_AdjustorThunk (void);
 extern void HierarchyNode_Equals_m21AA316B1263A399682DD3DF95419B0EE699B9AC_AdjustorThunk (void);
 extern void HierarchyNode_ToString_m393B16519275D2F761A5664F62F1F89C7576EE83_AdjustorThunk (void);
 extern void HierarchyNode_Equals_m0FF62873EFA0A0B67F63D93DAA27F370B7460AA2_AdjustorThunk (void);
 extern void HierarchyNode_GetHashCode_m4942E49DB4DAABA2353958AB4BE213B7FA546574_AdjustorThunk (void);
-extern void HierarchyNodeType_get_Id_mB584AF3C7EE66323EE1C3CFDEFF400B5E30CFB2E_AdjustorThunk (void);
 extern void HierarchyNodeType_Equals_mC1ABF19667AE18B967EAA0087E8ACCB00FB09B86_AdjustorThunk (void);
 extern void HierarchyNodeType_ToString_mF1B22CBC191CD587C3C6744430C6B88CA1CBD6A9_AdjustorThunk (void);
 extern void HierarchyNodeType_Equals_mC28897DB00E62C8F91EF555751869853AA42568B_AdjustorThunk (void);
 extern void HierarchyNodeType_GetHashCode_mD56E6A6C18B5602DD3EB1E77DDF0C4ADB8BA04CA_AdjustorThunk (void);
-extern void HierarchySearchFilter_get_IsValid_m57196B68CAD2B3A2F36094A71BD2D8510B4EDF29_AdjustorThunk (void);
-extern void HierarchySearchFilter_get_Name_m0669ABA00F5156E06B704544AE30B70FF059CF2D_AdjustorThunk (void);
-extern void HierarchySearchFilter_get_Value_mD9D097264FAFD84679DFF24EBB7A5DDAF0422CE9_AdjustorThunk (void);
-extern void HierarchySearchFilter_get_Op_m6075B3B7DC8D0E011EC76F929D7CB05E01E16A94_AdjustorThunk (void);
 extern void HierarchySearchFilter_ToString_mE726A902E60DDDD1E51502ECB14F64171B9CD2A3_AdjustorThunk (void);
-static Il2CppTokenAdjustorThunkPair s_adjustorThunks[31] = 
+static Il2CppTokenAdjustorThunkPair s_adjustorThunks[15] = 
 {
-	{ 0x06000027, ConstructorScope__ctor_m5206FF1B0BC7B354ADDBB032498DECC069DCBF60_AdjustorThunk },
-	{ 0x06000028, ConstructorScope_Dispose_m6C9839EFB1F77810EA89AB6FA98CE076D508889C_AdjustorThunk },
-	{ 0x06000029, HierarchyNodeTypeHandlerBaseEnumerable__ctor_m74A6F14CF8E83EF2018C457BDD801C6BCCC0BCBF_AdjustorThunk },
-	{ 0x0600002A, HierarchyNodeTypeHandlerBaseEnumerable_GetEnumerator_mC4238937FE4C1B682BC937ECDF43E8B55C3A5782_AdjustorThunk },
-	{ 0x0600002B, Enumerator__ctor_m483CE9122BDCE84FCD5256E925C0F2B760524683_AdjustorThunk },
-	{ 0x0600002C, Enumerator_Dispose_m4279DC1C5317D178525B7AC9A0768DE254C547F5_AdjustorThunk },
-	{ 0x0600002D, Enumerator_get_Current_m7D70CAF47D0A1020791233A20ED007CBC386DD64_AdjustorThunk },
-	{ 0x0600002E, Enumerator_MoveNext_mF41149CF855F3F56B56FACE2CE8AB69C6393DC1A_AdjustorThunk },
-	{ 0x06000053, HierarchyFlattenedNode_get_Node_m3300E071E1C9AE0841FF14B78F87529A3F0270A7_AdjustorThunk },
-	{ 0x06000054, HierarchyFlattenedNode__ctor_m2E635590F8550F10E6C52FBB7EB37BAAA983F3B3_AdjustorThunk },
-	{ 0x06000056, HierarchyFlattenedNode_Equals_m84AF827EDEE1DF08FB68E4A246E13D2D6E49FFCC_AdjustorThunk },
-	{ 0x06000057, HierarchyFlattenedNode_ToString_m5DB9A1AE3A137B8A693A65BF67E4629000833560_AdjustorThunk },
-	{ 0x06000058, HierarchyFlattenedNode_Equals_mD7CCECE4687CAB017FF646FB26A63118B3E8EF1F_AdjustorThunk },
-	{ 0x06000059, HierarchyFlattenedNode_GetHashCode_mC788C5FBAEA281CB55C888350D7F74B8FA4ACE55_AdjustorThunk },
-	{ 0x0600005B, HierarchyNode_get_Id_mF2B5D36F53FAD484A8B5BCF36BB70BD85B0D06C8_AdjustorThunk },
-	{ 0x0600005C, HierarchyNode_get_Version_m0A17AB68CE616656EFF72AB94A5B02824CCD0DEF_AdjustorThunk },
-	{ 0x0600005D, HierarchyNode__ctor_mD501006228CB122DDF2CAA27F940D1BAADB000B9_AdjustorThunk },
-	{ 0x0600005F, HierarchyNode_Equals_m21AA316B1263A399682DD3DF95419B0EE699B9AC_AdjustorThunk },
-	{ 0x06000060, HierarchyNode_ToString_m393B16519275D2F761A5664F62F1F89C7576EE83_AdjustorThunk },
-	{ 0x06000061, HierarchyNode_Equals_m0FF62873EFA0A0B67F63D93DAA27F370B7460AA2_AdjustorThunk },
-	{ 0x06000062, HierarchyNode_GetHashCode_m4942E49DB4DAABA2353958AB4BE213B7FA546574_AdjustorThunk },
-	{ 0x06000064, HierarchyNodeType_get_Id_mB584AF3C7EE66323EE1C3CFDEFF400B5E30CFB2E_AdjustorThunk },
-	{ 0x06000066, HierarchyNodeType_Equals_mC1ABF19667AE18B967EAA0087E8ACCB00FB09B86_AdjustorThunk },
-	{ 0x06000067, HierarchyNodeType_ToString_mF1B22CBC191CD587C3C6744430C6B88CA1CBD6A9_AdjustorThunk },
-	{ 0x06000068, HierarchyNodeType_Equals_mC28897DB00E62C8F91EF555751869853AA42568B_AdjustorThunk },
-	{ 0x06000069, HierarchyNodeType_GetHashCode_mD56E6A6C18B5602DD3EB1E77DDF0C4ADB8BA04CA_AdjustorThunk },
-	{ 0x0600006B, HierarchySearchFilter_get_IsValid_m57196B68CAD2B3A2F36094A71BD2D8510B4EDF29_AdjustorThunk },
-	{ 0x0600006C, HierarchySearchFilter_get_Name_m0669ABA00F5156E06B704544AE30B70FF059CF2D_AdjustorThunk },
-	{ 0x0600006D, HierarchySearchFilter_get_Value_mD9D097264FAFD84679DFF24EBB7A5DDAF0422CE9_AdjustorThunk },
-	{ 0x0600006E, HierarchySearchFilter_get_Op_m6075B3B7DC8D0E011EC76F929D7CB05E01E16A94_AdjustorThunk },
-	{ 0x06000070, HierarchySearchFilter_ToString_mE726A902E60DDDD1E51502ECB14F64171B9CD2A3_AdjustorThunk },
-};
-static const int32_t s_InvokerIndices[151] = 
-{
-	16311,
-	16311,
-	12403,
-	16311,
-	12241,
-	15732,
-	10175,
-	5190,
-	12198,
-	8660,
-	16311,
-	12198,
-	22425,
-	12198,
-	18879,
-	20736,
-	23316,
-	23316,
-	22425,
-	21192,
-	19763,
-	22522,
-	20844,
-	20841,
-	23316,
-	21823,
-	15772,
-	8660,
-	23890,
-	21817,
-	21192,
-	19925,
-	22522,
-	20844,
-	22769,
-	23316,
-	23297,
-	23297,
-	3450,
-	16311,
-	12198,
-	16433,
-	12198,
-	16311,
-	15732,
-	15772,
-	16311,
-	23890,
-	-1,
-	3456,
-	16311,
-	16311,
-	12241,
-	15903,
-	22425,
-	23316,
-	15937,
-	9987,
-	19803,
-	21823,
-	22721,
-	21192,
-	22769,
-	5336,
-	12198,
-	12406,
-	16311,
-	16311,
-	12241,
-	22425,
-	23316,
-	22774,
-	22769,
-	1129,
-	16311,
-	16311,
-	12241,
-	22425,
-	23316,
-	18011,
-	19185,
-	23643,
-	15902,
-	16311,
-	20736,
-	8823,
-	15732,
-	8660,
-	15937,
-	23643,
-	15937,
-	15937,
-	16311,
-	20736,
-	8824,
-	15732,
-	8660,
-	15937,
-	23643,
-	15937,
-	20736,
-	8825,
-	15732,
-	8660,
-	15937,
-	23643,
-	15772,
-	15732,
-	15732,
-	15937,
-	22423,
-	15732,
-	22408,
-	23890,
-	15732,
-	12198,
-	15732,
-	12198,
-	15732,
-	12198,
-	12241,
-	12241,
-	15732,
-	5294,
-	15732,
-	15732,
-	15732,
-	15732,
-	15732,
-	-1,
-	23890,
-	23890,
-	16311,
-	8826,
-	8826,
-	12198,
-	15732,
-	360,
-	16311,
-	16311,
-	12241,
-	22425,
-	23316,
-	16989,
-	17291,
-	21826,
-	23316,
-	22425,
-	22769,
-	5336,
-	12732,
-};
-static const Il2CppTokenRangePair s_rgctxIndices[2] = 
-{
-	{ 0x0200000C, { 0, 1 } },
-	{ 0x06000082, { 1, 9 } },
-};
-extern const uint32_t g_rgctx_ReadOnlyNativeVector_1_tC7EF43C3C05983728D7B18616785ABACB27E724E;
-extern const uint32_t g_rgctx_IEnumerable_1_t8612489969C1D1C7CCF269C73B6019AAA2A73746;
-extern const uint32_t g_rgctx_IEnumerable_1_GetEnumerator_m57E377F5F9CFA73DF1FEE3F8FE4C5D6C1BB99010;
-extern const uint32_t g_rgctx_IEnumerator_1_t3A70EC462149467EF2C21615B0F7CD98D55D9817;
-extern const uint32_t g_rgctx_IEnumerator_1_get_Current_mE62A6243D1984ADB3436F6F5D1D61FCA7CFEABD4;
-extern const uint32_t g_rgctx_T_t05BBECD276BBCC62C106EE88DFB2778BB64235A3;
-extern const uint32_t g_rgctx_Func_2_t749796035C3FF846915024CB5E7E6AC9DA727202;
-extern const uint32_t g_rgctx_Func_2_Invoke_mD5B1D2D30B36CD768B644A35CE3F0466E739F882;
-extern const uint32_t g_rgctx_TU5BU5D_tE6D0DD8F2770CEAF1176362CA7055592C6293DF5;
-extern const uint32_t g_rgctx_TU5BU5D_tE6D0DD8F2770CEAF1176362CA7055592C6293DF5;
-static const Il2CppRGCTXDefinition s_rgctxValues[10] = 
-{
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_ReadOnlyNativeVector_1_tC7EF43C3C05983728D7B18616785ABACB27E724E },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_IEnumerable_1_t8612489969C1D1C7CCF269C73B6019AAA2A73746 },
-	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_IEnumerable_1_GetEnumerator_m57E377F5F9CFA73DF1FEE3F8FE4C5D6C1BB99010 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_IEnumerator_1_t3A70EC462149467EF2C21615B0F7CD98D55D9817 },
-	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_IEnumerator_1_get_Current_mE62A6243D1984ADB3436F6F5D1D61FCA7CFEABD4 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_T_t05BBECD276BBCC62C106EE88DFB2778BB64235A3 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_Func_2_t749796035C3FF846915024CB5E7E6AC9DA727202 },
-	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Func_2_Invoke_mD5B1D2D30B36CD768B644A35CE3F0466E739F882 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TU5BU5D_tE6D0DD8F2770CEAF1176362CA7055592C6293DF5 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TU5BU5D_tE6D0DD8F2770CEAF1176362CA7055592C6293DF5 },
+	{ 0x0600003D, ConstructorScope_Dispose_m6C9839EFB1F77810EA89AB6FA98CE076D508889C_AdjustorThunk },
+	{ 0x06000041, Enumerator_Dispose_m4279DC1C5317D178525B7AC9A0768DE254C547F5_AdjustorThunk },
+	{ 0x0600006A, HierarchyFlattenedNode_Equals_m84AF827EDEE1DF08FB68E4A246E13D2D6E49FFCC_AdjustorThunk },
+	{ 0x0600006B, HierarchyFlattenedNode_ToString_m5DB9A1AE3A137B8A693A65BF67E4629000833560_AdjustorThunk },
+	{ 0x0600006C, HierarchyFlattenedNode_Equals_mD7CCECE4687CAB017FF646FB26A63118B3E8EF1F_AdjustorThunk },
+	{ 0x0600006D, HierarchyFlattenedNode_GetHashCode_mC788C5FBAEA281CB55C888350D7F74B8FA4ACE55_AdjustorThunk },
+	{ 0x06000073, HierarchyNode_Equals_m21AA316B1263A399682DD3DF95419B0EE699B9AC_AdjustorThunk },
+	{ 0x06000074, HierarchyNode_ToString_m393B16519275D2F761A5664F62F1F89C7576EE83_AdjustorThunk },
+	{ 0x06000075, HierarchyNode_Equals_m0FF62873EFA0A0B67F63D93DAA27F370B7460AA2_AdjustorThunk },
+	{ 0x06000076, HierarchyNode_GetHashCode_m4942E49DB4DAABA2353958AB4BE213B7FA546574_AdjustorThunk },
+	{ 0x0600007A, HierarchyNodeType_Equals_mC1ABF19667AE18B967EAA0087E8ACCB00FB09B86_AdjustorThunk },
+	{ 0x0600007B, HierarchyNodeType_ToString_mF1B22CBC191CD587C3C6744430C6B88CA1CBD6A9_AdjustorThunk },
+	{ 0x0600007C, HierarchyNodeType_Equals_mC28897DB00E62C8F91EF555751869853AA42568B_AdjustorThunk },
+	{ 0x0600007D, HierarchyNodeType_GetHashCode_mD56E6A6C18B5602DD3EB1E77DDF0C4ADB8BA04CA_AdjustorThunk },
+	{ 0x06000084, HierarchySearchFilter_ToString_mE726A902E60DDDD1E51502ECB14F64171B9CD2A3_AdjustorThunk },
 };
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_UnityEngine_HierarchyCoreModule_CodeGenModule;
 const Il2CppCodeGenModule g_UnityEngine_HierarchyCoreModule_CodeGenModule = 
 {
 	"UnityEngine.HierarchyCoreModule.dll",
-	151,
+	172,
 	s_methodPointers,
-	31,
+	15,
 	s_adjustorThunks,
-	s_InvokerIndices,
 	0,
-	NULL,
-	2,
-	s_rgctxIndices,
-	10,
-	s_rgctxValues,
 	NULL,
 	NULL,
 	NULL,

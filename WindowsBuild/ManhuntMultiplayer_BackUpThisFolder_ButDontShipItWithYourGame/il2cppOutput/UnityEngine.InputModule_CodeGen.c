@@ -9,15 +9,15 @@
 
 extern void EmbeddedAttribute__ctor_m21A058F23627F8E6DB17BCE0D170B7F70952FE43 (void);
 extern void RefSafetyRulesAttribute__ctor_mF529A1A065F46DCF6EBE5DEC64C5961D5234FE90 (void);
+extern void __UnityModuleInitialization_Initialize_m577193A41170F244A17377E5587BFAD95B5D351C (void);
 extern void NativeUpdateCallback__ctor_m04FDCD50564E7535FADAFF34BBA83500585A84F5 (void);
 extern void NativeUpdateCallback_Invoke_mC4B7018AE8ED52FB9C6805F65C57A81812D21333 (void);
 extern void NativeInputSystem_get_onDeviceDiscovered_mD55A996A1107331B95C4D9409B8D4C98BADB8FCC (void);
 extern void NativeInputSystem_set_onDeviceDiscovered_m8DEE711BB866D1C923DA537B7DE62BF03094D855 (void);
-extern void NativeInputSystem__cctor_mADBD6616441651B2AFE2AD8AF64D63DF0BA66693 (void);
-extern void NativeInputSystem_NotifyBeforeUpdate_m39AE2F1A42BD47200A263AD0EF9EDA5EF4C0042A (void);
-extern void NativeInputSystem_NotifyUpdate_m482599CC17084B0383809F97671530613EA39AD0 (void);
+extern void NativeInputSystem_Clear_m21EAE98C3BDA1269AB27AE9DD3474F83B38CA724 (void);
 extern void NativeInputSystem_NotifyDeviceDiscovered_m861CCAFB4DD314DB3DC58FBD0398800CF9272C03 (void);
-extern void NativeInputSystem_ShouldRunUpdate_m7C9E1201550198D8E1F163787175C86A8B0EE71B (void);
+extern void NativeInputSystem_NotifyBeforeUpdate_m2E083FFCE8D30FEF497A488BB1BD013157AA4798 (void);
+extern void NativeInputSystem_ProcessInputUpdate_mCA6744E5BB12FA2D14583F76127672A620E775AA (void);
 extern void NativeInputSystem_DoSendMouseEvents_m1D11FB9DBBB4E2CD0C22F18B8A2F439E1F2E40EB (void);
 extern void NativeInputSystem_set_hasDeviceDiscoveredCallback_m0979ABC04DBA52617481EDF743D8B48CC089A1C8 (void);
 extern void NativeInputSystem_get_currentTime_mB10D8CF832AA53952843986F29675B3BC71AAEC9 (void);
@@ -32,19 +32,23 @@ extern void NativeInputSystem_get_normalizeScrollWheelDelta_mF633DF00F7F5823179F
 extern void NativeInputSystem_set_normalizeScrollWheelDelta_mA6CCECFB417A30D7AEB05FDB313FEA28963F012D (void);
 extern void NativeInputSystem_GetScrollWheelDeltaPerTick_mD4FBEBF03836656D5DE3D39A8CEB3CB395DB607B (void);
 extern void NativeInputSystem_get_useImplicitMouseEventScriptCallbacks_m61D9B15E56C6FF00A9EEA9F8FABADBE2390C1A43 (void);
-static Il2CppMethodPointer s_methodPointers[25] = 
+extern void NativeInputSystem___AutoStaticsCleanup_Unity_Scripting_LifecycleManagement_CodeLoadedScope_Exiting_m8B3E4C06472838FCF19819B65F496F6C8BAF768A (void);
+extern void NativeInputSystem_UnityEngineInternal_Input_NativeInputSystem_Clear_RegisterLifecycleMethod_m5367DA948D8330C725330EECE49A69A3BB106918 (void);
+extern void NativeInputSystem__cctor_mADBD6616441651B2AFE2AD8AF64D63DF0BA66693 (void);
+extern void InputFocusEvent_get_hasApplicationFocus_m344427AED1ACE991F16CAAF780C84ED664A73E78 (void);
+static Il2CppMethodPointer s_methodPointers[29] = 
 {
 	EmbeddedAttribute__ctor_m21A058F23627F8E6DB17BCE0D170B7F70952FE43,
 	RefSafetyRulesAttribute__ctor_mF529A1A065F46DCF6EBE5DEC64C5961D5234FE90,
+	__UnityModuleInitialization_Initialize_m577193A41170F244A17377E5587BFAD95B5D351C,
 	NativeUpdateCallback__ctor_m04FDCD50564E7535FADAFF34BBA83500585A84F5,
 	NativeUpdateCallback_Invoke_mC4B7018AE8ED52FB9C6805F65C57A81812D21333,
 	NativeInputSystem_get_onDeviceDiscovered_mD55A996A1107331B95C4D9409B8D4C98BADB8FCC,
 	NativeInputSystem_set_onDeviceDiscovered_m8DEE711BB866D1C923DA537B7DE62BF03094D855,
-	NativeInputSystem__cctor_mADBD6616441651B2AFE2AD8AF64D63DF0BA66693,
-	NativeInputSystem_NotifyBeforeUpdate_m39AE2F1A42BD47200A263AD0EF9EDA5EF4C0042A,
-	NativeInputSystem_NotifyUpdate_m482599CC17084B0383809F97671530613EA39AD0,
+	NativeInputSystem_Clear_m21EAE98C3BDA1269AB27AE9DD3474F83B38CA724,
 	NativeInputSystem_NotifyDeviceDiscovered_m861CCAFB4DD314DB3DC58FBD0398800CF9272C03,
-	NativeInputSystem_ShouldRunUpdate_m7C9E1201550198D8E1F163787175C86A8B0EE71B,
+	NativeInputSystem_NotifyBeforeUpdate_m2E083FFCE8D30FEF497A488BB1BD013157AA4798,
+	NativeInputSystem_ProcessInputUpdate_mCA6744E5BB12FA2D14583F76127672A620E775AA,
 	NativeInputSystem_DoSendMouseEvents_m1D11FB9DBBB4E2CD0C22F18B8A2F439E1F2E40EB,
 	NativeInputSystem_set_hasDeviceDiscoveredCallback_m0979ABC04DBA52617481EDF743D8B48CC089A1C8,
 	NativeInputSystem_get_currentTime_mB10D8CF832AA53952843986F29675B3BC71AAEC9,
@@ -59,50 +63,20 @@ static Il2CppMethodPointer s_methodPointers[25] =
 	NativeInputSystem_set_normalizeScrollWheelDelta_mA6CCECFB417A30D7AEB05FDB313FEA28963F012D,
 	NativeInputSystem_GetScrollWheelDeltaPerTick_mD4FBEBF03836656D5DE3D39A8CEB3CB395DB607B,
 	NativeInputSystem_get_useImplicitMouseEventScriptCallbacks_m61D9B15E56C6FF00A9EEA9F8FABADBE2390C1A43,
-};
-static const int32_t s_InvokerIndices[25] = 
-{
-	16311,
-	12403,
-	5336,
-	6069,
-	23643,
-	23297,
-	23890,
-	23314,
-	21811,
-	21807,
-	21807,
-	19138,
-	23298,
-	23692,
-	23692,
-	23724,
-	23316,
-	18867,
-	23333,
-	23828,
-	23314,
-	23663,
-	23298,
-	23828,
-	23663,
+	NativeInputSystem___AutoStaticsCleanup_Unity_Scripting_LifecycleManagement_CodeLoadedScope_Exiting_m8B3E4C06472838FCF19819B65F496F6C8BAF768A,
+	NativeInputSystem_UnityEngineInternal_Input_NativeInputSystem_Clear_RegisterLifecycleMethod_m5367DA948D8330C725330EECE49A69A3BB106918,
+	NativeInputSystem__cctor_mADBD6616441651B2AFE2AD8AF64D63DF0BA66693,
+	InputFocusEvent_get_hasApplicationFocus_m344427AED1ACE991F16CAAF780C84ED664A73E78,
 };
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_UnityEngine_InputModule_CodeGenModule;
 const Il2CppCodeGenModule g_UnityEngine_InputModule_CodeGenModule = 
 {
 	"UnityEngine.InputModule.dll",
-	25,
+	29,
 	s_methodPointers,
 	0,
 	NULL,
-	s_InvokerIndices,
 	0,
-	NULL,
-	0,
-	NULL,
-	0,
-	NULL,
 	NULL,
 	NULL,
 	NULL,

@@ -1,8 +1,6 @@
 ﻿<Solution>
   <Project Path="ProjectAssembly.csproj" />
-  <Project Path="BetterHierarchy.csproj" />
   <Project Path="DOTween.Modules.csproj" />
-  <Project Path="BetterHierarchyDemoScripts.csproj" />
   <Project Path="SceneReference.csproj" />
   <Project Path="SceneReference.Editor.csproj" />
 </Solution>

@@ -32,7 +32,7 @@ extern void DownloadHandler_CompleteHeaders_m56AADA88850EFB2B1C40FC7C8ADE6BF13DA
 extern void DownloadHandler_CompleteContent_m0FFC337906FF9BF8BDD546906D48DA57F52F81CA (void);
 extern void DownloadHandler_GetProgress_mB440AC38C72F2E14DD53259E1D0C9D7612F0791F (void);
 extern void DownloadHandler_ReleaseFromScripting_Injected_m58D4660921050A173147221836BBECDFB83CC22B (void);
-extern void DownloadHandler_GetContentType_Injected_m11E7081CBE3683EA2B82AD09571D01D5427223E9 (void);
+extern void DownloadHandler_GetContentType_Injected_m77AB180A4F7061EF06C09B5098EE9BD85F03E569 (void);
 extern void BindingsMarshaller_ConvertToNative_mF982DE80FF446BC654CB8CB6A775E312AE1F3DAE (void);
 extern void UnityWebRequestAsyncOperation_get_webRequest_mF67D15420C7C1C4DCA1BD6F839048A0542998BC3 (void);
 extern void UnityWebRequest_GetWebErrorString_mE82AF7BF8045F616FDB38A7DBD071CA41F6D468D (void);
@@ -55,14 +55,14 @@ extern void UnityWebRequest_GetResponseHeaders_m67147A5D3FF83FD75071AA42F4890439
 extern void UnityWebRequest_get_uploadHandler_mF92ED2E0410E7F720B8775B467CFD86B60909CF5 (void);
 extern void UnityWebRequest_get_downloadHandler_m1AA91B23D9D594A4F4FE2975FC356C508528F1D5 (void);
 extern void UnityWebRequest_get_certificateHandler_m928A7BE34EB3725EA1D977877B7362E813918D7D (void);
-extern void UnityWebRequest_GetWebErrorString_Injected_mC196A95CAC9FB28CFFE83D756BF942C0AA9D29B6 (void);
-extern void UnityWebRequest_GetHTTPStatusString_Injected_m3031BB056CD4FD5EB87073171DFB6164051A05B7 (void);
+extern void UnityWebRequest_GetWebErrorString_Injected_mEA7807F6FD2DC406082B32C81EA8E0444CC4D520 (void);
+extern void UnityWebRequest_GetHTTPStatusString_Injected_mE14BB810B61A535BFB5AD8621A555C360980918A (void);
 extern void UnityWebRequest_Release_Injected_m0FFC15CBADE5CACD96040C33D5E367630893D991 (void);
 extern void UnityWebRequest_Abort_Injected_m4108EF0777C12995F2ECA76F24D9BE98D22F6D01 (void);
 extern void UnityWebRequest_GetError_Injected_mAC8F4853BAB30F535A7228F301D2F95ACE3BA61C (void);
 extern void UnityWebRequest_get_responseCode_Injected_mC1153EF1D079A7F24314CE1C609A93171D805BB0 (void);
 extern void UnityWebRequest_get_result_Injected_m0ED910F3F3676B6A729DF54FF0B34320FE98D5E9 (void);
-extern void UnityWebRequest_GetResponseHeader_Injected_m2E32A52EAC6E8310DF64310C3568165F5AA04D43 (void);
+extern void UnityWebRequest_GetResponseHeader_Injected_m2EDF8843098C2FBA40C2F6E6BD8B0A9EEED1EE7F (void);
 extern void UnityWebRequest_GetResponseHeaderKeys_Injected_mBFEE671306049A64F028596078C1555789BFDF90 (void);
 extern void BindingsMarshaller_ConvertToNative_mA66C9FA951E8595D50DA107F5881C9BF15579BCB (void);
 extern void UploadHandler_ReleaseFromScripting_m3CA892EE57ADFDEF86A3CD9AC35EF50848C178D3 (void);
@@ -96,7 +96,7 @@ static Il2CppMethodPointer s_methodPointers[62] =
 	DownloadHandler_CompleteContent_m0FFC337906FF9BF8BDD546906D48DA57F52F81CA,
 	DownloadHandler_GetProgress_mB440AC38C72F2E14DD53259E1D0C9D7612F0791F,
 	DownloadHandler_ReleaseFromScripting_Injected_m58D4660921050A173147221836BBECDFB83CC22B,
-	DownloadHandler_GetContentType_Injected_m11E7081CBE3683EA2B82AD09571D01D5427223E9,
+	DownloadHandler_GetContentType_Injected_m77AB180A4F7061EF06C09B5098EE9BD85F03E569,
 	BindingsMarshaller_ConvertToNative_mF982DE80FF446BC654CB8CB6A775E312AE1F3DAE,
 	UnityWebRequestAsyncOperation_get_webRequest_mF67D15420C7C1C4DCA1BD6F839048A0542998BC3,
 	UnityWebRequest_GetWebErrorString_mE82AF7BF8045F616FDB38A7DBD071CA41F6D468D,
@@ -119,85 +119,20 @@ static Il2CppMethodPointer s_methodPointers[62] =
 	UnityWebRequest_get_uploadHandler_mF92ED2E0410E7F720B8775B467CFD86B60909CF5,
 	UnityWebRequest_get_downloadHandler_m1AA91B23D9D594A4F4FE2975FC356C508528F1D5,
 	UnityWebRequest_get_certificateHandler_m928A7BE34EB3725EA1D977877B7362E813918D7D,
-	UnityWebRequest_GetWebErrorString_Injected_mC196A95CAC9FB28CFFE83D756BF942C0AA9D29B6,
-	UnityWebRequest_GetHTTPStatusString_Injected_m3031BB056CD4FD5EB87073171DFB6164051A05B7,
+	UnityWebRequest_GetWebErrorString_Injected_mEA7807F6FD2DC406082B32C81EA8E0444CC4D520,
+	UnityWebRequest_GetHTTPStatusString_Injected_mE14BB810B61A535BFB5AD8621A555C360980918A,
 	UnityWebRequest_Release_Injected_m0FFC15CBADE5CACD96040C33D5E367630893D991,
 	UnityWebRequest_Abort_Injected_m4108EF0777C12995F2ECA76F24D9BE98D22F6D01,
 	UnityWebRequest_GetError_Injected_mAC8F4853BAB30F535A7228F301D2F95ACE3BA61C,
 	UnityWebRequest_get_responseCode_Injected_mC1153EF1D079A7F24314CE1C609A93171D805BB0,
 	UnityWebRequest_get_result_Injected_m0ED910F3F3676B6A729DF54FF0B34320FE98D5E9,
-	UnityWebRequest_GetResponseHeader_Injected_m2E32A52EAC6E8310DF64310C3568165F5AA04D43,
+	UnityWebRequest_GetResponseHeader_Injected_m2EDF8843098C2FBA40C2F6E6BD8B0A9EEED1EE7F,
 	UnityWebRequest_GetResponseHeaderKeys_Injected_mBFEE671306049A64F028596078C1555789BFDF90,
 	BindingsMarshaller_ConvertToNative_mA66C9FA951E8595D50DA107F5881C9BF15579BCB,
 	UploadHandler_ReleaseFromScripting_m3CA892EE57ADFDEF86A3CD9AC35EF50848C178D3,
 	UploadHandler_Dispose_mA92AC689361199836EEABE182E13F9759A74D109,
 	UploadHandler_ReleaseFromScripting_Injected_m3D0A5BB5C2E43B12CB06166F7FD022B2093A1A1A,
 	BindingsMarshaller_ConvertToNative_m4520B52F497C3D16FB3E6ADB12DE939EF6494D56,
-};
-static const int32_t s_InvokerIndices[62] = 
-{
-	16311,
-	12403,
-	20581,
-	23890,
-	16311,
-	8660,
-	8660,
-	16311,
-	23316,
-	22769,
-	16311,
-	16311,
-	15732,
-	15298,
-	15732,
-	15732,
-	15732,
-	3970,
-	12733,
-	12403,
-	23297,
-	16311,
-	16311,
-	16182,
-	23316,
-	21817,
-	22769,
-	15732,
-	22423,
-	22424,
-	15772,
-	15772,
-	15772,
-	16311,
-	16311,
-	16311,
-	16311,
-	16311,
-	15937,
-	15732,
-	15938,
-	15937,
-	7945,
-	15732,
-	15732,
-	15732,
-	15732,
-	15732,
-	21807,
-	21816,
-	23316,
-	23316,
-	22721,
-	22757,
-	22721,
-	20332,
-	22425,
-	22769,
-	16311,
-	16311,
-	23316,
-	22769,
 };
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_UnityEngine_UnityWebRequestModule_CodeGenModule;
 const Il2CppCodeGenModule g_UnityEngine_UnityWebRequestModule_CodeGenModule = 
@@ -207,13 +142,7 @@ const Il2CppCodeGenModule g_UnityEngine_UnityWebRequestModule_CodeGenModule =
 	s_methodPointers,
 	0,
 	NULL,
-	s_InvokerIndices,
 	0,
-	NULL,
-	0,
-	NULL,
-	0,
-	NULL,
 	NULL,
 	NULL,
 	NULL,

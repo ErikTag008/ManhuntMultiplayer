@@ -57,29 +57,6 @@ static Il2CppTokenAdjustorThunkPair s_adjustorThunks[2] =
 	{ 0x06000003, VideoClipPlayable_GetHandle_m1D990903234220E9FE756F2DA895650EBDC1415D_AdjustorThunk },
 	{ 0x06000004, VideoClipPlayable_Equals_mDBA2CCE1368B628829B065EA8DEDE84512B2723E_AdjustorThunk },
 };
-static const int32_t s_InvokerIndices[20] = 
-{
-	16311,
-	12403,
-	16082,
-	9175,
-	23297,
-	21740,
-	23297,
-	23297,
-	23297,
-	21724,
-	23297,
-	21731,
-	5336,
-	12198,
-	5336,
-	5294,
-	5336,
-	5334,
-	5336,
-	5317,
-};
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_UnityEngine_VideoModule_CodeGenModule;
 const Il2CppCodeGenModule g_UnityEngine_VideoModule_CodeGenModule = 
 {
@@ -88,13 +65,7 @@ const Il2CppCodeGenModule g_UnityEngine_VideoModule_CodeGenModule =
 	s_methodPointers,
 	2,
 	s_adjustorThunks,
-	s_InvokerIndices,
 	0,
-	NULL,
-	0,
-	NULL,
-	0,
-	NULL,
 	NULL,
 	NULL,
 	NULL,

@@ -44,26 +44,6 @@ static Il2CppMethodPointer s_methodPointers[17] =
 	IgnoreSection_SerializeSection_m12BD59834DBCACE13758DA83BD3DEF2B8A6F3DBE,
 	ThrowStub_ThrowNotSupportedException_mA14F496FFE8A1B92C4565A9F18F2113E1C1F2A77,
 };
-static const int32_t s_InvokerIndices[17] = 
-{
-	15732,
-	15772,
-	12198,
-	16311,
-	12198,
-	15772,
-	16311,
-	2618,
-	12198,
-	16311,
-	15732,
-	12198,
-	15772,
-	12198,
-	16311,
-	2618,
-	23890,
-};
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_System_Configuration_CodeGenModule;
 const Il2CppCodeGenModule g_System_Configuration_CodeGenModule = 
 {
@@ -72,13 +52,7 @@ const Il2CppCodeGenModule g_System_Configuration_CodeGenModule =
 	s_methodPointers,
 	0,
 	NULL,
-	s_InvokerIndices,
 	0,
-	NULL,
-	0,
-	NULL,
-	0,
-	NULL,
 	NULL,
 	NULL,
 	NULL,

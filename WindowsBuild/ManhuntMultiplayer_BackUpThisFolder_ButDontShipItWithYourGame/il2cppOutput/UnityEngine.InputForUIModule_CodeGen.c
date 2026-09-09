@@ -121,6 +121,7 @@ extern void EventProvider_Shutdown_mC7555B784CCBC1EC859FBD7374E866EC58939D0F (vo
 extern void EventProvider_OnFocusChanged_m26FDB6E1AE2841953DCEE2110FF59D477EFC6D9B (void);
 extern void EventProvider_NotifyUpdate_m30171685ED8559A5E59D74870573E49D70472608 (void);
 extern void EventProvider_SetInputSystemProvider_m6C3F39EF66599573B1E026947568F63F5E64C1DC (void);
+extern void EventProvider___AutoStaticsCleanup_Unity_Scripting_LifecycleManagement_CodeLoadedScope_Exiting_m9899F2DDC9DFB797DD56447560042A6B280C596F (void);
 extern void EventProvider__cctor_m43251A9D75881B0B1D5C406A64C912C587431E3C (void);
 extern void U3CU3Ec__cctor_m58BE846E628A4649079FB42D8AB34515AA282D01 (void);
 extern void U3CU3Ec__ctor_mED9C83795F0ABEE40F08C2F85108B8E7D5955E97 (void);
@@ -138,6 +139,7 @@ extern void InputEventPartialProvider_GetTimestamp_m08C36E9210FF2911346E6472570B
 extern void InputEventPartialProvider_UpdateEventModifiers_mC9202812FD6F7A0C31C3354C8B815850E7394464 (void);
 extern void InputEventPartialProvider_ToKeyEvent_m23B05A6C3345993DFF882C6946420637B683427F (void);
 extern void InputEventPartialProvider_ToTextInputEvent_m7F83D7D16705B11148556C3A79462EBBECDB0FF7 (void);
+extern void InputEventPartialProvider_ToIMECompositionEvent_m96322D33FC55B7BEB0F81737332A9F76D8229F91 (void);
 extern void InputEventPartialProvider_SendNextOrPreviousNavigationEventOnTabKeyDownEvent_mE5142DD9C59E0277E21522FCDDB9B8AACD4CF970 (void);
 extern void InputEventPartialProvider_ToCommandEvent_mA848D18A0F630A577369D6C3B74B4882CC0CCBFC (void);
 extern void InputEventPartialProvider__ctor_mAD089CB3ACA29F2E2BC600CB4A20263A58C50AF6 (void);
@@ -170,6 +172,7 @@ extern void InputManagerProvider_TiltToAltitude_m817A8B10D8C02599C90079F527B7748
 extern void InputManagerProvider_MultiDisplayBottomLeftToPanelPosition_m65D469CB9946C2D86882FC517BBC691C585BA355 (void);
 extern void InputManagerProvider_MultiDisplayToLocalScreenPosition_mC429C7E2DC68889715F5FD241095FC6C8F829340 (void);
 extern void InputManagerProvider_ScreenBottomLeftToPanelPosition_m3D7C004A055685C3FD686B5EC787D09DCA47F231 (void);
+extern void InputManagerProvider_GetScreenHeight_m229B0E8DAABB1EB3CB7F81C49AD8D34D6C143BFF (void);
 extern void InputManagerProvider_ScreenBottomLeftToPanelDelta_m560324B7D692193DD8589C4C57B3D38A1ADDAA14 (void);
 extern void ButtonEventsIterator_get_Current_m86D6845A6F6A4489F303ED060476EF59F67CD6DB (void);
 extern void ButtonEventsIterator_MoveNext_m742C90ADEB41243BAA32EE2380C5831ED1792A74 (void);
@@ -220,7 +223,7 @@ extern void EventSanitizer_Reset_m3B7D88555BBA84A9C4EFF2A2770AB161D09F20EB (void
 extern void EventSanitizer_BeforeProviderUpdate_m65F246118381B43BCAD668849185ECEF7C52C971 (void);
 extern void EventSanitizer_AfterProviderUpdate_m3CD0CF9D1169DE1B1B9A96A564069E282B48E9AA (void);
 extern void EventSanitizer_Inspect_m9B438E50B9AE5E6CAF8E03679C90D02D11ACCF73 (void);
-static Il2CppMethodPointer s_methodPointers[244] = 
+static Il2CppMethodPointer s_methodPointers[247] = 
 {
 	EmbeddedAttribute__ctor_m7FE582A5F1727A40CE5DB1AF01F069CA2AE53CE3,
 	RefSafetyRulesAttribute__ctor_m29A1A4E195A437EEA1FA9FEFCF24908951ACD43A,
@@ -344,6 +347,7 @@ static Il2CppMethodPointer s_methodPointers[244] =
 	EventProvider_OnFocusChanged_m26FDB6E1AE2841953DCEE2110FF59D477EFC6D9B,
 	EventProvider_NotifyUpdate_m30171685ED8559A5E59D74870573E49D70472608,
 	EventProvider_SetInputSystemProvider_m6C3F39EF66599573B1E026947568F63F5E64C1DC,
+	EventProvider___AutoStaticsCleanup_Unity_Scripting_LifecycleManagement_CodeLoadedScope_Exiting_m9899F2DDC9DFB797DD56447560042A6B280C596F,
 	EventProvider__cctor_m43251A9D75881B0B1D5C406A64C912C587431E3C,
 	U3CU3Ec__cctor_m58BE846E628A4649079FB42D8AB34515AA282D01,
 	U3CU3Ec__ctor_mED9C83795F0ABEE40F08C2F85108B8E7D5955E97,
@@ -365,6 +369,7 @@ static Il2CppMethodPointer s_methodPointers[244] =
 	InputEventPartialProvider_UpdateEventModifiers_mC9202812FD6F7A0C31C3354C8B815850E7394464,
 	InputEventPartialProvider_ToKeyEvent_m23B05A6C3345993DFF882C6946420637B683427F,
 	InputEventPartialProvider_ToTextInputEvent_m7F83D7D16705B11148556C3A79462EBBECDB0FF7,
+	InputEventPartialProvider_ToIMECompositionEvent_m96322D33FC55B7BEB0F81737332A9F76D8229F91,
 	InputEventPartialProvider_SendNextOrPreviousNavigationEventOnTabKeyDownEvent_mE5142DD9C59E0277E21522FCDDB9B8AACD4CF970,
 	InputEventPartialProvider_ToCommandEvent_mA848D18A0F630A577369D6C3B74B4882CC0CCBFC,
 	InputEventPartialProvider__ctor_mAD089CB3ACA29F2E2BC600CB4A20263A58C50AF6,
@@ -397,6 +402,7 @@ static Il2CppMethodPointer s_methodPointers[244] =
 	InputManagerProvider_MultiDisplayBottomLeftToPanelPosition_m65D469CB9946C2D86882FC517BBC691C585BA355,
 	InputManagerProvider_MultiDisplayToLocalScreenPosition_mC429C7E2DC68889715F5FD241095FC6C8F829340,
 	InputManagerProvider_ScreenBottomLeftToPanelPosition_m3D7C004A055685C3FD686B5EC787D09DCA47F231,
+	InputManagerProvider_GetScreenHeight_m229B0E8DAABB1EB3CB7F81C49AD8D34D6C143BFF,
 	InputManagerProvider_ScreenBottomLeftToPanelDelta_m560324B7D692193DD8589C4C57B3D38A1ADDAA14,
 	ButtonEventsIterator_get_Current_m86D6845A6F6A4489F303ED060476EF59F67CD6DB,
 	ButtonEventsIterator_MoveNext_m742C90ADEB41243BAA32EE2380C5831ED1792A74,
@@ -467,540 +473,74 @@ static Il2CppMethodPointer s_methodPointers[244] =
 	NULL,
 	NULL,
 };
-extern void CommandEvent_set_timestamp_m62E4D17DC8DDC56E6A98D5904AE2C24C5E0E0D7C_AdjustorThunk (void);
 extern void CommandEvent_get_eventSource_mAE9F153B7FBCF387F82996F35E9A181673800CDB_AdjustorThunk (void);
-extern void CommandEvent_set_eventSource_m05EB34E98BDAC88C0C63DAEBFB12E0B9D797644C_AdjustorThunk (void);
-extern void CommandEvent_set_playerId_mB59C516FBF8583564870DE3644754B4CA7DF3FDF_AdjustorThunk (void);
 extern void CommandEvent_get_eventModifiers_mDE813197A28BFBB82027157E446A56BDA43E8AD8_AdjustorThunk (void);
-extern void CommandEvent_set_eventModifiers_m3BA5ECFBD39DCB518239F2063DAA8BA1DCDF8AF4_AdjustorThunk (void);
 extern void CommandEvent_ToString_mDD56EB15CDB87552F3E1E7D9A7A1231DED00794D_AdjustorThunk (void);
-extern void Event_get_type_m43E61FACF8BB047BB65240475858AB9B81E26D45_AdjustorThunk (void);
-extern void Event_get_asObject_m305BBFAF86E3918584403DABC85E04BBEACF6DAF_AdjustorThunk (void);
 extern void Event_get_eventSource_m3AB10031C9E651873EF4456C93F2FE5EF93FEC63_AdjustorThunk (void);
 extern void Event_get_eventModifiers_mE64227776B41073F39044BAA5E7DF23B81828CEF_AdjustorThunk (void);
-extern void Event_Ensure_m74EAA1E0AAD1FBF4C2C5E2DEDDCB678254E9299E_AdjustorThunk (void);
 extern void Event_ToString_m40AE120A2A50F4A51EC650CB21E6141EECC7E0EE_AdjustorThunk (void);
-extern void Event_get_asKeyEvent_mD0AA1C05803D90E0A783C9EA73529C320DA078F8_AdjustorThunk (void);
-extern void Event_get_asPointerEvent_mC75B2F3DDE603A2B3DE0C60D92B55068225644B8_AdjustorThunk (void);
-extern void Event_get_asTextInputEvent_m6E628742A95EFC058021FC9AABAF585BBA30FA8A_AdjustorThunk (void);
-extern void Event_get_asIMECompositionEvent_mD5CF3917637A15EB115398E8FD9B91A7BAD369A6_AdjustorThunk (void);
-extern void Event_get_asCommandEvent_m0217C5C5EBDA55BC07434158EF4C314D9D4367D1_AdjustorThunk (void);
-extern void Event_get_asNavigationEvent_m7514BFFC317A37EA5AC2413A4A08FF1986C84461_AdjustorThunk (void);
-extern void EventModifiers_IsPressed_m6BAC9B3EACDECA1760C524F4D763432C2FEC10D7_AdjustorThunk (void);
-extern void EventModifiers_get_isShiftPressed_m744DB3E0E9AB1E8642ADC89753F32FBEA0CDAB75_AdjustorThunk (void);
-extern void EventModifiers_get_isCtrlPressed_mBD0F785EB48BA04709114ADEB4E2A4A13A5A35BF_AdjustorThunk (void);
-extern void EventModifiers_get_isAltPressed_m954BB57E4F88201642B1456F6FCA0EA150DACF1A_AdjustorThunk (void);
-extern void EventModifiers_get_isMetaPressed_m4DB2C47378F2DC78FEEC776C1BB80DBA683AD8EA_AdjustorThunk (void);
-extern void EventModifiers_get_isCapsLockEnabled_m9BA2B54CBA7C6B2A03C2DC5465F7E19E9484C08D_AdjustorThunk (void);
-extern void EventModifiers_get_isFunctionKeyPressed_mD221094212B21BA36C9A930253A5C8EC7C822CEE_AdjustorThunk (void);
-extern void EventModifiers_get_isNumericPressed_mCEBBBA209E22E1C0DF3F6266DDD39E572189A7DC_AdjustorThunk (void);
-extern void EventModifiers_SetPressed_m33664B1E54F26DD03806889C9FE38D6079B00810_AdjustorThunk (void);
-extern void EventModifiers_Reset_mF75724904B151CFD1F05B44D8C9851698A2D54C6_AdjustorThunk (void);
 extern void EventModifiers_ToString_m039F852BFE0EE0FAD27908AB1D494B8948BA42CA_AdjustorThunk (void);
-extern void IMECompositionEvent_set_timestamp_mCF0C8F7EC4CFDA5B52381D5484A81EB8B4E5D1B8_AdjustorThunk (void);
 extern void IMECompositionEvent_get_eventSource_m5A9262ED18044F734147AB4A65263C7E455B7CAB_AdjustorThunk (void);
-extern void IMECompositionEvent_set_eventSource_mFDE0BE60BC1C8AF8EFCC6437C538446E4FC45F8D_AdjustorThunk (void);
-extern void IMECompositionEvent_set_playerId_mD2E85CFEC4CCD2DCB0A3A09F73A588374BE27792_AdjustorThunk (void);
 extern void IMECompositionEvent_get_eventModifiers_m4B212B13B5AA27343B784C20FA77266C1D741012_AdjustorThunk (void);
-extern void IMECompositionEvent_set_eventModifiers_m8E58584375A5E3CB51743803911AB4F1779C3035_AdjustorThunk (void);
 extern void IMECompositionEvent_ToString_m0E99A80480D5870682A59747BAD3E63AC45FFE1E_AdjustorThunk (void);
-extern void KeyEvent_set_timestamp_mA1AC56751009BD6C8EF3FC6D2892860D6AC03990_AdjustorThunk (void);
 extern void KeyEvent_get_eventSource_m9A74264E7C276EEFA5F603C1EA12BC23034CDE0D_AdjustorThunk (void);
-extern void KeyEvent_set_eventSource_m472DC90E7A9CC0B04F163CF606ACEF997493D0C5_AdjustorThunk (void);
-extern void KeyEvent_set_playerId_m013ACE8EB81283F1EA7D201C1AC7E918E422304B_AdjustorThunk (void);
 extern void KeyEvent_get_eventModifiers_mF90EB0DF537425D3D09B1E095A2B9D24EE448782_AdjustorThunk (void);
-extern void KeyEvent_set_eventModifiers_mBD0AFAC76018A0CCCDD5338471370A4B36C740E8_AdjustorThunk (void);
 extern void KeyEvent_ToString_mE3FC37D2498578B189857DDF16061937A8BB3EE0_AdjustorThunk (void);
-extern void ButtonsState_GetUnchecked_mC4D05E5776EC19AF70558CD43A18E50DFAEF4276_AdjustorThunk (void);
-extern void ButtonsState_SetUnchecked_m3DA8C3D711F89AA225C83E5AA3C715B7070090B8_AdjustorThunk (void);
-extern void ButtonsState_ClearUnchecked_mFE649DCAA069241AB35FAD93B54C638CBCA83E1D_AdjustorThunk (void);
-extern void ButtonsState_IsPressed_m077940991B13B5E5E8C73997B82358A9022D37C3_AdjustorThunk (void);
-extern void ButtonsState_GetAllPressed_m116B75F1006DB83D41784159F9144CC01160A42E_AdjustorThunk (void);
-extern void ButtonsState_SetPressed_m83A234B0D8B922BC8797FB9DB61AF4B26545F9EA_AdjustorThunk (void);
-extern void ButtonsState_Reset_m2682450F34125FB2DB313B9F9528F27FCE18F10B_AdjustorThunk (void);
 extern void ButtonsState_ToString_m0F4594EDB720B831AF8A808B19FB753687C6D4E0_AdjustorThunk (void);
-extern void NavigationEvent_set_timestamp_mA6CDDEB6A1C29A64AD4B42203ECAB1A628E88983_AdjustorThunk (void);
 extern void NavigationEvent_get_eventSource_mD35D875FBB7FA557068DF25BB145292A6EF9FBA0_AdjustorThunk (void);
-extern void NavigationEvent_set_eventSource_m74427FF1CC7AA5430F1FEF37F9BA4D50BE5CB2B3_AdjustorThunk (void);
-extern void NavigationEvent_set_playerId_mA2E0FFCDFE0D345A8DFF67E567099CDF1A637F36_AdjustorThunk (void);
 extern void NavigationEvent_get_eventModifiers_mA4BA9D05B5E5E327B9E5A1889202FA12518AB815_AdjustorThunk (void);
-extern void NavigationEvent_set_eventModifiers_m1B4B8E45D1892C2357EF0933D51A613D3156076E_AdjustorThunk (void);
 extern void NavigationEvent_ToString_mD59B9C574F8B542874908EF4266F0D9B09E06667_AdjustorThunk (void);
-extern void PointerEvent_get_isPrimaryPointer_mEA57B41D6996C4107CDBE1133C92EBAE58EFA007_AdjustorThunk (void);
-extern void PointerEvent_get_worldRay_m33290A34554F651A1E6A24FBA876D171679FAEA7_AdjustorThunk (void);
-extern void PointerEvent_get_azimuth_m5FD6788924C58898C59D2D093790102216EA4B6E_AdjustorThunk (void);
-extern void PointerEvent_get_altitude_m96D1D73F089B16CDFD1D199A07C310E5456124B4_AdjustorThunk (void);
 extern void PointerEvent_get_timestamp_m5A833B8F7FC3F775DD8D6FA05E7A3AA86A3D5035_AdjustorThunk (void);
-extern void PointerEvent_set_timestamp_m1332F1F26A4457114C873F78D1F8B486D65B5AD6_AdjustorThunk (void);
 extern void PointerEvent_get_eventSource_m433AD39B323BF13AE165F5F9D025444092FAEB33_AdjustorThunk (void);
-extern void PointerEvent_set_eventSource_mE12591C4D25BCF5EB9DD502688B73CC5F59A7AD0_AdjustorThunk (void);
-extern void PointerEvent_set_playerId_m33852BB774BBD9AB5868145E1B1069658FEA4E2B_AdjustorThunk (void);
 extern void PointerEvent_get_eventModifiers_m5C238F94AA34FB172F4D7256E5D68E838E3C5A05_AdjustorThunk (void);
-extern void PointerEvent_set_eventModifiers_mECB5C87AE58191D859769627A924B1DF137C168A_AdjustorThunk (void);
 extern void PointerEvent_ToString_m7DA27740BA43C97712A917546C18AD0A1C2BCBA3_AdjustorThunk (void);
-extern void ButtonsState_Set_m52DB679AB8DF80E2E34A72654B66F922DD835032_AdjustorThunk (void);
-extern void ButtonsState_Get_mE6798B0C21BCA75C5CB52BDA200536F9EE3E9893_AdjustorThunk (void);
-extern void ButtonsState_Reset_mD96D8954FBCB9ED51CC3D35A0E8A7BAD6B3088AF_AdjustorThunk (void);
 extern void ButtonsState_ToString_mDE2CA355C9C0F9A18F6E52599AF852CAF5B73758_AdjustorThunk (void);
-extern void TextInputEvent_set_timestamp_m44508CDEF51657A9AEAFB68194E0527AFD7F262B_AdjustorThunk (void);
 extern void TextInputEvent_get_eventSource_mD08759B60A91AAC1DD74CD97AABA7F47C1332CF2_AdjustorThunk (void);
-extern void TextInputEvent_set_eventSource_m9489D4075B4EF62E68A557B4A569989C11382340_AdjustorThunk (void);
-extern void TextInputEvent_set_playerId_mCEC6B21B1EDC0D9E8244CF4519C5FDE05119AC2D_AdjustorThunk (void);
 extern void TextInputEvent_get_eventModifiers_m0C34160E76D9DE9F4D307C6EDF4BBF7319BB6E78_AdjustorThunk (void);
-extern void TextInputEvent_set_eventModifiers_mA544AB38AD48B6538B27806943DA654223501B2E_AdjustorThunk (void);
 extern void TextInputEvent_ToString_m14C55E0242789C632CFE6B231E3C5844BB9C8ABB_AdjustorThunk (void);
-extern void ButtonEventsIterator_get_Current_m86D6845A6F6A4489F303ED060476EF59F67CD6DB_AdjustorThunk (void);
 extern void ButtonEventsIterator_MoveNext_m742C90ADEB41243BAA32EE2380C5831ED1792A74_AdjustorThunk (void);
 extern void ButtonEventsIterator_Reset_m178B46B30A239DE2E1A29E7AA98FF1513EDA17F0_AdjustorThunk (void);
 extern void ButtonEventsIterator_System_Collections_IEnumerator_get_Current_mF2064D9D36208EBC155BF0F8150CC36B046AE329_AdjustorThunk (void);
-extern void PointerState_get_LastPressedButton_m12CCDCF3247A0A4513EC22E7CFDAFCDF1A12D342_AdjustorThunk (void);
-extern void PointerState_set_LastPressedButton_m4B75F3AD3146CB62D189140DC42A5245DAC37D22_AdjustorThunk (void);
-extern void PointerState_get_ButtonsState_m9C44C7CD402868FA0A4FB2542E98B9E7278C378B_AdjustorThunk (void);
-extern void PointerState_get_NextPressTime_m12D2DCC838A9BB0D21B1C3AD3A4580BFB5949FE2_AdjustorThunk (void);
-extern void PointerState_set_NextPressTime_m17CBA6464FE4DE8EB6646AC179F153CF52F9DA8C_AdjustorThunk (void);
-extern void PointerState_get_ClickCount_m0378690A745AF06423CF6A01969FDEF06CCC09AA_AdjustorThunk (void);
-extern void PointerState_set_ClickCount_m8DC9D4E3E11FB38CA977A6D45DC3431B1798CA17_AdjustorThunk (void);
-extern void PointerState_get_LastPosition_m994D92D93C3633D45DE22B239EB6AE38BFC8608E_AdjustorThunk (void);
-extern void PointerState_set_LastPosition_mA58AB07C81F5D5D4D5BB8E2E01BF83F93730684B_AdjustorThunk (void);
-extern void PointerState_get_LastDisplayIndex_m3873EF0EB7E68124D270FB3F7A2083F53604AA42_AdjustorThunk (void);
-extern void PointerState_set_LastDisplayIndex_m76B16012DDA718A2E7A8AD333AABA80E1ED56040_AdjustorThunk (void);
-extern void PointerState_get_LastPositionValid_mB3A5D44574F272EA9EC2674A0D408AC8AC200C81_AdjustorThunk (void);
-extern void PointerState_set_LastPositionValid_mFDF1E68670710967C93480FCAF23AEA96DE5D621_AdjustorThunk (void);
-extern void PointerState_OnButtonDown_m79BD7ABD8CD0C0632088E98AD39B160FCC05CE3F_AdjustorThunk (void);
-extern void PointerState_OnButtonUp_mCE8DE6B7E8D38FCF45C848F49547998CA39C1EB6_AdjustorThunk (void);
-extern void PointerState_OnButtonChange_m76D1C399434C6B40BB7E4880B0E3109744A91E65_AdjustorThunk (void);
-extern void PointerState_OnMove_mFCF40645372BEA0B69DA5A5C4064BC6A11068972_AdjustorThunk (void);
-extern void PointerState_Reset_m6DD45B949BC56BA9C68497B3F1178BCBFC70462F_AdjustorThunk (void);
-extern void EventSanitizer_Reset_m3B7D88555BBA84A9C4EFF2A2770AB161D09F20EB_AdjustorThunk (void);
-extern void EventSanitizer_BeforeProviderUpdate_m65F246118381B43BCAD668849185ECEF7C52C971_AdjustorThunk (void);
-extern void EventSanitizer_AfterProviderUpdate_m3CD0CF9D1169DE1B1B9A96A564069E282B48E9AA_AdjustorThunk (void);
-extern void EventSanitizer_Inspect_m9B438E50B9AE5E6CAF8E03679C90D02D11ACCF73_AdjustorThunk (void);
-static Il2CppTokenAdjustorThunkPair s_adjustorThunks[108] = 
+static Il2CppTokenAdjustorThunkPair s_adjustorThunks[28] = 
 {
-	{ 0x06000003, CommandEvent_set_timestamp_m62E4D17DC8DDC56E6A98D5904AE2C24C5E0E0D7C_AdjustorThunk },
 	{ 0x06000004, CommandEvent_get_eventSource_mAE9F153B7FBCF387F82996F35E9A181673800CDB_AdjustorThunk },
-	{ 0x06000005, CommandEvent_set_eventSource_m05EB34E98BDAC88C0C63DAEBFB12E0B9D797644C_AdjustorThunk },
-	{ 0x06000006, CommandEvent_set_playerId_mB59C516FBF8583564870DE3644754B4CA7DF3FDF_AdjustorThunk },
 	{ 0x06000007, CommandEvent_get_eventModifiers_mDE813197A28BFBB82027157E446A56BDA43E8AD8_AdjustorThunk },
-	{ 0x06000008, CommandEvent_set_eventModifiers_m3BA5ECFBD39DCB518239F2063DAA8BA1DCDF8AF4_AdjustorThunk },
 	{ 0x06000009, CommandEvent_ToString_mDD56EB15CDB87552F3E1E7D9A7A1231DED00794D_AdjustorThunk },
-	{ 0x0600000B, Event_get_type_m43E61FACF8BB047BB65240475858AB9B81E26D45_AdjustorThunk },
-	{ 0x0600000C, Event_get_asObject_m305BBFAF86E3918584403DABC85E04BBEACF6DAF_AdjustorThunk },
 	{ 0x0600000D, Event_get_eventSource_m3AB10031C9E651873EF4456C93F2FE5EF93FEC63_AdjustorThunk },
 	{ 0x0600000E, Event_get_eventModifiers_mE64227776B41073F39044BAA5E7DF23B81828CEF_AdjustorThunk },
-	{ 0x0600000F, Event_Ensure_m74EAA1E0AAD1FBF4C2C5E2DEDDCB678254E9299E_AdjustorThunk },
 	{ 0x06000010, Event_ToString_m40AE120A2A50F4A51EC650CB21E6141EECC7E0EE_AdjustorThunk },
-	{ 0x06000012, Event_get_asKeyEvent_mD0AA1C05803D90E0A783C9EA73529C320DA078F8_AdjustorThunk },
-	{ 0x06000014, Event_get_asPointerEvent_mC75B2F3DDE603A2B3DE0C60D92B55068225644B8_AdjustorThunk },
-	{ 0x06000016, Event_get_asTextInputEvent_m6E628742A95EFC058021FC9AABAF585BBA30FA8A_AdjustorThunk },
-	{ 0x06000018, Event_get_asIMECompositionEvent_mD5CF3917637A15EB115398E8FD9B91A7BAD369A6_AdjustorThunk },
-	{ 0x0600001A, Event_get_asCommandEvent_m0217C5C5EBDA55BC07434158EF4C314D9D4367D1_AdjustorThunk },
-	{ 0x0600001C, Event_get_asNavigationEvent_m7514BFFC317A37EA5AC2413A4A08FF1986C84461_AdjustorThunk },
-	{ 0x06000024, EventModifiers_IsPressed_m6BAC9B3EACDECA1760C524F4D763432C2FEC10D7_AdjustorThunk },
-	{ 0x06000025, EventModifiers_get_isShiftPressed_m744DB3E0E9AB1E8642ADC89753F32FBEA0CDAB75_AdjustorThunk },
-	{ 0x06000026, EventModifiers_get_isCtrlPressed_mBD0F785EB48BA04709114ADEB4E2A4A13A5A35BF_AdjustorThunk },
-	{ 0x06000027, EventModifiers_get_isAltPressed_m954BB57E4F88201642B1456F6FCA0EA150DACF1A_AdjustorThunk },
-	{ 0x06000028, EventModifiers_get_isMetaPressed_m4DB2C47378F2DC78FEEC776C1BB80DBA683AD8EA_AdjustorThunk },
-	{ 0x06000029, EventModifiers_get_isCapsLockEnabled_m9BA2B54CBA7C6B2A03C2DC5465F7E19E9484C08D_AdjustorThunk },
-	{ 0x0600002A, EventModifiers_get_isFunctionKeyPressed_mD221094212B21BA36C9A930253A5C8EC7C822CEE_AdjustorThunk },
-	{ 0x0600002B, EventModifiers_get_isNumericPressed_mCEBBBA209E22E1C0DF3F6266DDD39E572189A7DC_AdjustorThunk },
-	{ 0x0600002C, EventModifiers_SetPressed_m33664B1E54F26DD03806889C9FE38D6079B00810_AdjustorThunk },
-	{ 0x0600002D, EventModifiers_Reset_mF75724904B151CFD1F05B44D8C9851698A2D54C6_AdjustorThunk },
 	{ 0x0600002F, EventModifiers_ToString_m039F852BFE0EE0FAD27908AB1D494B8948BA42CA_AdjustorThunk },
-	{ 0x06000032, IMECompositionEvent_set_timestamp_mCF0C8F7EC4CFDA5B52381D5484A81EB8B4E5D1B8_AdjustorThunk },
 	{ 0x06000033, IMECompositionEvent_get_eventSource_m5A9262ED18044F734147AB4A65263C7E455B7CAB_AdjustorThunk },
-	{ 0x06000034, IMECompositionEvent_set_eventSource_mFDE0BE60BC1C8AF8EFCC6437C538446E4FC45F8D_AdjustorThunk },
-	{ 0x06000035, IMECompositionEvent_set_playerId_mD2E85CFEC4CCD2DCB0A3A09F73A588374BE27792_AdjustorThunk },
 	{ 0x06000036, IMECompositionEvent_get_eventModifiers_m4B212B13B5AA27343B784C20FA77266C1D741012_AdjustorThunk },
-	{ 0x06000037, IMECompositionEvent_set_eventModifiers_m8E58584375A5E3CB51743803911AB4F1779C3035_AdjustorThunk },
 	{ 0x06000038, IMECompositionEvent_ToString_m0E99A80480D5870682A59747BAD3E63AC45FFE1E_AdjustorThunk },
-	{ 0x06000039, KeyEvent_set_timestamp_mA1AC56751009BD6C8EF3FC6D2892860D6AC03990_AdjustorThunk },
 	{ 0x0600003A, KeyEvent_get_eventSource_m9A74264E7C276EEFA5F603C1EA12BC23034CDE0D_AdjustorThunk },
-	{ 0x0600003B, KeyEvent_set_eventSource_m472DC90E7A9CC0B04F163CF606ACEF997493D0C5_AdjustorThunk },
-	{ 0x0600003C, KeyEvent_set_playerId_m013ACE8EB81283F1EA7D201C1AC7E918E422304B_AdjustorThunk },
 	{ 0x0600003D, KeyEvent_get_eventModifiers_mF90EB0DF537425D3D09B1E095A2B9D24EE448782_AdjustorThunk },
-	{ 0x0600003E, KeyEvent_set_eventModifiers_mBD0AFAC76018A0CCCDD5338471370A4B36C740E8_AdjustorThunk },
 	{ 0x0600003F, KeyEvent_ToString_mE3FC37D2498578B189857DDF16061937A8BB3EE0_AdjustorThunk },
-	{ 0x06000041, ButtonsState_GetUnchecked_mC4D05E5776EC19AF70558CD43A18E50DFAEF4276_AdjustorThunk },
-	{ 0x06000042, ButtonsState_SetUnchecked_m3DA8C3D711F89AA225C83E5AA3C715B7070090B8_AdjustorThunk },
-	{ 0x06000043, ButtonsState_ClearUnchecked_mFE649DCAA069241AB35FAD93B54C638CBCA83E1D_AdjustorThunk },
-	{ 0x06000044, ButtonsState_IsPressed_m077940991B13B5E5E8C73997B82358A9022D37C3_AdjustorThunk },
-	{ 0x06000045, ButtonsState_GetAllPressed_m116B75F1006DB83D41784159F9144CC01160A42E_AdjustorThunk },
-	{ 0x06000046, ButtonsState_SetPressed_m83A234B0D8B922BC8797FB9DB61AF4B26545F9EA_AdjustorThunk },
-	{ 0x06000047, ButtonsState_Reset_m2682450F34125FB2DB313B9F9528F27FCE18F10B_AdjustorThunk },
 	{ 0x06000048, ButtonsState_ToString_m0F4594EDB720B831AF8A808B19FB753687C6D4E0_AdjustorThunk },
-	{ 0x06000051, NavigationEvent_set_timestamp_mA6CDDEB6A1C29A64AD4B42203ECAB1A628E88983_AdjustorThunk },
 	{ 0x06000052, NavigationEvent_get_eventSource_mD35D875FBB7FA557068DF25BB145292A6EF9FBA0_AdjustorThunk },
-	{ 0x06000053, NavigationEvent_set_eventSource_m74427FF1CC7AA5430F1FEF37F9BA4D50BE5CB2B3_AdjustorThunk },
-	{ 0x06000054, NavigationEvent_set_playerId_mA2E0FFCDFE0D345A8DFF67E567099CDF1A637F36_AdjustorThunk },
 	{ 0x06000055, NavigationEvent_get_eventModifiers_mA4BA9D05B5E5E327B9E5A1889202FA12518AB815_AdjustorThunk },
-	{ 0x06000056, NavigationEvent_set_eventModifiers_m1B4B8E45D1892C2357EF0933D51A613D3156076E_AdjustorThunk },
 	{ 0x06000057, NavigationEvent_ToString_mD59B9C574F8B542874908EF4266F0D9B09E06667_AdjustorThunk },
-	{ 0x06000059, PointerEvent_get_isPrimaryPointer_mEA57B41D6996C4107CDBE1133C92EBAE58EFA007_AdjustorThunk },
-	{ 0x0600005A, PointerEvent_get_worldRay_m33290A34554F651A1E6A24FBA876D171679FAEA7_AdjustorThunk },
-	{ 0x0600005B, PointerEvent_get_azimuth_m5FD6788924C58898C59D2D093790102216EA4B6E_AdjustorThunk },
-	{ 0x0600005C, PointerEvent_get_altitude_m96D1D73F089B16CDFD1D199A07C310E5456124B4_AdjustorThunk },
 	{ 0x0600005D, PointerEvent_get_timestamp_m5A833B8F7FC3F775DD8D6FA05E7A3AA86A3D5035_AdjustorThunk },
-	{ 0x0600005E, PointerEvent_set_timestamp_m1332F1F26A4457114C873F78D1F8B486D65B5AD6_AdjustorThunk },
 	{ 0x0600005F, PointerEvent_get_eventSource_m433AD39B323BF13AE165F5F9D025444092FAEB33_AdjustorThunk },
-	{ 0x06000060, PointerEvent_set_eventSource_mE12591C4D25BCF5EB9DD502688B73CC5F59A7AD0_AdjustorThunk },
-	{ 0x06000061, PointerEvent_set_playerId_m33852BB774BBD9AB5868145E1B1069658FEA4E2B_AdjustorThunk },
 	{ 0x06000062, PointerEvent_get_eventModifiers_m5C238F94AA34FB172F4D7256E5D68E838E3C5A05_AdjustorThunk },
-	{ 0x06000063, PointerEvent_set_eventModifiers_mECB5C87AE58191D859769627A924B1DF137C168A_AdjustorThunk },
 	{ 0x06000064, PointerEvent_ToString_m7DA27740BA43C97712A917546C18AD0A1C2BCBA3_AdjustorThunk },
-	{ 0x06000066, ButtonsState_Set_m52DB679AB8DF80E2E34A72654B66F922DD835032_AdjustorThunk },
-	{ 0x06000067, ButtonsState_Get_mE6798B0C21BCA75C5CB52BDA200536F9EE3E9893_AdjustorThunk },
-	{ 0x06000068, ButtonsState_Reset_mD96D8954FBCB9ED51CC3D35A0E8A7BAD6B3088AF_AdjustorThunk },
 	{ 0x06000069, ButtonsState_ToString_mDE2CA355C9C0F9A18F6E52599AF852CAF5B73758_AdjustorThunk },
-	{ 0x0600006A, TextInputEvent_set_timestamp_m44508CDEF51657A9AEAFB68194E0527AFD7F262B_AdjustorThunk },
 	{ 0x0600006B, TextInputEvent_get_eventSource_mD08759B60A91AAC1DD74CD97AABA7F47C1332CF2_AdjustorThunk },
-	{ 0x0600006C, TextInputEvent_set_eventSource_m9489D4075B4EF62E68A557B4A569989C11382340_AdjustorThunk },
-	{ 0x0600006D, TextInputEvent_set_playerId_mCEC6B21B1EDC0D9E8244CF4519C5FDE05119AC2D_AdjustorThunk },
 	{ 0x0600006E, TextInputEvent_get_eventModifiers_m0C34160E76D9DE9F4D307C6EDF4BBF7319BB6E78_AdjustorThunk },
-	{ 0x0600006F, TextInputEvent_set_eventModifiers_mA544AB38AD48B6538B27806943DA654223501B2E_AdjustorThunk },
 	{ 0x06000070, TextInputEvent_ToString_m14C55E0242789C632CFE6B231E3C5844BB9C8ABB_AdjustorThunk },
-	{ 0x060000B1, ButtonEventsIterator_get_Current_m86D6845A6F6A4489F303ED060476EF59F67CD6DB_AdjustorThunk },
-	{ 0x060000B2, ButtonEventsIterator_MoveNext_m742C90ADEB41243BAA32EE2380C5831ED1792A74_AdjustorThunk },
-	{ 0x060000B3, ButtonEventsIterator_Reset_m178B46B30A239DE2E1A29E7AA98FF1513EDA17F0_AdjustorThunk },
-	{ 0x060000B4, ButtonEventsIterator_System_Collections_IEnumerator_get_Current_mF2064D9D36208EBC155BF0F8150CC36B046AE329_AdjustorThunk },
-	{ 0x060000DA, PointerState_get_LastPressedButton_m12CCDCF3247A0A4513EC22E7CFDAFCDF1A12D342_AdjustorThunk },
-	{ 0x060000DB, PointerState_set_LastPressedButton_m4B75F3AD3146CB62D189140DC42A5245DAC37D22_AdjustorThunk },
-	{ 0x060000DC, PointerState_get_ButtonsState_m9C44C7CD402868FA0A4FB2542E98B9E7278C378B_AdjustorThunk },
-	{ 0x060000DD, PointerState_get_NextPressTime_m12D2DCC838A9BB0D21B1C3AD3A4580BFB5949FE2_AdjustorThunk },
-	{ 0x060000DE, PointerState_set_NextPressTime_m17CBA6464FE4DE8EB6646AC179F153CF52F9DA8C_AdjustorThunk },
-	{ 0x060000DF, PointerState_get_ClickCount_m0378690A745AF06423CF6A01969FDEF06CCC09AA_AdjustorThunk },
-	{ 0x060000E0, PointerState_set_ClickCount_m8DC9D4E3E11FB38CA977A6D45DC3431B1798CA17_AdjustorThunk },
-	{ 0x060000E1, PointerState_get_LastPosition_m994D92D93C3633D45DE22B239EB6AE38BFC8608E_AdjustorThunk },
-	{ 0x060000E2, PointerState_set_LastPosition_mA58AB07C81F5D5D4D5BB8E2E01BF83F93730684B_AdjustorThunk },
-	{ 0x060000E3, PointerState_get_LastDisplayIndex_m3873EF0EB7E68124D270FB3F7A2083F53604AA42_AdjustorThunk },
-	{ 0x060000E4, PointerState_set_LastDisplayIndex_m76B16012DDA718A2E7A8AD333AABA80E1ED56040_AdjustorThunk },
-	{ 0x060000E5, PointerState_get_LastPositionValid_mB3A5D44574F272EA9EC2674A0D408AC8AC200C81_AdjustorThunk },
-	{ 0x060000E6, PointerState_set_LastPositionValid_mFDF1E68670710967C93480FCAF23AEA96DE5D621_AdjustorThunk },
-	{ 0x060000E7, PointerState_OnButtonDown_m79BD7ABD8CD0C0632088E98AD39B160FCC05CE3F_AdjustorThunk },
-	{ 0x060000E8, PointerState_OnButtonUp_mCE8DE6B7E8D38FCF45C848F49547998CA39C1EB6_AdjustorThunk },
-	{ 0x060000E9, PointerState_OnButtonChange_m76D1C399434C6B40BB7E4880B0E3109744A91E65_AdjustorThunk },
-	{ 0x060000EA, PointerState_OnMove_mFCF40645372BEA0B69DA5A5C4064BC6A11068972_AdjustorThunk },
-	{ 0x060000EB, PointerState_Reset_m6DD45B949BC56BA9C68497B3F1178BCBFC70462F_AdjustorThunk },
-	{ 0x060000ED, EventSanitizer_Reset_m3B7D88555BBA84A9C4EFF2A2770AB161D09F20EB_AdjustorThunk },
-	{ 0x060000EE, EventSanitizer_BeforeProviderUpdate_m65F246118381B43BCAD668849185ECEF7C52C971_AdjustorThunk },
-	{ 0x060000EF, EventSanitizer_AfterProviderUpdate_m3CD0CF9D1169DE1B1B9A96A564069E282B48E9AA_AdjustorThunk },
-	{ 0x060000F0, EventSanitizer_Inspect_m9B438E50B9AE5E6CAF8E03679C90D02D11ACCF73_AdjustorThunk },
-};
-static const int32_t s_InvokerIndices[244] = 
-{
-	16311,
-	12403,
-	12290,
-	15937,
-	12403,
-	12732,
-	15838,
-	12308,
-	15732,
-	21181,
-	15937,
-	15732,
-	15937,
-	15838,
-	12403,
-	15732,
-	22636,
-	15954,
-	22638,
-	16090,
-	22639,
-	16240,
-	22635,
-	15909,
-	22634,
-	15782,
-	22637,
-	16023,
-	-1,
-	-1,
-	23890,
-	-1,
-	-1,
-	-1,
-	-1,
-	9148,
-	15772,
-	15772,
-	15772,
-	15772,
-	15772,
-	15772,
-	15772,
-	6909,
-	16311,
-	21724,
-	15732,
-	-1,
-	-1,
-	12290,
-	15937,
-	12403,
-	12732,
-	15838,
-	12308,
-	15732,
-	12290,
-	15937,
-	12403,
-	12732,
-	15838,
-	12308,
-	15732,
-	22520,
-	9148,
-	12732,
-	12732,
-	8854,
-	15732,
-	6098,
-	16311,
-	15732,
-	12403,
-	16311,
-	15772,
-	15937,
-	16311,
-	15732,
-	15732,
-	15732,
-	12290,
-	15937,
-	12403,
-	12732,
-	15838,
-	12308,
-	15732,
-	21218,
-	15772,
-	16111,
-	16182,
-	16182,
-	15816,
-	12290,
-	15937,
-	12403,
-	12732,
-	15838,
-	12308,
-	15732,
-	23112,
-	6909,
-	9148,
-	16311,
-	15732,
-	12290,
-	15937,
-	12403,
-	12732,
-	15838,
-	12308,
-	15732,
-	19056,
-	23297,
-	23298,
-	23297,
-	23890,
-	23890,
-	23890,
-	23298,
-	23890,
-	23297,
-	23890,
-	23890,
-	16311,
-	4968,
-	16311,
-	9261,
-	5336,
-	8660,
-	-1,
-	-1,
-	-1,
-	-1,
-	16311,
-	16311,
-	16311,
-	12241,
-	8854,
-	9538,
-	12198,
-	10894,
-	11332,
-	12198,
-	9482,
-	16311,
-	15838,
-	16311,
-	16311,
-	16311,
-	16311,
-	8750,
-	16311,
-	23112,
-	4038,
-	5579,
-	12290,
-	12290,
-	12290,
-	12290,
-	12290,
-	12241,
-	15937,
-	15772,
-	15772,
-	11211,
-	8660,
-	15704,
-	4498,
-	22985,
-	21623,
-	22985,
-	21625,
-	21625,
-	21626,
-	23259,
-	15772,
-	15772,
-	16311,
-	15732,
-	19259,
-	23913,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	15732,
-	8854,
-	8660,
-	11211,
-	16058,
-	15772,
-	15937,
-	11359,
-	15772,
-	8854,
-	8854,
-	8854,
-	16300,
-	16298,
-	16311,
-	-1,
-	16110,
-	16311,
-	16311,
-	2781,
-	16311,
-	16272,
-	12732,
-	16546,
-	15816,
-	12290,
-	15937,
-	12403,
-	16298,
-	12750,
-	15937,
-	12403,
-	15772,
-	12241,
-	5580,
-	5580,
-	2489,
-	3301,
-	16311,
-	23890,
-	16311,
-	16311,
-	16311,
-	12198,
-	-1,
-	-1,
-	-1,
-	-1,
-};
-static const Il2CppTokenRangePair s_rgctxIndices[5] = 
-{
-	{ 0x0600001D, { 0, 9 } },
-	{ 0x0600001E, { 9, 4 } },
-	{ 0x06000021, { 13, 2 } },
-	{ 0x06000022, { 15, 3 } },
-	{ 0x06000023, { 18, 3 } },
-};
-extern const uint32_t g_rgctx_TOutputType_tAF4888CAC03693F38C314D38D4FAC145904CD8D1;
-extern const uint32_t g_rgctx_TMapType_t2539BF2FB400455ECA567C04283D0611DFFB7287;
-extern const uint32_t g_rgctx_IMapFn_1_t34C4B47724C005C16C1E2DB5A8A7C04436D97EAE;
-extern const Il2CppRGCTXConstrainedData g_rgctx_TMapType_t2539BF2FB400455ECA567C04283D0611DFFB7287_IMapFn_1_Map_TisKeyEvent_tCC737454044642F99DE2CDD2F11E792AE596F931_mD28DDD0F29A051359E249B557097D2A3E9E03664;
-extern const Il2CppRGCTXConstrainedData g_rgctx_TMapType_t2539BF2FB400455ECA567C04283D0611DFFB7287_IMapFn_1_Map_TisPointerEvent_tC25A522EBDFCAF2CDEEE1D70428C281F78C1FA05_m82DE231FDE921428E0EDD907BA8D92EA21498F53;
-extern const Il2CppRGCTXConstrainedData g_rgctx_TMapType_t2539BF2FB400455ECA567C04283D0611DFFB7287_IMapFn_1_Map_TisTextInputEvent_t178912D1FB7425ABEAA189639883A2966679C87A_m1635D64D0F57D0A2E36D42F481788CAECD8C4EF6;
-extern const Il2CppRGCTXConstrainedData g_rgctx_TMapType_t2539BF2FB400455ECA567C04283D0611DFFB7287_IMapFn_1_Map_TisIMECompositionEvent_tDB878E24C29EAF63886AD297892F6408D74D9FE4_mA2B17409A555CE83B08FA02CD1D3411F133DB9A9;
-extern const Il2CppRGCTXConstrainedData g_rgctx_TMapType_t2539BF2FB400455ECA567C04283D0611DFFB7287_IMapFn_1_Map_TisCommandEvent_tCA81E54195CF66429904DCE8EE4DFD25BEEAC06F_mF52A86F30B47B0B9B647CEF5F3CE6233F6FD1B52;
-extern const Il2CppRGCTXConstrainedData g_rgctx_TMapType_t2539BF2FB400455ECA567C04283D0611DFFB7287_IMapFn_1_Map_TisNavigationEvent_t33FC4003A394B4773A3C23C5B0C134D749E544BD_m0C4078D3E46690F27334102AA8D0FC043DAEA922;
-extern const uint32_t g_rgctx_Activator_CreateInstance_TisTMapType_t7B9D42EACE2DE78A8D0BBD55D7A9A3E39DC3EEE3_m136A81600E77AE46CA92D1D41EB15FAD4341FB86;
-extern const uint32_t g_rgctx_TMapType_t7B9D42EACE2DE78A8D0BBD55D7A9A3E39DC3EEE3;
-extern const uint32_t g_rgctx_Event_Map_TisTOutputType_tDCB476FF48B5F679F4556FE8EB20C214BCF69482_TisTMapType_t7B9D42EACE2DE78A8D0BBD55D7A9A3E39DC3EEE3_m555C9A94B0F88181E9C13E7D2CC7CFA53562ED6C;
-extern const uint32_t g_rgctx_TOutputType_tDCB476FF48B5F679F4556FE8EB20C214BCF69482;
-extern const uint32_t g_rgctx_TEventTypeU26_t73F15EF4568578F6799B690AC74A055135812E51;
-extern const uint32_t g_rgctx_TEventType_tA6204FE5FDF30343C6434FB2DD5D9864B0B26281;
-extern const uint32_t g_rgctx_TEventTypeU26_t6AEEEE1E2D93F986A4C24BD675A0185E390A642E;
-extern const uint32_t g_rgctx_TEventType_t57A7280BF671DE50785AC4BA95C810E79E4762CC;
-extern const Il2CppRGCTXConstrainedData g_rgctx_TEventType_t57A7280BF671DE50785AC4BA95C810E79E4762CC_IEventProperties_get_eventSource_m50023C6BA5D5672D3C7D4B30F4420B27E93E7456;
-extern const uint32_t g_rgctx_TEventTypeU26_t5BFA7EC43C8E82E177643DC418010A5B3A5E8A1E;
-extern const uint32_t g_rgctx_TEventType_t126E42DAD6F4DEB3B0E49038C26154C2A411FFAE;
-extern const Il2CppRGCTXConstrainedData g_rgctx_TEventType_t126E42DAD6F4DEB3B0E49038C26154C2A411FFAE_IEventProperties_get_eventModifiers_mC0A8952528593DB4A53B4129E84DD7D6963EA706;
-static const Il2CppRGCTXDefinition s_rgctxValues[21] = 
-{
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TOutputType_tAF4888CAC03693F38C314D38D4FAC145904CD8D1 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TMapType_t2539BF2FB400455ECA567C04283D0611DFFB7287 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_IMapFn_1_t34C4B47724C005C16C1E2DB5A8A7C04436D97EAE },
-	{ (Il2CppRGCTXDataType)5, (const void *)&g_rgctx_TMapType_t2539BF2FB400455ECA567C04283D0611DFFB7287_IMapFn_1_Map_TisKeyEvent_tCC737454044642F99DE2CDD2F11E792AE596F931_mD28DDD0F29A051359E249B557097D2A3E9E03664 },
-	{ (Il2CppRGCTXDataType)5, (const void *)&g_rgctx_TMapType_t2539BF2FB400455ECA567C04283D0611DFFB7287_IMapFn_1_Map_TisPointerEvent_tC25A522EBDFCAF2CDEEE1D70428C281F78C1FA05_m82DE231FDE921428E0EDD907BA8D92EA21498F53 },
-	{ (Il2CppRGCTXDataType)5, (const void *)&g_rgctx_TMapType_t2539BF2FB400455ECA567C04283D0611DFFB7287_IMapFn_1_Map_TisTextInputEvent_t178912D1FB7425ABEAA189639883A2966679C87A_m1635D64D0F57D0A2E36D42F481788CAECD8C4EF6 },
-	{ (Il2CppRGCTXDataType)5, (const void *)&g_rgctx_TMapType_t2539BF2FB400455ECA567C04283D0611DFFB7287_IMapFn_1_Map_TisIMECompositionEvent_tDB878E24C29EAF63886AD297892F6408D74D9FE4_mA2B17409A555CE83B08FA02CD1D3411F133DB9A9 },
-	{ (Il2CppRGCTXDataType)5, (const void *)&g_rgctx_TMapType_t2539BF2FB400455ECA567C04283D0611DFFB7287_IMapFn_1_Map_TisCommandEvent_tCA81E54195CF66429904DCE8EE4DFD25BEEAC06F_mF52A86F30B47B0B9B647CEF5F3CE6233F6FD1B52 },
-	{ (Il2CppRGCTXDataType)5, (const void *)&g_rgctx_TMapType_t2539BF2FB400455ECA567C04283D0611DFFB7287_IMapFn_1_Map_TisNavigationEvent_t33FC4003A394B4773A3C23C5B0C134D749E544BD_m0C4078D3E46690F27334102AA8D0FC043DAEA922 },
-	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Activator_CreateInstance_TisTMapType_t7B9D42EACE2DE78A8D0BBD55D7A9A3E39DC3EEE3_m136A81600E77AE46CA92D1D41EB15FAD4341FB86 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TMapType_t7B9D42EACE2DE78A8D0BBD55D7A9A3E39DC3EEE3 },
-	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_Event_Map_TisTOutputType_tDCB476FF48B5F679F4556FE8EB20C214BCF69482_TisTMapType_t7B9D42EACE2DE78A8D0BBD55D7A9A3E39DC3EEE3_m555C9A94B0F88181E9C13E7D2CC7CFA53562ED6C },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TOutputType_tDCB476FF48B5F679F4556FE8EB20C214BCF69482 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TEventTypeU26_t73F15EF4568578F6799B690AC74A055135812E51 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TEventType_tA6204FE5FDF30343C6434FB2DD5D9864B0B26281 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TEventTypeU26_t6AEEEE1E2D93F986A4C24BD675A0185E390A642E },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TEventType_t57A7280BF671DE50785AC4BA95C810E79E4762CC },
-	{ (Il2CppRGCTXDataType)5, (const void *)&g_rgctx_TEventType_t57A7280BF671DE50785AC4BA95C810E79E4762CC_IEventProperties_get_eventSource_m50023C6BA5D5672D3C7D4B30F4420B27E93E7456 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TEventTypeU26_t5BFA7EC43C8E82E177643DC418010A5B3A5E8A1E },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_TEventType_t126E42DAD6F4DEB3B0E49038C26154C2A411FFAE },
-	{ (Il2CppRGCTXDataType)5, (const void *)&g_rgctx_TEventType_t126E42DAD6F4DEB3B0E49038C26154C2A411FFAE_IEventProperties_get_eventModifiers_mC0A8952528593DB4A53B4129E84DD7D6963EA706 },
+	{ 0x060000B5, ButtonEventsIterator_MoveNext_m742C90ADEB41243BAA32EE2380C5831ED1792A74_AdjustorThunk },
+	{ 0x060000B6, ButtonEventsIterator_Reset_m178B46B30A239DE2E1A29E7AA98FF1513EDA17F0_AdjustorThunk },
+	{ 0x060000B7, ButtonEventsIterator_System_Collections_IEnumerator_get_Current_mF2064D9D36208EBC155BF0F8150CC36B046AE329_AdjustorThunk },
 };
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_UnityEngine_InputForUIModule_CodeGenModule;
 const Il2CppCodeGenModule g_UnityEngine_InputForUIModule_CodeGenModule = 
 {
 	"UnityEngine.InputForUIModule.dll",
-	244,
+	247,
 	s_methodPointers,
-	108,
+	28,
 	s_adjustorThunks,
-	s_InvokerIndices,
 	0,
-	NULL,
-	5,
-	s_rgctxIndices,
-	21,
-	s_rgctxValues,
 	NULL,
 	NULL,
 	NULL,

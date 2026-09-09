@@ -90,7 +90,11 @@ namespace Project.Assets._Project._Scripts.Player
             if (IsOwner)
             {
                 _playerInput.enabled = true;
+                if (_model != null)
+                    _model.GetComponentInChildren<Renderer>().enabled = false;
             }
+
+
             if (IsServer)
             {
                 _health.OnDowned += HandleGettingDownedRpc;
@@ -446,6 +450,7 @@ namespace Project.Assets._Project._Scripts.Player
         {
             Destroy(_model.gameObject);
             _model = Instantiate(model, transform);
+            if(IsOwner) _model.GetComponentInChildren<Renderer>().enabled = false;
             _movement?.ChangeModel(_model);
         }
 

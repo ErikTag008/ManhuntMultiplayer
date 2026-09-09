@@ -7,8 +7,6 @@
 
 
 
-extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_mDF29CEE8C0A3EF22F4AA964EF42086BC2CEBCF47 (void);
-extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_mAFA78870ABC02E78208D6FE44EAE16F82EFA6B97 (void);
 extern void EnumerableExtensions_CountEnumerable_mFD6EE33DA521DD5EEA89788D601625D44DC3BE75 (void);
 extern void PrefabUtil_IsUninstantiatedPrefab_m52DD00E964F9CC37C05EA654EDEF598C4C90A27B (void);
 extern void PrefabUtil__ctor_m7DEE0102F0EDFDDA2F9580CAEB65A7F36B9D14A6 (void);
@@ -52,10 +50,8 @@ extern void U3CU3Ec__DisplayClass6_0_U3CUpdateRefU3Eb__1_m0FF940D311FA0A1777F18E
 extern void SceneRefFilter__ctor_mC2FA1D4174BE442B4E3A52234C0C2D63E0AD910A (void);
 extern void ValidatedMonoBehaviour_OnValidate_mAEEA4C918BC630033B66A0505DEACB5792DE7882 (void);
 extern void ValidatedMonoBehaviour__ctor_m8BC2EC82BE61BA5B85A43C8CEF3456C012FC891C (void);
-static Il2CppMethodPointer s_methodPointers[63] = 
+static Il2CppMethodPointer s_methodPointers[61] = 
 {
-	UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_mDF29CEE8C0A3EF22F4AA964EF42086BC2CEBCF47,
-	UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_mAFA78870ABC02E78208D6FE44EAE16F82EFA6B97,
 	EnumerableExtensions_CountEnumerable_mFD6EE33DA521DD5EEA89788D601625D44DC3BE75,
 	NULL,
 	NULL,
@@ -118,120 +114,15 @@ static Il2CppMethodPointer s_methodPointers[63] =
 	ValidatedMonoBehaviour_OnValidate_mAEEA4C918BC630033B66A0505DEACB5792DE7882,
 	ValidatedMonoBehaviour__ctor_m8BC2EC82BE61BA5B85A43C8CEF3456C012FC891C,
 };
-static const int32_t s_InvokerIndices[63] = 
-{
-	23935,
-	16311,
-	22707,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	-1,
-	22510,
-	16311,
-	-1,
-	15937,
-	15937,
-	15732,
-	3390,
-	8854,
-	6069,
-	6069,
-	6069,
-	6069,
-	6069,
-	21726,
-	21726,
-	21726,
-	19516,
-	21724,
-	18220,
-	22408,
-	20581,
-	18368,
-	18444,
-	18444,
-	19560,
-	20738,
-	19515,
-	18225,
-	18225,
-	18225,
-	18225,
-	18245,
-	23890,
-	23890,
-	16311,
-	8660,
-	16311,
-	8660,
-	16311,
-	7945,
-	-1,
-	16311,
-	-1,
-	-1,
-	-1,
-	16311,
-	16311,
-};
-static const Il2CppTokenRangePair s_rgctxIndices[3] = 
-{
-	{ 0x02000007, { 0, 3 } },
-	{ 0x02000018, { 9, 3 } },
-	{ 0x06000013, { 3, 6 } },
-};
-extern const uint32_t g_rgctx_InterfaceRef_1_t7B99B523DC8ED1614AE898DD8EC51DC0B1DEBF85;
-extern const uint32_t g_rgctx_T_tBF6D54C43B874F406A14FA06A0E6F635B6296EAF;
-extern const uint32_t g_rgctx_T_tBF6D54C43B874F406A14FA06A0E6F635B6296EAF;
-extern const uint32_t g_rgctx_T_tFDDD1EC1C203A81CA5A0A0346FC703F60B280D71;
-extern const uint32_t g_rgctx_T_tFDDD1EC1C203A81CA5A0A0346FC703F60B280D71;
-extern const uint32_t g_rgctx_IList_1_t865092F9CB685FAD89A9D24D12A6782A497B2C6B;
-extern const uint32_t g_rgctx_AttributedField_1_tFACDD2113D41BFA843292C32DAB0E255DCC31C22;
-extern const uint32_t g_rgctx_ICollection_1_t181CE2BB4A8065ABF6F720260099340CC51E6BC4;
-extern const uint32_t g_rgctx_ICollection_1_Add_m3507CB3A1AEBB7E9E25233BAF7348FB1C21C0DB8;
-extern const uint32_t g_rgctx_T_t63913534B8E7A96F4D8B23D0589AF4AFD56B0B2B;
-extern const uint32_t g_rgctx_SceneRefFilter_1_tD3099AA595C95979FDFB754361663F62F9DB29F5;
-extern const uint32_t g_rgctx_SceneRefFilter_1_IncludeSceneRef_m098C4861234B40261EEC378666775AEDEFC89B2A;
-static const Il2CppRGCTXDefinition s_rgctxValues[12] = 
-{
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_InterfaceRef_1_t7B99B523DC8ED1614AE898DD8EC51DC0B1DEBF85 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_T_tBF6D54C43B874F406A14FA06A0E6F635B6296EAF },
-	{ (Il2CppRGCTXDataType)1, (const void *)&g_rgctx_T_tBF6D54C43B874F406A14FA06A0E6F635B6296EAF },
-	{ (Il2CppRGCTXDataType)1, (const void *)&g_rgctx_T_tFDDD1EC1C203A81CA5A0A0346FC703F60B280D71 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_T_tFDDD1EC1C203A81CA5A0A0346FC703F60B280D71 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_IList_1_t865092F9CB685FAD89A9D24D12A6782A497B2C6B },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_AttributedField_1_tFACDD2113D41BFA843292C32DAB0E255DCC31C22 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_ICollection_1_t181CE2BB4A8065ABF6F720260099340CC51E6BC4 },
-	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_ICollection_1_Add_m3507CB3A1AEBB7E9E25233BAF7348FB1C21C0DB8 },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_T_t63913534B8E7A96F4D8B23D0589AF4AFD56B0B2B },
-	{ (Il2CppRGCTXDataType)2, (const void *)&g_rgctx_SceneRefFilter_1_tD3099AA595C95979FDFB754361663F62F9DB29F5 },
-	{ (Il2CppRGCTXDataType)3, (const void *)&g_rgctx_SceneRefFilter_1_IncludeSceneRef_m098C4861234B40261EEC378666775AEDEFC89B2A },
-};
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_KBCore_Refs_CodeGenModule;
 const Il2CppCodeGenModule g_KBCore_Refs_CodeGenModule = 
 {
 	"KBCore.Refs.dll",
-	63,
+	61,
 	s_methodPointers,
 	0,
 	NULL,
-	s_InvokerIndices,
 	0,
-	NULL,
-	3,
-	s_rgctxIndices,
-	12,
-	s_rgctxValues,
 	NULL,
 	NULL,
 	NULL,
