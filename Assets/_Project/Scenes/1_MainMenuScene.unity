@@ -760,6 +760,91 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1869768913}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &891489948
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 891489949}
+  - component: {fileID: 891489951}
+  - component: {fileID: 891489950}
+  m_Layer: 0
+  m_Name: DevTools
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &891489949
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 891489948}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1348637675}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &891489950
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 891489948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be8b5e83efd9314b8694557f6fc34f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.DevTools::Project.Assets._Project._Scripts.DevTools.DebugMenu
+  _toggleAction:
+    m_Name: ToggleDebugMenu
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 4780a6cc-1831-4adb-a084-a5fb59227cbe
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: 2dd5414f-081c-4aa7-8e18-99ded82f8ae3
+      m_Path: <Keyboard>/f1
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: ToggleDebugMenu
+      m_Flags: 0
+    m_Flags: 0
+    m_Priority: 0
+  _windowTitle: Debug
+  _windowRect:
+    serializedVersion: 2
+    x: 10
+    y: 10
+    width: 260
+    height: 0
+  _windowId: 9001
+--- !u!114 &891489951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 891489948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4843470cb14ad2a4d9026aeaa888f335, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.DevTools::Project.Assets._Project._Scripts.DevTools.DevAutoConnect
+  _isAutoConnectEnabled: 1
+  _clientJoinDelayInSeconds: 2
 --- !u!1 &936738791
 GameObject:
   m_ObjectHideFlags: 0
@@ -1252,6 +1337,7 @@ Transform:
   m_Children:
   - {fileID: 453461025}
   - {fileID: 1094094482}
+  - {fileID: 891489949}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1582792829

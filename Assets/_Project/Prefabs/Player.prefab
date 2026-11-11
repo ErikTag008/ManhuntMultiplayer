@@ -294,13 +294,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 4071102025
+  GlobalObjectIdHash: 2901312222
   InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
-  <InScenePlaced>k__BackingField: 0
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 1
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
@@ -336,6 +337,7 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
+  _maxDamageTargets: 3
 --- !u!114 &588730770247830364
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -433,8 +435,7 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 4851020409925496502}
-        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Player.InputReader,
-          ProjectAssembly
+        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Player.InputReader, ProjectAssembly
         m_MethodName: Move
         m_Mode: 0
         m_Arguments:
@@ -450,8 +451,7 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 4851020409925496502}
-        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Player.InputReader,
-          ProjectAssembly
+        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Player.InputReader, ProjectAssembly
         m_MethodName: Look
         m_Mode: 0
         m_Arguments:
@@ -467,8 +467,7 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 4851020409925496502}
-        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Input.InputReader,
-          ProjectAssembly
+        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Input.InputReader, ProjectAssembly
         m_MethodName: Attack
         m_Mode: 0
         m_Arguments:
@@ -484,8 +483,7 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 4851020409925496502}
-        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Player.InputReader,
-          ProjectAssembly
+        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Player.InputReader, ProjectAssembly
         m_MethodName: Jump
         m_Mode: 0
         m_Arguments:
@@ -521,8 +519,7 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 4851020409925496502}
-        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Player.InputReader,
-          ProjectAssembly
+        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Player.InputReader, ProjectAssembly
         m_MethodName: StartButton
         m_Mode: 0
         m_Arguments:
@@ -553,6 +550,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.Player.InputReader
   _playerInput: {fileID: 5189175634887361945}
+  _keyboardMouseControlScheme: Keyboard&Mouse
 --- !u!54 &4515986925934261871
 Rigidbody:
   m_ObjectHideFlags: 0

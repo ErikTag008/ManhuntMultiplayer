@@ -1,0 +1,23 @@
+{
+    "name": "Project.DevTools",
+    "rootNamespace": "Project",
+    "references": [
+        "GUID:74b337d06d684050895382b8e515ccd9",
+        "GUID:510b39b7f9ae43b5bd991cb739209418",
+        "GUID:528bec2aeca64a9588a3855368e351ef",
+        "GUID:5594b4b19a4a437b88b6ff074f53f802",
+        "GUID:1530a967b84cfb44dbdd5e8a1989764f",
+        "GUID:1491147abca9d7d4bb7105af628b223e",
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
