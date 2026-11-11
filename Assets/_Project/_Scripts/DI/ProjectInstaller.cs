@@ -1,6 +1,7 @@
 using Alchemy.Inspector;
 using Project.Assets._Project._Scripts.CameraUtils;
 using Project.Assets._Project._Scripts.Managers;
+using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player;
 using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.UI;
@@ -17,6 +18,7 @@ namespace Project.Assets._Project._Scripts.DI
         [SerializeField, AssetsOnly] private RunnerStats _runnerStats;
         [SerializeField, AssetsOnly] private GameLobbySettings _gameLobbySettings;
         [SerializeField, AssetsOnly] private GameScenes _gameScenes;
+        [SerializeField, AssetsOnly] private ConnectionSettings _connectionSettings;
         public void InstallBindings(ContainerBuilder builder)
         {
 
@@ -27,6 +29,7 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(typeof(PersistentObjectRegistry), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(TeamAssignmentService), new Type[] { typeof(ITeamAssignmentService) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             builder.RegisterType(typeof(UIManager), new Type[] { typeof(IUIManager) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(LocalConnectionService), new Type[] { typeof(IConnectionService) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
 
             // Network-spawned systems register themselves in GameSystemsRegistry; transient so each resolve sees the live instance
             builder.RegisterFactory(p => p.Resolve<GameSystemsRegistry>().PlayerRegistry, new Type[] { typeof(IPlayerRegistry) }, Reflex.Enums.Lifetime.Transient, Reflex.Enums.Resolution.Lazy);
@@ -37,6 +40,7 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterFactory(p => _runnerStats, new Type[] { typeof(RunnerStats)},Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterValue(_gameLobbySettings);
             builder.RegisterValue(_gameScenes);
+            builder.RegisterValue(_connectionSettings);
         }
     }
 }

@@ -1,6 +1,7 @@
 using Alchemy.Inspector;
 using Assets._Project._Scripts.SceneReference;
 using Cysharp.Threading.Tasks;
+using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.UI;
 using Reflex.Attributes;
@@ -17,6 +18,8 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
         [Inject] private readonly IUIManager _uiManager;
         [Inject] private readonly GameScenes _gameScenes;
+        [Inject] private readonly IConnectionService _connectionService;
+        [Inject] private readonly ConnectionSettings _connectionSettings;
         [SerializeField, AssetsOnly] private NetworkObject _gameSystemsPrefab;
         private void Start()
         {
@@ -24,19 +27,33 @@ namespace Project.Assets._Project._Scripts.Managers
             _uiManager.OnHostStart += HandleHostStart;
             _uiManager.OnClientStart += HandleClientStart;
         }
-        private void HandleClientStart()
+        // App-lifetime token: a successful join unloads this scene during Netcode's scene sync
+        private void HandleClientStart() => JoinSession(Application.exitCancellationToken).Forget();
+
+        private void HandleHostStart() => HostSession(Application.exitCancellationToken).Forget();
+
+        private async UniTaskVoid HostSession(CancellationToken token)
         {
-            NetworkManager.Singleton.StartClient();
             _serverStarterUI.ToggleServerStarterUI(false);
-            //UnloadMainMenu().Forget();
+            if (!await _connectionService.Host(_connectionSettings.DefaultLobbyVisibility, token))
+            {
+                if (this == null) return;
+                _serverStarterUI.ToggleServerStarterUI(true);
+                return;
+            }
+
+            SpawnGameSystems();
+            UnloadMainMenu().Forget();
         }
 
-        private void HandleHostStart()
+        private async UniTaskVoid JoinSession(CancellationToken token)
         {
-            NetworkManager.Singleton.StartHost();
-            SpawnGameSystems();
             _serverStarterUI.ToggleServerStarterUI(false);
-            UnloadMainMenu().Forget();
+            if (!await _connectionService.Join(_connectionSettings.Address, token))
+            {
+                if (this == null) return;
+                _serverStarterUI.ToggleServerStarterUI(true);
+            }
         }
 
         private async UniTaskVoid UnloadMainMenu()

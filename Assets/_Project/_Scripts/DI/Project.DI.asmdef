@@ -2,6 +2,7 @@
     "name": "Project.DI",
     "rootNamespace": "Project",
     "references": [
+        "Project.Networking",
         "GUID:74b337d06d684050895382b8e515ccd9",
         "GUID:d139b368566142e395b68b3bfe8f8738",
         "GUID:510b39b7f9ae43b5bd991cb739209418",

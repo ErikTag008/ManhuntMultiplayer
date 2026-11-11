@@ -1,5 +1,6 @@
 ﻿<Solution>
   <Project Path="Project.Player.csproj" />
+  <Project Path="Project.Networking.csproj" />
   <Project Path="DOTween.Modules.csproj" />
   <Project Path="Project.Managers.csproj" />
   <Project Path="Project.CameraUtils.csproj" />
