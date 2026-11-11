@@ -208,7 +208,7 @@ namespace Project.Assets._Project._Scripts.Player
             float maxSpeed = _stats.MaxMoveSpeed;
             float accel = grounded ? _stats.GroundAcceleration : _stats.AirAcceleration;
 
-            Vector3 targetVelocity = magnitude * maxSpeed * moveVector;
+            Vector3 targetVelocity = magnitude * maxSpeed * moveDir;
             Vector3 velocityDelta = targetVelocity - planarVelocity;
 
             velocityDelta = Vector3.ClampMagnitude(velocityDelta, accel * Time.fixedDeltaTime);
