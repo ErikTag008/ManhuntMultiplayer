@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using Reflex.Attributes;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -8,6 +9,15 @@ namespace Project.Assets._Project._Scripts.Managers
 {
     public class NetworkCoordinator : NetworkBehaviour, INetworkCoordinator
     {
+        private GameSystemsRegistry _gameSystemsRegistry;
+
+        [Inject]
+        private void RegisterInGameSystems(GameSystemsRegistry gameSystemsRegistry)
+        {
+            _gameSystemsRegistry = gameSystemsRegistry;
+            _gameSystemsRegistry.Register(this);
+        }
+
         public async UniTask<Scene> LoadNetworkScene(string sceneNameToLoad, CancellationToken token, LoadSceneMode loadSceneMode = LoadSceneMode.Additive, bool setActiveScene = true)
         {
             var loadedScene = SceneManager.GetSceneByName(sceneNameToLoad);
@@ -79,6 +89,12 @@ namespace Project.Assets._Project._Scripts.Managers
         {
             await LoadNetworkScene(gameScene, token);
             await UnloadNetworkScene(lobbyScene, token);
+        }
+
+        public override void OnDestroy()
+        {
+            _gameSystemsRegistry?.Unregister(this);
+            base.OnDestroy();
         }
     }
 }

@@ -50,11 +50,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
   GlobalObjectIdHash: 2684866440
   InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
-  <InScenePlaced>k__BackingField: 0
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 1
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
@@ -75,6 +76,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.Managers.GameManager
   ShowTopMostFoldoutHeaderGroup: 1
+  _playerRegistry: {fileID: 8383161310462518707}
+  _gameStateMachine: {fileID: 2195926799005246414}
 --- !u!114 &2195926799005246414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -88,6 +91,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.Managers.GameStateMachine
   ShowTopMostFoldoutHeaderGroup: 1
+  _playerRegistry: {fileID: 8383161310462518707}
+  _networkCoordinator: {fileID: 1276794458824371617}
 --- !u!114 &8383161310462518707
 MonoBehaviour:
   m_ObjectHideFlags: 0

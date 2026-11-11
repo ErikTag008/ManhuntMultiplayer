@@ -1,0 +1,16 @@
+{
+    "name": "Project.SceneFlow",
+    "rootNamespace": "Project",
+    "references": [
+        "GUID:babdd7067507bc245a5b1b27f86b9d33"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

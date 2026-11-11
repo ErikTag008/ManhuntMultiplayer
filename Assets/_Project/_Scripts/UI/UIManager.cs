@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Project.Assets._Project._Scripts.Managers
+namespace Project.Assets._Project._Scripts.UI
 {
     public class UIManager : IUIManager
     {

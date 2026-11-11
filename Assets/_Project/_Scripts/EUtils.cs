@@ -32,17 +32,6 @@ namespace Project.Assets._Project._Scripts
                 return func();
         }
 
-    private static Camera _camera;
-
-        public static Camera Cam
-        {
-            get
-            {
-                if (_camera == null)
-                    _camera = Camera.main;
-                return _camera;
-            }
-        }
         public static void MoveTextThenDestroy(this TMP_Text text, Vector3 relativeMove, float duration = 2f, bool fade = true, Ease ease = Ease.InOutSine)
         {
             if (fade)
@@ -61,15 +50,15 @@ namespace Project.Assets._Project._Scripts
         }
         public static void SnapToGrid(this Transform transform, float gridSize) =>
                 transform.position = Math.SnapToGrid(transform.position, gridSize);
-        public static void SetUIElementWorldPosition(this RectTransform element, Vector3 worldPos, Canvas canvas)
+        public static void SetUIElementWorldPosition(this RectTransform element, Vector3 worldPos, Canvas canvas, Camera camera)
         {
-            if (canvas == null || element == null || Cam == null) return;
+            if (canvas == null || element == null || camera == null) return;
 
-            Vector2 screenPos = Cam.WorldToScreenPoint(worldPos);
+            Vector2 screenPos = camera.WorldToScreenPoint(worldPos);
 
             if (canvas.renderMode == RenderMode.ScreenSpaceOverlay)
                 element.position = screenPos;
-            else if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, screenPos, Cam, out Vector2 local))
+            else if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, screenPos, camera, out Vector2 local))
                 element.anchoredPosition = local;
         }
 
@@ -138,7 +127,8 @@ namespace Project.Assets._Project._Scripts
 
         public static class UI
         {
-            private static readonly List<RaycastResult> _results = new List<RaycastResult>(10);
+            private const int RaycastResultsCapacity = 10;
+            private static readonly List<RaycastResult> _results = new List<RaycastResult>(RaycastResultsCapacity);
 
 
             public static bool IsOverUI()
@@ -164,10 +154,10 @@ namespace Project.Assets._Project._Scripts
                 return _results.Count > 0;
             }
 
-            public static Vector2 GetWorldPositionOfCanvasElement(RectTransform element)
+            public static Vector2 GetWorldPositionOfCanvasElement(RectTransform element, Camera camera)
             {
-                Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(Cam, element.position);
-                RectTransformUtility.ScreenPointToWorldPointInRectangle(element, screenPoint, Cam, out var result);
+                Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(camera, element.position);
+                RectTransformUtility.ScreenPointToWorldPointInRectangle(element, screenPoint, camera, out var result);
                 return result;
             }
 
@@ -277,6 +267,9 @@ namespace Project.Assets._Project._Scripts
 
         public static class Scene
         {
+            // AsyncOperation.progress stops at 0.9 while allowSceneActivation is false
+            private const float SceneReadyForActivationProgress = 0.9f;
+
             public static async UniTask LoadSceneWithLoadingScreen(string targetScene, string loadingScene)
             {
                 await SceneManager.LoadSceneAsync(loadingScene, LoadSceneMode.Additive);
@@ -284,7 +277,7 @@ namespace Project.Assets._Project._Scripts
                 var loadOp = SceneManager.LoadSceneAsync(targetScene);
                 loadOp.allowSceneActivation = false;
 
-                await UniTask.WaitUntil(() => loadOp.progress >= 0.9f);
+                await UniTask.WaitUntil(() => loadOp.progress >= SceneReadyForActivationProgress);
 
                 loadOp.allowSceneActivation = true;
                 await loadOp.ToUniTask();

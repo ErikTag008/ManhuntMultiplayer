@@ -1,4 +1,4 @@
-namespace Project.Assets._Project._Scripts.Managers
+namespace Project.Assets._Project._Scripts.SceneFlow
 {
     public interface ISceneInitialized
     {

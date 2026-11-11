@@ -1,7 +1,7 @@
 using Assets._Project._Scripts.SceneReference;
 using UnityEngine;
 
-namespace Project.Assets._Project._Scripts.Managers
+namespace Project.Assets._Project._Scripts.SceneFlow
 {
     [CreateAssetMenu(fileName = "GameScenes", menuName = "ScriptableObjects/GameScenes", order = 1)]
         public class GameScenes : ScriptableObject

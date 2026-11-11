@@ -1,9 +1,8 @@
 using Alchemy.Inspector;
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.CameraUtils;
-using Project.Assets._Project._Scripts.DI;
 using Project.Assets._Project._Scripts.Input;
-using Project.Assets._Project._Scripts.Managers;
+using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.UI;
 using Project.Assets._Project._Scripts.Weapons;
 using Reflex.Attributes;
@@ -27,7 +26,7 @@ namespace Project.Assets._Project._Scripts.Player
     }
 
     [RequireComponent(typeof(PlayerInput), typeof(InputReader), typeof(Rigidbody))]
-    public class PlayerController : NetworkBehaviour, ISceneInitialized
+    public class PlayerController : NetworkBehaviour, ISceneInitialized, IFirstPersonCameraTarget
     {
         [SerializeField, Self] private PlayerInput _playerInput;
         [SerializeField, Self] private InputReader _inputReader;
@@ -42,6 +41,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField] private Transform _weaponPivot;
         [SerializeField] private Transform _cameraFollower;
         [SerializeField] private NetworkVariable<Team> _team = new();
+        [SerializeField] private int _maxDamageTargets = 3;
 
         public Team Team => _team.Value;
         public Transform CameraTarget => _cameraTarget;
@@ -68,10 +68,11 @@ namespace Project.Assets._Project._Scripts.Player
         private Vector3 _targetWeaponPosition;
         private Quaternion _targetWeaponRotation;
 
-        private readonly Collider[] _damagables = new Collider[3];
+        private Collider[] _damagables;
 
         private void Awake()
         {
+            _damagables = new Collider[_maxDamageTargets];
             _playerInput.enabled = false;
         }
 

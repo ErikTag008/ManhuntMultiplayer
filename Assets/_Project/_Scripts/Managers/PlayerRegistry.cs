@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Project.Assets._Project._Scripts.Player;
+using Reflex.Attributes;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -11,9 +12,17 @@ namespace Project.Assets._Project._Scripts.Managers
         [SerializeField] private List<PlayerController> _players = new();
         [SerializeField] private NetworkList<PlayerInfo> _playerInfos = new();
         private NetworkVariable<int> _playerCount = new();
+        private GameSystemsRegistry _gameSystemsRegistry;
 
         public int PlayerCount => _playerCount.Value;
         public List<PlayerController> GetPlayers() => _players;
+
+        [Inject]
+        private void RegisterInGameSystems(GameSystemsRegistry gameSystemsRegistry)
+        {
+            _gameSystemsRegistry = gameSystemsRegistry;
+            _gameSystemsRegistry.Register(this);
+        }
 
         public void AddPlayerInfo(PlayerInfo info)
         {
@@ -47,5 +56,11 @@ namespace Project.Assets._Project._Scripts.Managers
 
         public NetworkList<PlayerInfo> PlayerInfos => _playerInfos;
         public NetworkVariable<int> PlayerCountVariable => _playerCount;
+
+        public override void OnDestroy()
+        {
+            _gameSystemsRegistry?.Unregister(this);
+            base.OnDestroy();
+        }
     }
 }

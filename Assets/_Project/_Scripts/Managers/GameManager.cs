@@ -1,4 +1,7 @@
+using KBCore.Refs;
 using Project.Assets._Project._Scripts.Player;
+using Project.Assets._Project._Scripts.SceneFlow;
+using Project.Assets._Project._Scripts.UI;
 using Reflex.Attributes;
 using Reflex.Extensions;
 using Reflex.Injectors;
@@ -12,12 +15,13 @@ namespace Project.Assets._Project._Scripts.Managers
     {
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
         [Inject] private readonly IUIManager _uiManager;
-        [Inject] private readonly IPlayerRegistry _playerRegistry;
         [Inject] private readonly ITeamAssignmentService _teamAssignmentService;
-        [Inject] private readonly INetworkCoordinator _networkCoordinator;
-        [Inject] private readonly IGameStateMachine _gameStateMachine;
         [Inject] private readonly GameLobbySettings _gameLobbySettings;
         [Inject] private readonly GameScenes _gameScenes;
+        [SerializeField, Self] private PlayerRegistry _playerRegistry;
+        [SerializeField, Self] private GameStateMachine _gameStateMachine;
+
+        private void OnValidate() => this.ValidateRefs();
 
         private void Start()
         {

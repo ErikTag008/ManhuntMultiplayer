@@ -1,0 +1,21 @@
+{
+    "name": "Project.CameraUtils",
+    "rootNamespace": "Project",
+    "references": [
+        "GUID:74b337d06d684050895382b8e515ccd9",
+        "GUID:3b17a38143d84178b0bd557cffa5128e",
+        "GUID:33759803a11f4d538227861a78aba30b",
+        "GUID:1530a967b84cfb44dbdd5e8a1989764f",
+        "GUID:4307f53044263cf4b835bd812fc161a4",
+        "GUID:a086f2f33537541d1b1e8cde513be9e4"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

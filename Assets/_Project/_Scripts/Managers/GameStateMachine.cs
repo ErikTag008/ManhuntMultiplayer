@@ -1,5 +1,7 @@
 using Cysharp.Threading.Tasks;
-using Project.Assets._Project._Scripts.Player;
+using KBCore.Refs;
+using Project.Assets._Project._Scripts.SceneFlow;
+using Project.Assets._Project._Scripts.UI;
 using Reflex.Attributes;
 using System;
 using System.Collections.Generic;
@@ -13,20 +15,30 @@ namespace Project.Assets._Project._Scripts.Managers
     public class GameStateMachine : NetworkBehaviour, IGameStateMachine
     {
         [Inject] private readonly IUIManager _uiManager;
-        [Inject] private readonly IPlayerRegistry _playerRegistry;
         [Inject] private readonly ITeamAssignmentService _teamAssignmentService;
-        [Inject] private readonly INetworkCoordinator _networkCoordinator;
         [Inject] private readonly GameLobbySettings _settings;
         [Inject] private readonly GameScenes _gameScenes;
+        [SerializeField, Self] private PlayerRegistry _playerRegistry;
+        [SerializeField, Self] private NetworkCoordinator _networkCoordinator;
 
         private NetworkVariable<GameState> _state = new();
         private NetworkVariable<double> _countdownEndTime = new();
         private CancellationTokenSource _gameLoopCTS;
         private CancellationTokenSource _countdownCTS;
         private bool _gameStartRequested = false;
+        private GameSystemsRegistry _gameSystemsRegistry;
 
         public GameState CurrentState => _state.Value;
         public event Action<GameState, GameState> OnStateChanged;
+
+        private void OnValidate() => this.ValidateRefs();
+
+        [Inject]
+        private void RegisterInGameSystems(GameSystemsRegistry gameSystemsRegistry)
+        {
+            _gameSystemsRegistry = gameSystemsRegistry;
+            _gameSystemsRegistry.Register(this);
+        }
 
         public override void OnNetworkSpawn()
         {
@@ -112,10 +124,10 @@ namespace Project.Assets._Project._Scripts.Managers
 
         private async UniTask WaitForRunnerHide(CancellationToken token)
         {
-            var spawnDistributor = FindAnyObjectByType<PlayerGameSpawnDistributor>();
+            var spawnDistributor = _gameSystemsRegistry.SpawnDistributor;
             if (spawnDistributor == null)
             {
-                EUtils.Logger.LogError("[GameStateMachine] PlayerGameSpawnDistributor not found in scene!");
+                EUtils.Logger.LogError("[GameStateMachine] No ISpawnDistributor registered for the gameplay scene!");
                 return;
             }
 
@@ -158,6 +170,12 @@ namespace Project.Assets._Project._Scripts.Managers
                 _uiManager.ChangeCountdownText(Mathf.CeilToInt((float)remaining).ToString());
                 await UniTask.Yield(cancellationToken: token);
             }
+        }
+
+        public override void OnDestroy()
+        {
+            _gameSystemsRegistry?.Unregister(this);
+            base.OnDestroy();
         }
     }
 }

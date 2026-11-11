@@ -1,4 +1,5 @@
 using Project.Assets._Project._Scripts.Player;
+using Reflex.Attributes;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -7,9 +8,9 @@ namespace Project.Assets._Project._Scripts.Managers
 {
     public class PlayerSpawner : MonoBehaviour
     {
+        [Inject] private readonly GameSystemsRegistry _gameSystemsRegistry;
         [SerializeField] private NetworkObject _playerPrefab;
         [SerializeField] private Transform[] _spawnPoints;
-        private IPlayerRegistry _playerRegistry;
         private readonly HashSet<ulong> _spawnedClients = new();
 
 
@@ -64,12 +65,11 @@ namespace Project.Assets._Project._Scripts.Managers
 
             var playerController = player.GetComponent<PlayerController>();
 
-            // Resolve the registry dynamically instead of relying on injection
-            _playerRegistry ??= FindAnyObjectByType<PlayerRegistry>();
+            var playerRegistry = _gameSystemsRegistry.PlayerRegistry;
 
-            if (_playerRegistry != null)
+            if (playerRegistry != null)
             {
-                _playerRegistry.RegisterPlayer(playerController);
+                playerRegistry.RegisterPlayer(playerController);
             }
             else
             {

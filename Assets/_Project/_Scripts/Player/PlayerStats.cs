@@ -1,3 +1,4 @@
+using Project.Assets._Project._Scripts.CameraUtils;
 using Project.Assets._Project._Scripts.Weapons;
 using UnityEngine;
 
@@ -12,6 +13,7 @@ namespace Project.Assets._Project._Scripts.Player
         [field: SerializeField] public float CoyoteTime { get; private set; } = 0.2f;
         [field: SerializeField] public float JumpBuffer { get; private set; } = 0.2f;
         [field: SerializeField] public float JumpButtonUpVerticalVelocityMultiplier { get; private set; } = 0.3f;
+        [field: SerializeField] public float JumpButtonUpMinVerticalVelocity { get; private set; } = 0.1f;
         [field: SerializeField] public float GroundCheckRadius { get; private set; } = 0.2f;
         [field: SerializeField] public float GroundCheckMaxYVelocity { get; private set; } = 0.5f;
         [field: SerializeField] public float NetworkVariableDetectionMinMagnitude { get; private set; } = 3f;
@@ -49,14 +51,6 @@ namespace Project.Assets._Project._Scripts.Player
         [field: SerializeField] public Transform Model { get; private set; }
     }
 
-    public interface ICameraStats
-    {
-        public float MaxPitch { get; }
-        public float MouseLookXSensitivity { get; }
-        public float MouseLookYSensitivity { get; }
-        public float GamepadLookXSensitivity { get; }
-        public float GamepadLookYSensitivity { get; }
-    }
 
     public interface IMovementStats
     {
@@ -65,6 +59,7 @@ namespace Project.Assets._Project._Scripts.Player
         public float CoyoteTime { get; }
         public float JumpBuffer { get; }
         public float JumpButtonUpVerticalVelocityMultiplier { get; }
+        public float JumpButtonUpMinVerticalVelocity { get; }
         public float GroundCheckRadius { get; }
         public float GroundCheckMaxYVelocity { get; }
         public float MaxGroundAngle { get; }

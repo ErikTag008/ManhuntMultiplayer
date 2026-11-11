@@ -1,6 +1,5 @@
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.Input;
-using Project.Assets._Project._Scripts.Player;
 using Reflex.Attributes;
 using System;
 using Unity.Cinemachine;
@@ -45,7 +44,7 @@ namespace Project.Assets._Project._Scripts.CameraUtils
             _cinemachinePanTilt.TiltAxis.Range = new Vector2(-_cameraStats.MaxPitch, _cameraStats.MaxPitch);
         }
 
-        public void BindCameraToPlayer(PlayerController player)
+        public void BindCameraToPlayer(IFirstPersonCameraTarget player)
         {
             print(EUtils.Logger.Colorize("Bind Camera Was Called", "blue"));
             if (player == null)

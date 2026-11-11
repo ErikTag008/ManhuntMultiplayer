@@ -85,7 +85,7 @@ namespace Project.Assets._Project._Scripts.Player
             }
             else
             {
-                if(_rb.linearVelocity.y > 0.1f)
+                if(_rb.linearVelocity.y > _stats.JumpButtonUpMinVerticalVelocity)
                 {
                     SlowDownVerticalVelocity();
                 }

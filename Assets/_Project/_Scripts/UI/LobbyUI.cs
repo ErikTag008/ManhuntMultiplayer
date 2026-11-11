@@ -1,4 +1,3 @@
-using Project.Assets._Project._Scripts.Managers;
 using Reflex.Attributes;
 using TMPro;
 using UnityEngine;

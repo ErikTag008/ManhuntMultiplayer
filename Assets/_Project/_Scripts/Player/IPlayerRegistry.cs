@@ -1,8 +1,7 @@
-﻿using Project.Assets._Project._Scripts.Player;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Unity.Netcode;
 
-namespace Project.Assets._Project._Scripts.Managers
+namespace Project.Assets._Project._Scripts.Player
 {
     public interface IPlayerRegistry
     {

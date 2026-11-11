@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Project.Assets._Project._Scripts.Player;
+using Reflex.Attributes;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -10,6 +11,15 @@ namespace Project.Assets._Project._Scripts.Managers
     {
         [SerializeField] private Transform[] _waitingRoomSpawns;
         [SerializeField] private Transform[] _gameRoomSpawns;
+
+        private GameSystemsRegistry _gameSystemsRegistry;
+
+        [Inject]
+        private void RegisterInGameSystems(GameSystemsRegistry gameSystemsRegistry)
+        {
+            _gameSystemsRegistry = gameSystemsRegistry;
+            _gameSystemsRegistry.Register(this);
+        }
 
         
 
@@ -53,5 +63,6 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
+        private void OnDestroy() => _gameSystemsRegistry?.Unregister(this);
     }
 }

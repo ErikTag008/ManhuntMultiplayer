@@ -8,6 +8,7 @@ namespace Project.Assets._Project._Scripts.Input
     public class InputReader : MonoBehaviour
     {
         [SerializeField, Self] private PlayerInput _playerInput;
+        [SerializeField] private string _keyboardMouseControlScheme = "Keyboard&Mouse";
         public Vector2 MoveDirection { get; private set; }
         public Vector2 LookDirection { get; private set; }
         public event Action OnAttack;
@@ -19,7 +20,7 @@ namespace Project.Assets._Project._Scripts.Input
         public event Action OnHealthPotionUsed;
 
         public event Action OnStartButtonKeyPressed;
-        public bool IsUsingMouse => _playerInput.currentControlScheme == "Keyboard&Mouse";
+        public bool IsUsingMouse => _playerInput.currentControlScheme == _keyboardMouseControlScheme;
 
         private void Awake()
         {
