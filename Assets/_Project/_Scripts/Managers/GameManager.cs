@@ -30,55 +30,23 @@ namespace Project.Assets._Project._Scripts.Managers
             OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
         }
 
-        private void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
+        private void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode) => _sceneLifecycleManager.InitializeScene(GetSceneType(scene));
+
+        private void OnSceneUnloaded(Scene scene) => _sceneLifecycleManager.ClearScene(GetSceneType(scene));
+
+        // Any scene that isn't the menu or lobby is a map, so maps don't need to be listed here
+        private SceneType GetSceneType(Scene scene)
         {
-            switch (scene.name)
-            {
-                case var name when name == _gameScenes.LobbySceneName:
-                    _sceneLifecycleManager.InitializeScene(SceneType.Lobby);
-                    break;
-
-                case var name when name == _gameScenes.GameSceneName:
-                    _sceneLifecycleManager.InitializeScene(SceneType.Gameplay);
-                    break;
-
-                case var name when name == _gameScenes.MainMenuSceneName:
-                    _sceneLifecycleManager.InitializeScene(SceneType.MainMenu);
-                    break;
-
-                default:
-                    EUtils.Logger.LogError($"Unknown loaded scene: {scene.name}");
-                    EUtils.Logger.LogError($"Known scenes:   {_gameScenes.LobbySceneName}, {_gameScenes.GameSceneName}, {_gameScenes.MainMenuSceneName}");
-                    break;
-            }
-        }
-
-        private void OnSceneUnloaded(Scene scene)
-        {
-            switch (scene.name)
-            {
-                case var name when name == _gameScenes.LobbySceneName:
-                    _sceneLifecycleManager.ClearScene(SceneType.Lobby);
-                    break;
-
-                case var name when name == _gameScenes.GameSceneName:
-                    _sceneLifecycleManager.ClearScene(SceneType.Gameplay);
-                    break;
-
-                case var name when name == _gameScenes.MainMenuSceneName:
-                    _sceneLifecycleManager.ClearScene(SceneType.MainMenu);
-                    break;
-                default:
-                    EUtils.Logger.LogError($"Unknown loaded scene: {scene.name}");
-                    EUtils.Logger.LogError($"Known scenes: {_gameScenes.LobbySceneName}, {_gameScenes.GameSceneName}, {_gameScenes.MainMenuSceneName}");
-
-                    break;
-            }
+            if (scene.name == _gameScenes.LobbySceneName) return SceneType.Lobby;
+            if (scene.name == _gameScenes.MainMenuSceneName) return SceneType.MainMenu;
+            return SceneType.Gameplay;
         }
 
         public override void OnNetworkSpawn()
         {
-            GameObjectInjector.InjectObject(gameObject, gameObject.scene.GetSceneContainer());
+            // GameSystems' own scene may be DontDestroyOnLoad (no Reflex container) or a scene about to be replaced,
+            // so every [Inject] dependency on GameSystems must stay project-scoped
+            GameObjectInjector.InjectObject(gameObject, SceneManager.GetActiveScene().GetSceneContainer());
             EUtils.Logger.LogColorized($"[GameManager] Called OnNetworkSpawn for Client {NetworkManager.Singleton.LocalClientId}...", "yellow");
             EUtils.Logger.LogColorized($"[GameManager] IsHost = {IsHost}...", "yellow");
             EUtils.Logger.LogColorized($"[GameManager] IsClient = {IsClient}...", "yellow");

@@ -1,5 +1,4 @@
 using Alchemy.Inspector;
-using Assets._Project._Scripts.SceneReference;
 using Cysharp.Threading.Tasks;
 using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.SceneFlow;
@@ -8,7 +7,6 @@ using Reflex.Attributes;
 using System.Threading;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Project.Assets._Project._Scripts.Managers
 {
@@ -17,23 +15,27 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly ServerStarterUI _serverStarterUI;
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
         [Inject] private readonly IUIManager _uiManager;
-        [Inject] private readonly GameScenes _gameScenes;
         [Inject] private readonly IConnectionService _connectionService;
         [Inject] private readonly ConnectionSettings _connectionSettings;
+        [Inject] private readonly SessionEndHandler _sessionEndHandler;
         [SerializeField, AssetsOnly] private NetworkObject _gameSystemsPrefab;
+
         private void Start()
         {
             _sceneLifecycleManager.InitializeScene(SceneType.MainMenu);
+            _serverStarterUI.ShowDisconnectReason(_sessionEndHandler.LastDisconnectReason);
             _uiManager.OnHostStart += HandleHostStart;
             _uiManager.OnClientStart += HandleClientStart;
         }
-        // App-lifetime token: a successful join unloads this scene during Netcode's scene sync
+
+        // App-lifetime token: a successful join replaces this scene during Netcode's scene sync
         private void HandleClientStart() => JoinSession(Application.exitCancellationToken).Forget();
 
         private void HandleHostStart() => HostSession(Application.exitCancellationToken).Forget();
 
         private async UniTaskVoid HostSession(CancellationToken token)
         {
+            ClearDisconnectReason();
             _serverStarterUI.ToggleServerStarterUI(false);
             var isHosting = await _connectionService.Host(_connectionSettings.DefaultLobbyVisibility, token);
             if (this == null) return;
@@ -44,12 +46,13 @@ namespace Project.Assets._Project._Scripts.Managers
                 return;
             }
 
+            // the game loop on GameSystems loads the lobby in Single mode, which replaces this scene
             SpawnGameSystems();
-            UnloadMainMenu().Forget();
         }
 
         private async UniTaskVoid JoinSession(CancellationToken token)
         {
+            ClearDisconnectReason();
             _serverStarterUI.ToggleServerStarterUI(false);
             if (!await _connectionService.Join(_connectionSettings.Address, token))
             {
@@ -58,33 +61,18 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
-        private async UniTaskVoid UnloadMainMenu()
+        private void ClearDisconnectReason()
         {
-            await UniTask.WaitUntil(() => SceneManager.GetActiveScene().name != _gameScenes.MainMenuSceneName);
-
-            var scene = SceneManager.GetSceneByName(_gameScenes.MainMenuSceneName);
-
-            if (!scene.IsValid())
-            {
-                EUtils.Logger.LogWarning($"Scene '{_gameScenes.MainMenuSceneName}' is no longer valid.");
-                return;
-            }
-
-            if (!scene.isLoaded)
-            {
-                EUtils.Logger.LogWarning($"Scene '{_gameScenes.MainMenuSceneName}' is already unloaded.");
-                return;
-            }
-
-            await SceneManager.UnloadSceneAsync(scene);
+            _sessionEndHandler.ClearDisconnectReason();
+            _serverStarterUI.ShowDisconnectReason(null);
         }
 
+        // destroyWithScene: false keeps GameSystems alive across Single-mode scene loads
         private void SpawnGameSystems()
         {
             if (!NetworkManager.Singleton.IsServer) return;
-            NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(_gameSystemsPrefab);
+            NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(_gameSystemsPrefab, destroyWithScene: false);
         }
-        
 
         private void OnDestroy()
         {

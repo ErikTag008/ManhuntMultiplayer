@@ -78,7 +78,7 @@ namespace Project.Assets._Project._Scripts.Managers
             while (!token.IsCancellationRequested)
             {
                 _state.Value = GameState.Lobby;
-                await _networkCoordinator.LoadLobby(_gameScenes.LobbySceneName, token);
+                await _networkCoordinator.LoadNetworkScene(_gameScenes.LobbySceneName, token);
 
                 _state.Value = GameState.WaitingForPlayers;
                 await WaitForEnoughPlayers(token);
@@ -92,7 +92,7 @@ namespace Project.Assets._Project._Scripts.Managers
 
 
                 _state.Value = GameState.LoadingGameplay;
-                await _networkCoordinator.LoadGameplayScene(_gameScenes.GameSceneName, _gameScenes.LobbySceneName, token);
+                await _networkCoordinator.LoadNetworkScene(_gameScenes.DefaultMap.SceneName, token);
 
                 _countdownEndTime.Value = NetworkManager.ServerTime.Time + _settings.RunnersHideWaitTime;
                 _state.Value = GameState.WaitForRunnerHide;
@@ -105,9 +105,8 @@ namespace Project.Assets._Project._Scripts.Managers
                 DetermineWinner();
 
                 _state.Value = GameState.Results;
+                // the next iteration loads the lobby again
                 await ShowResults(token);
-
-                await _networkCoordinator.ReturnToLobby(_gameScenes.LobbySceneName, _gameScenes.GameSceneName, token);
             }
         }
 

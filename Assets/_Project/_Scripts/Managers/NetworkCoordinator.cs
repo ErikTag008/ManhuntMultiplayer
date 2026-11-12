@@ -1,9 +1,9 @@
 using Cysharp.Threading.Tasks;
 using Reflex.Attributes;
-using Unity.Netcode;
-using UnityEngine;
-using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 using System.Threading;
+using Unity.Netcode;
+using UnityEngine.SceneManagement;
 
 namespace Project.Assets._Project._Scripts.Managers
 {
@@ -18,77 +18,44 @@ namespace Project.Assets._Project._Scripts.Managers
             _gameSystemsRegistry.Register(this);
         }
 
-        public async UniTask<Scene> LoadNetworkScene(string sceneNameToLoad, CancellationToken token, LoadSceneMode loadSceneMode = LoadSceneMode.Additive, bool setActiveScene = true)
+        // Single mode: spawned objects with DestroyWithScene = false (GameSystems, players) survive the switch
+        public async UniTask LoadNetworkScene(string sceneName, CancellationToken token)
         {
-            var loadedScene = SceneManager.GetSceneByName(sceneNameToLoad);
-            if (NetworkManager.Singleton == null || NetworkManager.Singleton.SceneManager == null)
+            var sceneManager = NetworkManager != null ? NetworkManager.SceneManager : null;
+            if (sceneManager == null)
             {
-                EUtils.Logger.LogError("[NetworkCoordinator] NetworkManager or SceneManager is missing!");
-                return loadedScene;
-            }
-            if (loadedScene.isLoaded)
-            {
-                if (setActiveScene) SceneManager.SetActiveScene(loadedScene);
-                EUtils.Logger.LogWarning($"The Scene you tried to load is already Loaded");
-                return loadedScene;
-            }
-            var status = NetworkManager.Singleton.SceneManager.LoadScene(sceneNameToLoad, loadSceneMode);
-
-            if (status != SceneEventProgressStatus.Started)
-            {
-                EUtils.Logger.LogError($"Failed to load {sceneNameToLoad} scene");
-                return loadedScene;
+                EUtils.Logger.LogError("[NetworkCoordinator] NetworkManager or its SceneManager is missing!");
+                return;
             }
 
-            await UniTask.WaitUntil(() => SceneManager.GetSceneByName(sceneNameToLoad).isLoaded, cancellationToken: token);
-
-            loadedScene = SceneManager.GetSceneByName(sceneNameToLoad);
-
-            if (setActiveScene) SceneManager.SetActiveScene(loadedScene);
-
-            return loadedScene;
-        }
-
-        public async UniTask<Scene> UnloadNetworkScene(string sceneNameToUnload, CancellationToken token)
-        {
-            var unloadedScene = SceneManager.GetSceneByName(sceneNameToUnload);
-            if (NetworkManager.Singleton == null || NetworkManager.Singleton.SceneManager == null)
+            var loadCompleted = new UniTaskCompletionSource();
+            void HandleLoadEventCompleted(string loadedSceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
             {
-                EUtils.Logger.LogError("[NetworkCoordinator] NetworkManager or SceneManager is missing!");
-                return unloadedScene;
+                if (loadedSceneName != sceneName) return;
+
+                if (clientsTimedOut.Count > 0)
+                {
+                    EUtils.Logger.LogWarning($"[NetworkCoordinator] Clients timed out loading {sceneName}: {string.Join(", ", clientsTimedOut)}");
+                }
+                loadCompleted.TrySetResult();
             }
-            if (unloadedScene.IsValid())
+
+            sceneManager.OnLoadEventCompleted += HandleLoadEventCompleted;
+            try
             {
-                var status = NetworkManager.Singleton.SceneManager.UnloadScene(unloadedScene);
+                var status = sceneManager.LoadScene(sceneName, LoadSceneMode.Single);
                 if (status != SceneEventProgressStatus.Started)
                 {
-                    EUtils.Logger.LogError($"Failed to unload scene: {unloadedScene.name}");
-                    return unloadedScene;
+                    EUtils.Logger.LogError($"[NetworkCoordinator] Failed to load {sceneName}: {status}");
+                    return;
                 }
-                await UniTask.WaitUntil(() => !unloadedScene.isLoaded, cancellationToken: token);
+
+                await loadCompleted.Task.AttachExternalCancellation(token);
             }
-            else
+            finally
             {
-                await UniTask.Yield(cancellationToken: token);
+                sceneManager.OnLoadEventCompleted -= HandleLoadEventCompleted;
             }
-            return unloadedScene;
-        }
-
-        public async UniTask LoadLobby(string lobbyScene, CancellationToken token)
-        {
-            await LoadNetworkScene(lobbyScene, token);
-        }
-
-        public async UniTask ReturnToLobby(string lobbyScene, string gameScene, CancellationToken token)
-        {
-            await LoadNetworkScene(lobbyScene, token);
-            await UnloadNetworkScene(gameScene, token);
-        }
-
-        public async UniTask LoadGameplayScene(string gameScene, string lobbyScene, CancellationToken token)
-        {
-            await LoadNetworkScene(gameScene, token);
-            await UnloadNetworkScene(lobbyScene, token);
         }
 
         public override void OnDestroy()

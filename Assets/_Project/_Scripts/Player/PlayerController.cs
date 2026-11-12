@@ -222,7 +222,8 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void InjectGameDependencies()
         {
-            var container = SceneManager.GetSceneByName(_gameScenes.GameSceneName).GetSceneContainer();
+            // the loaded map is the active scene; its name comes from a MapDefinition, not GameScenes
+            var container = SceneManager.GetActiveScene().GetSceneContainer();
             if (container == null) return;
 
             try

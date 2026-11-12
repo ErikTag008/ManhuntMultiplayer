@@ -56,12 +56,19 @@ namespace Project.Assets._Project._Scripts.Managers
 
             var spawnPoint = _spawnPoints[clientId % (ulong)_spawnPoints.Length];
 
+            // Players persist across Single-mode scene loads; returning from a round only moves them back
+            if (TryGetExistingPlayer(clientId, out var existingPlayer))
+            {
+                existingPlayer.TeleportRpc(spawnPoint.position, spawnPoint.rotation);
+                return;
+            }
+
             var player = Instantiate(
                 _playerPrefab,
                 spawnPoint.position,
                 spawnPoint.rotation);
 
-            player.SpawnAsPlayerObject(clientId);
+            player.SpawnAsPlayerObject(clientId, destroyWithScene: false);
 
             var playerController = player.GetComponent<PlayerController>();
 
@@ -76,6 +83,15 @@ namespace Project.Assets._Project._Scripts.Managers
                 EUtils.Logger.LogError("[PlayerSpawner] IPlayerRegistry not found in scene! Cannot register player.");
             }
             EUtils.Logger.Log($"Spawned OwnerClientId = {player.OwnerClientId}");
+        }
+
+        private static bool TryGetExistingPlayer(ulong clientId, out PlayerController player)
+        {
+            player = null;
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client)) return false;
+            if (client.PlayerObject == null) return false;
+
+            return client.PlayerObject.TryGetComponent(out player);
         }
     }
 }
