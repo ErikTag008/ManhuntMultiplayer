@@ -23,6 +23,7 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
         [Inject] private readonly SceneContextProvider _sceneContextProvider;
         [Inject] private readonly IPlayerRegistry _playerRegistry;
+        [Inject] private readonly RunnerStats _runnerStats;
         [SerializeField, Self] private PlayerInput _playerInput;
         [SerializeField, Self] private InputReader _inputReader;
         [SerializeField, Self] private Rigidbody _rb;
@@ -39,6 +40,7 @@ namespace Project.Assets._Project._Scripts.Player
         private ModifiedMovementStats _movementStats;
         private IPlayerMovement _movement;
         private ILobbyUI _lobbyUI;
+        private bool _isKnockedCrawlApplied;
 
         public Team Team => _team.Team;
         public PlayerLifeState LifeState => _lifeState;
@@ -81,7 +83,7 @@ namespace Project.Assets._Project._Scripts.Player
             _movement?.ToggleMovement(false);
             _networkRb.SetPosition(position);
             _networkRb.SetRotation(rotation);
-            _movement?.ToggleMovement(_lifeState.IsUp);
+            _movement?.ToggleMovement(_lifeState.CanMove);
         }
 
         public void InitializeSceneReferences(SceneType sceneType)
@@ -125,7 +127,8 @@ namespace Project.Assets._Project._Scripts.Player
             _movement = new PlayerMovement(_rb, _movementStats, _groundCheck, camera, _team.Model, _cameraFollower);
             _movement.ModelRotationChanged += _networkSync.SendModelYaw;
             _movement.CameraFollowerRotationChanged += _networkSync.SendCameraFollowerRotation;
-            _movement.ToggleMovement(_lifeState.IsUp);
+            _movement.ToggleMovement(_lifeState.CanMove);
+            RefreshKnockedCrawl();
             _cameraBinder.OnCameraRotationChanged += _movement.HandleRotation;
             _inputReader.OnJump += _movement.HandleJump;
         }
@@ -158,6 +161,7 @@ namespace Project.Assets._Project._Scripts.Player
         private void HandleStatsChanged(PlayerStats stats)
         {
             _statModifiers.Clear();
+            _isKnockedCrawlApplied = false;
             _movementStats?.ChangeBaseStats(stats);
         }
 
@@ -165,7 +169,23 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void HandleLifeStateChanged(LifeState _)
         {
-            if (IsOwner) _movement?.ToggleMovement(_lifeState.IsUp);
+            if (!IsOwner) return;
+
+            _movement?.ToggleMovement(_lifeState.CanMove);
+            RefreshKnockedCrawl();
+        }
+
+        // Owner only: the session's life state reaches every instance, so the owner applies the crawl itself
+        private void RefreshKnockedCrawl()
+        {
+            if (_isKnockedCrawlApplied == _lifeState.IsKnocked) return;
+
+            _isKnockedCrawlApplied = _lifeState.IsKnocked;
+            foreach (var modifier in _runnerStats.KnockedModifiers)
+            {
+                if (_isKnockedCrawlApplied) _statModifiers.Add(modifier);
+                else _statModifiers.Remove(modifier);
+            }
         }
 
         public override void OnNetworkDespawn()

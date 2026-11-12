@@ -1,5 +1,7 @@
 using Project.Assets._Project._Scripts.Managers;
+using Project.Assets._Project._Scripts.Player;
 using Reflex.Attributes;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -15,6 +17,7 @@ namespace Project.Assets._Project._Scripts.DevTools
         [SerializeField] private Rect _windowRect = new(10f, 10f, 260f, 0f);
         [SerializeField] private int _windowId = 9001;
 
+        private readonly List<PlayerSession> _sessionBuffer = new();
         private bool _isVisible;
         private CursorLockMode _previousLockMode;
         private bool _wasCursorVisible;
@@ -83,14 +86,42 @@ namespace Project.Assets._Project._Scripts.DevTools
             GUILayout.Label($"Game state: {(gameStateMachine != null ? gameStateMachine.CurrentState.ToString() : "-")}");
             GUILayout.Label($"Registered players: {(playerRegistry != null ? playerRegistry.PlayerCount.ToString() : "-")}");
 
+            if (playerRegistry != null) DrawSessions(playerRegistry);
+
             GUI.enabled = isListening && networkManager.IsHost && gameStateMachine != null;
             if (GUILayout.Button("Request game start"))
             {
                 gameStateMachine.RequestGameStart();
             }
+            GUI.enabled = isListening && networkManager.IsHost && playerRegistry != null;
+            if (GUILayout.Button("Knock a standing runner"))
+            {
+                KnockFirstStandingRunner(playerRegistry);
+            }
             GUI.enabled = true;
 
             GUI.DragWindow();
+        }
+
+        private void DrawSessions(IPlayerRegistry playerRegistry)
+        {
+            playerRegistry.CopySessionsTo(_sessionBuffer);
+            foreach (var session in _sessionBuffer)
+            {
+                GUILayout.Label($"  Player {session.ClientId}: {session.Team}, {session.LifeState}");
+            }
+        }
+
+        // Server only: the player list and knocking both live on the server
+        private static void KnockFirstStandingRunner(IPlayerRegistry playerRegistry)
+        {
+            foreach (var player in playerRegistry.GetPlayers())
+            {
+                if (player.Team != Team.Runner || !player.LifeState.IsUp) continue;
+
+                player.LifeState.Knock();
+                return;
+            }
         }
 
         private static string GetRole(NetworkManager networkManager)
