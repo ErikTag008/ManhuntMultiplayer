@@ -106,9 +106,9 @@ namespace Project.Assets._Project._Scripts.Weapons
         }
         private void UpdateWeaponRotation()
         {
-            if (Mathf.Abs(transform.localEulerAngles.magnitude - _lastWeaponRotation.eulerAngles.magnitude) > _networkUpdateMinMagnitude)
+            if (Quaternion.Angle(transform.localRotation, _lastWeaponRotation) > _networkUpdateMinMagnitude)
             {
-                _lastWeaponRotation = transform.rotation;
+                _lastWeaponRotation = transform.localRotation;
                 OnWeaponRotationChanged?.Invoke(_lastWeaponRotation);
             }
 

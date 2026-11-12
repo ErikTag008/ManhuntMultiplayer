@@ -17,10 +17,11 @@ MonoBehaviour:
   <CoyoteTime>k__BackingField: 0.2
   <JumpBuffer>k__BackingField: 0.1
   <JumpButtonUpVerticalVelocityMultiplier>k__BackingField: 0.5
+  <JumpButtonUpMinVerticalVelocity>k__BackingField: 0.1
   <GroundCheckRadius>k__BackingField: 0.15
   <GroundCheckMaxYVelocity>k__BackingField: 0.3
   <NetworkVariableDetectionMinMagnitude>k__BackingField: 1
-  <NetworkVariableSmoothingSpeed>k__BackingField: 5
+  <NetworkVariableSmoothingSpeed>k__BackingField: 15
   <MaxGroundAngle>k__BackingField: 45
   <HorizontalDamping>k__BackingField: 5
   <VerticalDamping>k__BackingField: 1
@@ -30,8 +31,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   <MaxPitch>k__BackingField: 85
-  <MouseLookXSensitivity>k__BackingField: 5
-  <MouseLookYSensitivity>k__BackingField: 5
+  <MouseLookXSensitivity>k__BackingField: 0.05
+  <MouseLookYSensitivity>k__BackingField: 0.05
   <GamepadLookXSensitivity>k__BackingField: 5
   <GamepadLookYSensitivity>k__BackingField: 5
   <MaxInteractionDistance>k__BackingField: 5

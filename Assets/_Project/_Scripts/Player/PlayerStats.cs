@@ -28,8 +28,8 @@ namespace Project.Assets._Project._Scripts.Player
 
         [field: Header("Camera Stats")]
         [field: SerializeField, Range(1f, 89f)] public float MaxPitch { get; private set; } = 85f;
-        [field: SerializeField] public float MouseLookXSensitivity { get; private set; } = 5f;
-        [field: SerializeField] public float MouseLookYSensitivity { get; private set; } = 5f;
+        [field: SerializeField] public float MouseLookXSensitivity { get; private set; } = 0.05f;
+        [field: SerializeField] public float MouseLookYSensitivity { get; private set; } = 0.05f;
         [field: SerializeField] public float GamepadLookXSensitivity { get; private set; } = 5f;
         [field: SerializeField] public float GamepadLookYSensitivity { get; private set; } = 5f;
 

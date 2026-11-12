@@ -250,12 +250,16 @@ GameObject:
   - component: {fileID: 6284144716852822933}
   - component: {fileID: 6746026668882122894}
   - component: {fileID: 7194238487740375515}
-  - component: {fileID: 588730770247830364}
   - component: {fileID: 1578966875271402114}
   - component: {fileID: 5189175634887361945}
   - component: {fileID: 4851020409925496502}
   - component: {fileID: 4515986925934261871}
   - component: {fileID: 7914716674521843450}
+  - component: {fileID: 2895491558510482950}
+  - component: {fileID: 1513991399820021913}
+  - component: {fileID: 91084392635682791}
+  - component: {fileID: 4982083531400345192}
+  - component: {fileID: 36421261748081134}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -326,41 +330,13 @@ MonoBehaviour:
   _inputReader: {fileID: 4851020409925496502}
   _rb: {fileID: 4515986925934261871}
   _networkRb: {fileID: 7914716674521843450}
-  _health: {fileID: 588730770247830364}
-  _model: {fileID: 5711959362786639010}
+  _team: {fileID: 2895491558510482950}
+  _lifeState: {fileID: 1513991399820021913}
+  _networkSync: {fileID: 4982083531400345192}
+  _cameraBinder: {fileID: 36421261748081134}
   _groundCheck: {fileID: 7460693758395271466}
   _cameraTarget: {fileID: 4853491123650079907}
-  _weaponPivot: {fileID: 2525241098816555749}
   _cameraFollower: {fileID: 3526512074580094625}
-  _team:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue: 0
-  _maxDamageTargets: 3
---- !u!114 &588730770247830364
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8003451599721298038}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 91674552618a24d4a8271a77e0479ef8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.Player.Health
-  ShowTopMostFoldoutHeaderGroup: 1
-  MaxHealth:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue: 0
-  CurrentHealth:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
-    m_InternalValue: 0
 --- !u!114 &1578966875271402114
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -595,3 +571,75 @@ MonoBehaviour:
   UseRigidBodyForMotion: 1
   AutoUpdateKinematicState: 1
   AutoSetKinematicOnDespawn: 1
+--- !u!114 &2895491558510482950
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38b9ac31cada84043b51e29b76c12cde, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerTeam
+  ShowTopMostFoldoutHeaderGroup: 1
+  _model: {fileID: 5711959362786639010}
+--- !u!114 &1513991399820021913
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32e12b485d1288c44b9681458e2ecc72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerLifeState
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &91084392635682791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e23c8b4eb9c32864a8a40c2b5b4fbd4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerCombat
+  ShowTopMostFoldoutHeaderGroup: 1
+  _team: {fileID: 2895491558510482950}
+  _inputReader: {fileID: 4851020409925496502}
+  _weaponPivot: {fileID: 2525241098816555749}
+  _maxCatchTargets: 3
+--- !u!114 &4982083531400345192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd6dac1fda0eda445b36f91b39d7ee5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerNetworkSync
+  ShowTopMostFoldoutHeaderGroup: 1
+  _team: {fileID: 2895491558510482950}
+  _combat: {fileID: 91084392635682791}
+  _cameraFollower: {fileID: 3526512074580094625}
+--- !u!114 &36421261748081134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d6c88cfddec759429ffad45e789ee6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerCameraBinder

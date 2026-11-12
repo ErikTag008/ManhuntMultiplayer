@@ -161,7 +161,8 @@ namespace Project.Assets._Project._Scripts.Managers
             {
                 case GameState.Lobby:
                     _uiManager.ChangeLobbyStatusText("Initializing Lobby...");
-                    
+                    // runners knocked in the last round must be able to move in the lobby
+                    ResetLifeStates();
                     break;
                 case GameState.WaitingForPlayers:
                     _uiManager.ChangeLobbyStatusText($"Waiting for players... ({_gameLobbySettings.MinRequiredPlayers} required)");
@@ -175,10 +176,7 @@ namespace Project.Assets._Project._Scripts.Managers
                     _uiManager.ChangeLobbyStatusText($"Assigning teams...");
                     break;
                 case GameState.WaitForRunnerHide:
-                    foreach (var player in _playerRegistry.GetPlayers())
-                    {
-                        player.Health.ResetHealth();
-                    }
+                    ResetLifeStates();
                     break;
                 case GameState.Playing:
                     //_uiManager.ShowGameplayUI();
@@ -191,6 +189,15 @@ namespace Project.Assets._Project._Scripts.Managers
                 case GameState.Results:
                     //_uiManager.ShowResults();
                     break;
+            }
+        }
+
+        // server-only inside ResetState, so clients running this switch are no-ops
+        private void ResetLifeStates()
+        {
+            foreach (var player in _playerRegistry.GetPlayers())
+            {
+                player.LifeState.ResetState();
             }
         }
 

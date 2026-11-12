@@ -16,8 +16,6 @@ namespace Project.Assets._Project._Scripts.Player
         private float _lastGroundedTime = -Mathf.Infinity;
         private float _lastJumpPressedTime = -Mathf.Infinity;
         private Vector3 _lastGroundNormal = Vector3.up;
-        private float _lastModelYaw = 0f;
-        private Quaternion _lastCameraFollowerRotation = Quaternion.identity;
         private bool _movementEnabled = true;
         public event Action<float> ModelRotationChanged;
         public event Action<Quaternion> CameraFollowerRotationChanged;
@@ -156,11 +154,7 @@ namespace Project.Assets._Project._Scripts.Player
             if (!_cameraFollower || !_cameraFollower.gameObject.activeInHierarchy || _stats == null) return;
             Quaternion newRotation = _camera.transform.rotation;
             _cameraFollower.rotation = newRotation;
-            if (Mathf.Abs(newRotation.eulerAngles.magnitude - _lastCameraFollowerRotation.eulerAngles.magnitude) > _stats.NetworkVariableDetectionMinMagnitude)
-            {
-                _lastCameraFollowerRotation = newRotation;
-                CameraFollowerRotationChanged?.Invoke(newRotation);
-            }
+            CameraFollowerRotationChanged?.Invoke(newRotation);
         }
 
         private void HandleModelRotation()
@@ -175,11 +169,7 @@ namespace Project.Assets._Project._Scripts.Player
             if(_model != null)
                 _model.rotation = newRotation;
 
-            if (Mathf.Abs(newRotation.eulerAngles.y - _lastModelYaw) > _stats.NetworkVariableDetectionMinMagnitude)
-            {
-                _lastModelYaw = newRotation.eulerAngles.y; // Update last sent value
-                ModelRotationChanged?.Invoke(_lastModelYaw); // Send raw value to network
-            }
+            ModelRotationChanged?.Invoke(newRotation.eulerAngles.y);
         }
 
         private void HandleHorizontalMovement(Vector2 moveDirection, bool grounded)

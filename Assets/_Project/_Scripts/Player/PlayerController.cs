@@ -1,14 +1,11 @@
-using Alchemy.Inspector;
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.CameraUtils;
 using Project.Assets._Project._Scripts.Input;
 using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.UI;
-using Project.Assets._Project._Scripts.Weapons;
 using Reflex.Attributes;
 using Reflex.Extensions;
 using Reflex.Injectors;
-using System;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
@@ -17,172 +14,64 @@ using UnityEngine.SceneManagement;
 
 namespace Project.Assets._Project._Scripts.Player
 {
-    public enum Team
-    {
-        None,
-        Catcher,
-        Runner
-    }
-
+    // Thin coordinator: wires input, movement and the scene's camera to the focused player components
     [RequireComponent(typeof(PlayerInput), typeof(InputReader), typeof(Rigidbody))]
+    [RequireComponent(typeof(PlayerTeam), typeof(PlayerLifeState), typeof(PlayerCombat))]
+    [RequireComponent(typeof(PlayerNetworkSync), typeof(PlayerCameraBinder))]
     public class PlayerController : NetworkBehaviour, ISceneInitialized, IFirstPersonCameraTarget
     {
+        [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
+        [Inject] private readonly SceneContextProvider _sceneContextProvider;
+        [Inject] private readonly IPlayerRegistry _playerRegistry;
         [SerializeField, Self] private PlayerInput _playerInput;
         [SerializeField, Self] private InputReader _inputReader;
         [SerializeField, Self] private Rigidbody _rb;
         [SerializeField, Self] private NetworkRigidbody _networkRb;
-        [SerializeField, Self] private Health _health;
-        public Health Health => _health;
-
-        [SerializeField] private Transform _model;
+        [SerializeField, Self] private PlayerTeam _team;
+        [SerializeField, Self] private PlayerLifeState _lifeState;
+        [SerializeField, Self] private PlayerNetworkSync _networkSync;
+        [SerializeField, Self] private PlayerCameraBinder _cameraBinder;
         [SerializeField] private Transform _groundCheck;
         [SerializeField] private Transform _cameraTarget;
-        [SerializeField] private Transform _weaponPivot;
         [SerializeField] private Transform _cameraFollower;
-        [SerializeField] private NetworkVariable<Team> _team = new();
-        [SerializeField] private int _maxDamageTargets = 3;
 
-        public Team Team => _team.Value;
+        private IPlayerMovement _movement;
+        private ILobbyUI _lobbyUI;
+
+        public Team Team => _team.Team;
+        public PlayerLifeState LifeState => _lifeState;
         public Transform CameraTarget => _cameraTarget;
         public InputReader InputReader => _inputReader;
 
-        [Inject] private PlayerStats _playerStats;
-        [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
-        [Inject] private readonly SceneContextProvider _sceneContextProvider;
-        [Inject] private readonly CatcherStats _catcherStats;
-        [Inject] private readonly RunnerStats _runnerStats;
-        [Inject] private readonly IPlayerRegistry _playerRegistry;
+        private void OnValidate() => this.ValidateRefs();
 
-        private NetworkVariable<float> _modelRotation = new(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-        private NetworkVariable<Quaternion> _cameraFollowerRotation = new(Quaternion.identity, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-        private NetworkVariable<Vector3> _weaponPosition = new(Vector3.zero, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner); 
-        private NetworkVariable<Quaternion> _weaponRotation = new(Quaternion.identity, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-
-        private Camera _gameplayCamera;
-        private FPCameraInstaller _fpCameraInstaller;
-        private MeleeWeaponBase _currentWeapon;
-        private ILobbyUI _lobbyUI;
-        private IPlayerMovement _movement;
-
-        private float _targetModelRotation;
-        private Quaternion _targetCameraFollowerRotation;
-        private Vector3 _targetWeaponPosition;
-        private Quaternion _targetWeaponRotation;
-
-        private Collider[] _damagables;
-
+        // Network-spawned, so Reflex never injects it at scene load. Injecting in Awake covers every component
+        // on the player before any of their OnNetworkSpawn calls run.
         private void Awake()
         {
-            _damagables = new Collider[_maxDamageTargets];
             _playerInput.enabled = false;
+            GameObjectInjector.InjectObject(gameObject, SceneManager.GetActiveScene().GetSceneContainer());
         }
-
-        
 
         public override void OnNetworkSpawn()
         {
-            InjectGlobalDependencies();
-            Debug.Assert(_sceneLifecycleManager != null, "SceneLifecycleManager wasn't injected!");
-            UpdateModelRpc();
-            BindNetworkVariable(_modelRotation, OnModelRotationNetworkVarChanged);
-            BindNetworkVariable(_cameraFollowerRotation, OnCameraFollowerRotationNetworkVarChanged);
-            BindNetworkVariable(_weaponPosition, OnWeaponPositionNetworkVarChanged);
-            BindNetworkVariable(_weaponRotation, OnWeaponRotationNetworkVarChanged);
-            _sceneLifecycleManager.Register(this);
-            if (IsOwner)
-            {
-                _playerInput.enabled = true;
-                if (_model != null)
-                    _model.GetComponentInChildren<Renderer>().enabled = false;
-            }
-
-
-            if (IsServer)
-            {
-                _health.OnDowned += HandleGettingDownedRpc;
-
-            }
+            _team.OnStatsChanged += HandleStatsChanged;
+            _team.OnModelChanged += HandleModelChanged;
+            _lifeState.OnLifeStateChanged += HandleLifeStateChanged;
+            if (IsOwner) _playerInput.enabled = true;
         }
 
-        [Rpc(SendTo.Owner)]
-        private void HandleGettingDownedRpc()
-        {
-
-            _movement?.ToggleMovement(false);
-        }
-
-        [Rpc(SendTo.Owner)]
-        private void HandleGettingResurrectedRpc()
-        {
-            _movement?.ToggleMovement(true);
-        }
-
-        private void Update()
-        {
-            if (!IsOwner)
-            {
-                SmoothOutNetworkSyncedObjects();
-                return;
-            }
-            //_movement.HandleUpdate();
-        }
-
-        private void SmoothOutNetworkSyncedObjects()
-        {
-            _model.rotation = EUtils.Math.Slerp(_model.rotation, Quaternion.Euler(0f, _targetModelRotation, 0f), Time.deltaTime * _playerStats.NetworkVariableSmoothingSpeed);
-            _cameraFollower.rotation = EUtils.Math.Slerp(_cameraFollower.rotation, _targetCameraFollowerRotation, Time.deltaTime * _playerStats.NetworkVariableSmoothingSpeed);
-            if(_currentWeapon != null)
-            {
-                _currentWeapon.transform.SetLocalPositionAndRotation(
-                    EUtils.Math.Lerp(_currentWeapon.transform.localPosition, _targetWeaponPosition, Time.deltaTime * _playerStats.NetworkVariableSmoothingSpeed),
-                    EUtils.Math.Slerp(_currentWeapon.transform.localRotation, _targetWeaponRotation, Time.deltaTime * _playerStats.NetworkVariableSmoothingSpeed));
-            }
-            
-        }
+        // After every component's OnNetworkSpawn, so team stats and model are applied before movement is built.
+        // Registering calls InitializeSceneReferences right away when a scene is already active.
+        protected override void OnNetworkPostSpawn() => _sceneLifecycleManager.Register(this);
 
         private void FixedUpdate()
         {
-            if (!IsOwner) return;
-            if (_movement == null)
-            {
-                EUtils.Logger.LogWarning("Movement is NULL");
-                return;
-            }
+            if (!IsOwner || _movement == null) return;
             _movement.HandleFixedMovement(_inputReader.MoveDirection);
         }
 
-        private void BindNetworkVariable<T>(NetworkVariable<T> networkVar, Action<T, T> onChangedCallback)
-        {
-            networkVar.OnValueChanged += (oldValue, newValue) =>
-            {
-                if (!IsOwner)
-                {
-                    onChangedCallback?.Invoke(oldValue, newValue);
-                }
-            };
-        }
-
-        private void OnModelRotationNetworkVarChanged(float oldValue, float newValue)
-        {
-            _model.rotation = Quaternion.Euler(0f, newValue, 0f);
-        }
-
-        private void OnCameraFollowerRotationNetworkVarChanged(Quaternion oldValue, Quaternion newValue)
-        {
-            _cameraFollower.rotation = newValue;
-        }
-
-        private void OnWeaponPositionNetworkVarChanged(Vector3 oldValue, Vector3 newValue)
-        {
-            if(_currentWeapon != null)
-                _currentWeapon.transform.position = newValue;
-        }
-
-        private void OnWeaponRotationNetworkVarChanged(Quaternion oldValue, Quaternion newValue)
-        {
-            if (_currentWeapon != null)
-                _currentWeapon.transform.rotation = newValue;
-        }
+        public void SetTeam(Team team) => _team.SetTeam(team);
 
         [Rpc(SendTo.Owner)]
         public void TeleportRpc(Vector3 position, Quaternion rotation)
@@ -190,258 +79,108 @@ namespace Project.Assets._Project._Scripts.Player
             _movement?.ToggleMovement(false);
             _networkRb.SetPosition(position);
             _networkRb.SetRotation(rotation);
-            _movement?.ToggleMovement(true);
+            _movement?.ToggleMovement(_lifeState.IsUp);
         }
 
-        private void InjectGlobalDependencies()
+        public void InitializeSceneReferences(SceneType sceneType)
         {
-            var container = SceneManager.GetActiveScene().GetSceneContainer();
-            if (container == null)
-            {
-                EUtils.Logger.LogWarning("[PlayerController] Scene container not found during global injection. Retrying in next frame...");
-                return;
-            }
-            GameObjectInjector.InjectObject(gameObject, container);
-        }
+            if (sceneType == SceneType.MainMenu) return;
+            if (IsServer && sceneType == SceneType.Lobby) _playerRegistry?.RegisterPlayer(this);
+            if (!IsOwner) return;
 
-        // The scene's installer registers its context before sceneLoaded triggers InitializeSceneReferences
-        private void ApplySceneContext(SceneType sceneType)
-        {
             if (!_sceneContextProvider.TryGetCurrent(sceneType, out var sceneContext))
             {
                 EUtils.Logger.LogError($"[PlayerController] No {sceneType} scene context registered.");
-                _gameplayCamera = null;
-                _fpCameraInstaller = null;
+                _cameraBinder.Unbind();
                 return;
             }
 
-            _gameplayCamera = sceneContext.GameplayCamera;
-            _fpCameraInstaller = sceneContext.FPCameraInstaller;
-            // kept outside the lobby so ClearSceneReferences(Lobby) unsubscribes the same instance whatever the callback order
-            if (sceneType == SceneType.Lobby) _lobbyUI = sceneContext.LobbyUI;
+            _cameraBinder.Bind(sceneContext, this);
+            CreateMovementIfNeeded();
+            if (_movement != null && _cameraBinder.Camera != null) _movement.ChangeCamera(_cameraBinder.Camera);
+
+            if (sceneType == SceneType.Lobby) BindLobbyInput(sceneContext.LobbyUI);
         }
 
-        public void InitializeSceneReferences(SceneType scene)
+        public void ClearSceneReferences(SceneType sceneType)
         {
-            switch (scene)
+            if (!IsOwner) return;
+            if (sceneType == SceneType.Lobby) UnbindLobbyInput();
+        }
+
+        private void CreateMovementIfNeeded()
+        {
+            if (_movement != null) return;
+
+            var camera = _cameraBinder.Camera;
+            if (camera == null || _team.CurrentStats == null)
             {
-                case SceneType.Lobby:
-                    if (IsOwner)
-                    {
-                        ApplySceneContext(SceneType.Lobby);
-                        EUtils.Logger.Log("Creating movement");
-                        if (_fpCameraInstaller != null)
-                        {
-                            _fpCameraInstaller.BindCameraToPlayer(this);
-                        }
-                        else
-                        {
-                            EUtils.Logger.LogError("[PlayerController] FPCameraInstaller is NULL! Dependency resolution failed.");
-                        }
-
-                        if(_movement == null)
-                        {
-                            if (_playerStats && _gameplayCamera)
-                            {
-                                _movement = new PlayerMovement(_rb, _playerStats, _groundCheck, _gameplayCamera, _model, _cameraFollower);
-                                _fpCameraInstaller.OnCameraRotationChanged -= _movement.HandleRotation;
-                                _fpCameraInstaller.OnCameraRotationChanged += _movement.HandleRotation;
-                                _movement.ModelRotationChanged += val => OnVariableChanged(_modelRotation, val);
-                                _movement.CameraFollowerRotationChanged += val => OnVariableChanged(_cameraFollowerRotation, val);
-                            }
-                            else
-                            {
-                                EUtils.Logger.LogError($"[PlayerController] Missing dependencies for Movement! Stats: {_playerStats == null}, Camera: {_gameplayCamera == null}");
-                            }
-                        }
-                        else
-                        {
-                            if (_gameplayCamera != null)
-                            {
-                                _movement.ChangeCamera(_gameplayCamera);
-                                _fpCameraInstaller.OnCameraRotationChanged -= _movement.HandleRotation;
-                                _fpCameraInstaller.OnCameraRotationChanged += _movement.HandleRotation;
-                            }
-                        }
-                        _inputReader.OnJump += _movement.HandleJump;
-
-
-                        if (IsHost)
-                        {
-                            if (_lobbyUI != null)
-                            {
-                                _inputReader.OnStartButtonKeyPressed += _lobbyUI.InvokeGameStartButtonPress;
-                            }
-                            else
-                            {
-                                EUtils.Logger.LogError("[PlayerController] LobbyUI is NULL! Cannot bind Start Button.");
-                            }
-                        }
-                    }
-                    if (IsServer)
-                    {
-                        _playerRegistry?.RegisterPlayer(this);
-                    }
-                    break;
-                case SceneType.Gameplay:
-                    if (IsOwner)
-                    {
-                        ApplySceneContext(SceneType.Gameplay);
-                        if (_fpCameraInstaller != null)
-                        {
-                            _fpCameraInstaller.BindCameraToPlayer(this);
-                        }
-                        if (_movement != null && _gameplayCamera != null)
-                        {
-                            _movement.ChangeCamera(_gameplayCamera);
-                            _fpCameraInstaller.OnCameraRotationChanged -= _movement.HandleRotation;
-                            _fpCameraInstaller.OnCameraRotationChanged += _movement.HandleRotation;
-                        }
-                    }
-                    break;
+                EUtils.Logger.LogError($"[PlayerController] Missing dependencies for movement! Stats: {_team.CurrentStats != null}, Camera: {camera != null}");
+                return;
             }
+
+            _movement = new PlayerMovement(_rb, _team.CurrentStats, _groundCheck, camera, _team.Model, _cameraFollower);
+            _movement.ModelRotationChanged += _networkSync.SendModelYaw;
+            _movement.CameraFollowerRotationChanged += _networkSync.SendCameraFollowerRotation;
+            _movement.ToggleMovement(_lifeState.IsUp);
+            _cameraBinder.OnCameraRotationChanged += _movement.HandleRotation;
+            _inputReader.OnJump += _movement.HandleJump;
         }
 
-        private void OnVariableChanged<T>(NetworkVariable<T> networkVar, T value)
+        // Only the host can start the game from the lobby
+        private void BindLobbyInput(ILobbyUI lobbyUI)
         {
-            if(!IsOwner) return;
-            networkVar.Value = value;
-        }
+            UnbindLobbyInput();
+            if (!IsHost) return;
 
-        public void ClearSceneReferences(SceneType scene)
-        {
-            switch (scene)
+            if (lobbyUI == null)
             {
-                case SceneType.Lobby:
-                    if (IsOwner)
-                    {
-                        if (IsHost)
-                        {
-                            _inputReader.OnStartButtonKeyPressed -= _lobbyUI.InvokeGameStartButtonPress;
-                        }
-                    }
-                    break;
-                case SceneType.Gameplay:
-                    if (IsOwner)
-                    {
-                        _inputReader.OnJump -= _movement.HandleJump;
-                    }
-                    break;
+                EUtils.Logger.LogError("[PlayerController] LobbyUI is missing! Cannot bind the start button.");
+                return;
             }
+
+            _lobbyUI = lobbyUI;
+            _inputReader.OnStartButtonKeyPressed += _lobbyUI.InvokeGameStartButtonPress;
+        }
+
+        private void UnbindLobbyInput()
+        {
+            if (_lobbyUI == null) return;
+
+            _inputReader.OnStartButtonKeyPressed -= _lobbyUI.InvokeGameStartButtonPress;
+            _lobbyUI = null;
+        }
+
+        private void HandleStatsChanged(PlayerStats stats) => _movement?.ChangeStats(stats);
+
+        private void HandleModelChanged(Transform model) => _movement?.ChangeModel(model);
+
+        private void HandleLifeStateChanged(LifeState _)
+        {
+            if (IsOwner) _movement?.ToggleMovement(_lifeState.IsUp);
         }
 
         public override void OnNetworkDespawn()
         {
             _sceneLifecycleManager.Unregister(this);
-            _modelRotation.OnValueChanged -= OnModelRotationNetworkVarChanged;
+            _team.OnStatsChanged -= HandleStatsChanged;
+            _team.OnModelChanged -= HandleModelChanged;
+            _lifeState.OnLifeStateChanged -= HandleLifeStateChanged;
             if (!IsOwner) return;
-            if(_movement != null)
-                _inputReader.OnJump -= _movement.HandleJump;
-        }
 
-        public void SetTeam(Team team)
-        {
-            if (!IsServer)
-                return;
+            UnbindLobbyInput();
+            _cameraBinder.Unbind();
+            if (_movement == null) return;
 
-            _team.Value = team;
-           
-            
-            UpdateGlobalRpc(team);
-            UpdateLocalRpc(team);
-        }
-
-        private void PerformAttack()
-        {
-            print(EUtils.Logger.Colorize($"[PlayerController] Performing attack for player {OwnerClientId} on team {Team}", "red"));
-            if(_currentWeapon != null)
-                _currentWeapon.Attack();
-        }
-
-        [Rpc(SendTo.Server)]
-        private void CheckDamageServerRpc(Vector3 hitOrigin, float radius)
-        {
-            int damaged = Physics.OverlapSphereNonAlloc(hitOrigin, radius, _damagables, _playerStats.AttackRaycastLayer);
-            for (int i = 0; i < damaged; i++)
-            {
-                var damagedItem = _damagables[i];
-                if (damagedItem == null) continue;
-                damagedItem.GetComponentInParent<Health>()?.TakeDamage(1);
-                print(EUtils.Logger.Colorize($"{damagedItem} received Damager", "red"));
-
-            }
-        }
-
-        [Rpc(SendTo.Everyone)]
-        private void UpdateGlobalRpc(Team team)
-        {
-            PlayerStats stats = null;
-            if (team == Team.Catcher)
-            {
-                stats = _catcherStats;
-                GetWeapon(stats.WeaponPrefab);
-            }
-            else if (team == Team.Runner)
-            {
-                stats = _runnerStats;
-                DestroyWeapon();
-            }
-            if (stats == null) return;
-            _playerStats = stats;
-            _movement?.ChangeStats(stats);
-            ChangeModel(stats.Model);
-
-        }
-
-        private void GetWeapon(MeleeWeaponBase weaponPrefab)
-        {
-            if (weaponPrefab == null) return;
-
-            _currentWeapon = Instantiate(weaponPrefab, _weaponPivot);
-            _currentWeapon.OnWeaponPositionChanged += val => OnVariableChanged(_weaponPosition, val);
-            _currentWeapon.OnWeaponRotationChanged += val => OnVariableChanged(_weaponRotation, val);
-            _currentWeapon.OnCheckDamageRequested += CheckDamageServerRpc;
-        }
-
-        private void DestroyWeapon()
-        {
-            if(_currentWeapon != null)
-            {
-                Destroy(_currentWeapon.gameObject);
-                _currentWeapon = null;
-            }
-        }
-
-        [Rpc(SendTo.Owner)]
-        private void UpdateLocalRpc(Team team)
-        {
-            if (team == Team.Catcher)
-            {
-                _inputReader.OnAttack += PerformAttack;
-            }
-            else
-            {
-                _inputReader.OnAttack -= PerformAttack;
-            }
-        }
-
-        [Rpc(SendTo.Everyone)]
-        private void UpdateModelRpc()
-        {
-            ChangeModel(_playerStats.Model);
-        }
-
-        private void ChangeModel(Transform model)
-        {
-            Destroy(_model.gameObject);
-            _model = Instantiate(model, transform);
-            if(IsOwner) _model.GetComponentInChildren<Renderer>().enabled = false;
-            _movement?.ChangeModel(_model);
+            _movement.ModelRotationChanged -= _networkSync.SendModelYaw;
+            _movement.CameraFollowerRotationChanged -= _networkSync.SendCameraFollowerRotation;
+            _cameraBinder.OnCameraRotationChanged -= _movement.HandleRotation;
+            _inputReader.OnJump -= _movement.HandleJump;
         }
 
         private void OnDrawGizmos()
         {
-            if(!IsOwner) return;
+            if (!IsOwner) return;
             _movement?.DrawGizmos();
         }
     }
