@@ -10,6 +10,7 @@ namespace Project.Assets._Project._Scripts.Managers
         // None until a round has finished
         RoundResult LastRoundResult { get; }
         event Action<GameState, GameState> OnStateChanged;
+        event Action<RoundResult> OnLastRoundResultChanged;
 
         void StartGameLoop();
         void StopGameLoop();

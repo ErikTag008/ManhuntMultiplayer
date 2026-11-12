@@ -23,6 +23,7 @@ namespace Project.Assets._Project._Scripts.Managers
         [SerializeField, Self] private NetworkCoordinator _networkCoordinator;
 
         public event Action<GameState, GameState> OnStateChanged;
+        public event Action<RoundResult> OnLastRoundResultChanged;
 
         private readonly NetworkVariable<GameState> _state = new();
         private readonly NetworkVariable<double> _countdownEndTime = new();
@@ -48,6 +49,7 @@ namespace Project.Assets._Project._Scripts.Managers
         public override void OnNetworkSpawn()
         {
             _state.OnValueChanged += HandleStateChanged;
+            _lastRoundResult.OnValueChanged += HandleLastRoundResultChanged;
             _countdownEndTime.OnValueChanged += StartCountdown;
         }
 
@@ -151,6 +153,8 @@ namespace Project.Assets._Project._Scripts.Managers
 
         private void HandleStateChanged(GameState previous, GameState current) => OnStateChanged?.Invoke(previous, current);
 
+        private void HandleLastRoundResultChanged(RoundResult previous, RoundResult current) => OnLastRoundResultChanged?.Invoke(current);
+
         private void StartCountdown(double _, double endTime)
         {
             RestartCTS(ref _countdownCTS);
@@ -188,6 +192,7 @@ namespace Project.Assets._Project._Scripts.Managers
         public override void OnNetworkDespawn()
         {
             _state.OnValueChanged -= HandleStateChanged;
+            _lastRoundResult.OnValueChanged -= HandleLastRoundResultChanged;
             _countdownEndTime.OnValueChanged -= StartCountdown;
             DisposeCTS(ref _countdownCTS);
         }

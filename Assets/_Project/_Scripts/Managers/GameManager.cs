@@ -20,6 +20,10 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly GameScenes _gameScenes;
         [SerializeField, Self] private PlayerRegistry _playerRegistry;
         [SerializeField, Self] private GameStateMachine _gameStateMachine;
+        [SerializeField] private string _catchersWinTitle = "Catchers win!";
+        [SerializeField] private string _runnersWinTitle = "Runners win!";
+        [SerializeField] private string _localWinSubtitle = "You won";
+        [SerializeField] private string _localLossSubtitle = "You lost";
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -120,15 +124,19 @@ namespace Project.Assets._Project._Scripts.Managers
             ShowPlayerCount();
         }
 
+        // Runs on every lobby load, so drop the previous subscriptions first instead of stacking them
         private void SubscribeToServerChanges()
         {
+            UnsubscribeFromServerChanges();
             _gameStateMachine.OnStateChanged += OnStateChanged;
+            _gameStateMachine.OnLastRoundResultChanged += HandleLastRoundResultChanged;
             _playerRegistry.OnSessionsChanged += ShowPlayerCount;
         }
 
         private void UnsubscribeFromServerChanges()
         {
             _gameStateMachine.OnStateChanged -= OnStateChanged;
+            _gameStateMachine.OnLastRoundResultChanged -= HandleLastRoundResultChanged;
             _playerRegistry.OnSessionsChanged -= ShowPlayerCount;
         }
 
@@ -156,9 +164,7 @@ namespace Project.Assets._Project._Scripts.Managers
                     _uiManager.ChangeLobbyStatusText("Initializing Lobby...");
                     break;
                 case GameState.WaitingForPlayers:
-                    // until the results screen exists, the lobby says who won the last round
-                    var lastRound = _gameStateMachine.LastRoundResult == RoundResult.None ? "" : $"Last round: {GetResultText(_gameStateMachine.LastRoundResult)}\n";
-                    _uiManager.ChangeLobbyStatusText($"{lastRound}Waiting for players... ({_gameLobbySettings.MinRequiredPlayers} required)");
+                    _uiManager.ChangeLobbyStatusText($"Waiting for players... ({_gameLobbySettings.MinRequiredPlayers} required)");
                     break;
 
                 case GameState.Countdown:
@@ -177,17 +183,33 @@ namespace Project.Assets._Project._Scripts.Managers
                     break;
 
                 case GameState.Results:
-                    //_uiManager.ShowResults();
+                    ShowResultsIfReady();
                     break;
             }
         }
 
-        private static string GetResultText(RoundResult result) => result switch
+        // The state and the result are separate NetworkVariables, so either can arrive first on a client
+        private void HandleLastRoundResultChanged(RoundResult result)
         {
-            RoundResult.CatchersWin => "Catchers won",
-            RoundResult.RunnersWin => "Runners won",
-            _ => string.Empty
-        };
+            if (_gameStateMachine.CurrentState == GameState.Results) ShowResultsIfReady();
+        }
+
+        private void ShowResultsIfReady()
+        {
+            var result = _gameStateMachine.LastRoundResult;
+            if (result == RoundResult.None) return;
+
+            var winningTeam = result == RoundResult.CatchersWin ? Team.Catcher : Team.Runner;
+            var localTeam = GetPlayerTeam(NetworkManager.LocalClientId);
+            var title = result == RoundResult.CatchersWin ? _catchersWinTitle : _runnersWinTitle;
+            _uiManager.ShowResults(title, GetLocalResultSubtitle(localTeam, winningTeam));
+        }
+
+        private string GetLocalResultSubtitle(Team localTeam, Team winningTeam)
+        {
+            if (localTeam == Team.None) return string.Empty;
+            return localTeam == winningTeam ? _localWinSubtitle : _localLossSubtitle;
+        }
 
         public override void OnDestroy()
         {

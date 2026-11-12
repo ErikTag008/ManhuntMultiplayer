@@ -14,6 +14,7 @@ namespace Project.Assets._Project._Scripts.UI
         event Action OnRequestLobbyUIInitialization;
         event Action OnRequestGameUIInitialization;
         event Action OnRequestGameStart;
+        event Action<string, string> OnResultsShown;
 
         void RaiseHostStart();
         void RaiseClientStart();
@@ -25,5 +26,6 @@ namespace Project.Assets._Project._Scripts.UI
         void ChangeStartGameButtonAvailability(bool isActive);
         void RequestLobbyUIInitialization();
         void RequestGameUIInitialization();
+        void ShowResults(string title, string subtitle);
     }
 }
