@@ -5,41 +5,42 @@ using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player
 {
-    // Owns the player's team and applies the matching stats and model on every instance
+    // Applies the team from this player's session (stats and model) on every instance; PlayerRegistry owns the value
     public class PlayerTeam : NetworkBehaviour
     {
         [Inject] private readonly PlayerStats _defaultStats;
         [Inject] private readonly CatcherStats _catcherStats;
         [Inject] private readonly RunnerStats _runnerStats;
+        [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
         [SerializeField] private Transform _model;
 
         public event Action<PlayerStats> OnStatsChanged;
         public event Action<Transform> OnModelChanged;
 
-        private readonly NetworkVariable<Team> _team = new();
+        private Team _team;
         private PlayerStats _currentStats;
 
-        public Team Team => _team.Value;
+        public Team Team => _team;
         public PlayerStats CurrentStats => _currentStats;
         public Transform Model => _model;
 
-        // Applying the current value here also covers late joiners, since initial values don't raise OnValueChanged
+        // The session may not exist yet (it's added when the player reaches the lobby), so start from no team
         public override void OnNetworkSpawn()
         {
-            _team.OnValueChanged += HandleTeamChanged;
-            ApplyTeam(_team.Value);
+            _sessionDirectory.OnSessionChanged += HandleSessionChanged;
+            var team = _sessionDirectory.TryGetSession(OwnerClientId, out var session) ? session.Team : Team.None;
+            ApplyTeam(team);
         }
 
-        public void SetTeam(Team team)
+        private void HandleSessionChanged(PlayerSession session)
         {
-            if (!IsServer) return;
-            _team.Value = team;
+            if (session.ClientId != OwnerClientId || session.Team == _team) return;
+            ApplyTeam(session.Team);
         }
-
-        private void HandleTeamChanged(Team previous, Team current) => ApplyTeam(current);
 
         private void ApplyTeam(Team team)
         {
+            _team = team;
             _currentStats = team switch
             {
                 Team.Catcher => _catcherStats,
@@ -63,7 +64,7 @@ namespace Project.Assets._Project._Scripts.Player
             OnModelChanged?.Invoke(_model);
         }
 
-        public override void OnNetworkDespawn() => _team.OnValueChanged -= HandleTeamChanged;
+        public override void OnNetworkDespawn() => _sessionDirectory.OnSessionChanged -= HandleSessionChanged;
     }
 
     public enum Team

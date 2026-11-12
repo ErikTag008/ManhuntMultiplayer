@@ -27,6 +27,7 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(typeof(GameSystemsRegistry), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(ActiveCameraProvider), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(SceneContextProvider), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(PlayerSessionDirectory), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PersistentObjectRegistry), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(TeamAssignmentService), new Type[] { typeof(ITeamAssignmentService) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             builder.RegisterType(typeof(UIManager), new Type[] { typeof(IUIManager) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);

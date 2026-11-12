@@ -71,8 +71,6 @@ namespace Project.Assets._Project._Scripts.Player
             _movement.HandleFixedMovement(_inputReader.MoveDirection);
         }
 
-        public void SetTeam(Team team) => _team.SetTeam(team);
-
         [Rpc(SendTo.Owner)]
         public void TeleportRpc(Vector3 position, Quaternion rotation)
         {
@@ -162,6 +160,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         public override void OnNetworkDespawn()
         {
+            if (IsServer) _playerRegistry?.UnregisterPlayer(this);
             _sceneLifecycleManager.Unregister(this);
             _team.OnStatsChanged -= HandleStatsChanged;
             _team.OnModelChanged -= HandleModelChanged;

@@ -1,35 +1,50 @@
+using Reflex.Attributes;
 using System;
 using Unity.Netcode;
 
 namespace Project.Assets._Project._Scripts.Player
 {
-    // Server-owned Up / Knocked / Eliminated state, replicated to everyone
+    // Up / Knocked / Eliminated read from this player's session; PlayerRegistry owns the value
     public class PlayerLifeState : NetworkBehaviour
     {
+        [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
+        [Inject] private readonly IPlayerRegistry _playerRegistry;
+
         public event Action<LifeState> OnLifeStateChanged;
 
-        private readonly NetworkVariable<LifeState> _state = new();
+        private LifeState _state;
 
-        public LifeState State => _state.Value;
-        public bool IsUp => _state.Value == LifeState.Up;
+        public LifeState State => _state;
+        public bool IsUp => _state == LifeState.Up;
 
-        public override void OnNetworkSpawn() => _state.OnValueChanged += HandleStateChanged;
+        public override void OnNetworkSpawn()
+        {
+            _sessionDirectory.OnSessionChanged += HandleSessionChanged;
+            _state = _sessionDirectory.TryGetSession(OwnerClientId, out var session) ? session.LifeState : LifeState.Up;
+        }
 
+        // Server only; players are spawned after GameSystems, so the registry is injected on the server
         public void Knock()
         {
             if (!IsServer || !IsUp) return;
-            _state.Value = LifeState.Knocked;
+            if (_playerRegistry == null)
+            {
+                EUtils.Logger.LogError($"[PlayerLifeState] No player registry; can't knock player {OwnerClientId}.");
+                return;
+            }
+
+            _playerRegistry.SetLifeState(OwnerClientId, LifeState.Knocked);
         }
 
-        public void ResetState()
+        private void HandleSessionChanged(PlayerSession session)
         {
-            if (!IsServer) return;
-            _state.Value = LifeState.Up;
+            if (session.ClientId != OwnerClientId || session.LifeState == _state) return;
+
+            _state = session.LifeState;
+            OnLifeStateChanged?.Invoke(_state);
         }
 
-        private void HandleStateChanged(LifeState previous, LifeState current) => OnLifeStateChanged?.Invoke(current);
-
-        public override void OnNetworkDespawn() => _state.OnValueChanged -= HandleStateChanged;
+        public override void OnNetworkDespawn() => _sessionDirectory.OnSessionChanged -= HandleSessionChanged;
     }
 
     public enum LifeState

@@ -1,15 +1,22 @@
-﻿using System.Collections.Generic;
-using Unity.Netcode;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Project.Assets._Project._Scripts.Player
 {
     public interface IPlayerRegistry
     {
-        void RegisterPlayer(PlayerController player);
-        void AddPlayerInfo(PlayerInfo info);
+        // Every instance
         int PlayerCount { get; }
+        event Action OnSessionsChanged;
+        bool TryGetSession(ulong clientId, out PlayerSession session);
+
+        // Server only
         List<PlayerController> GetPlayers();
-        NetworkList<PlayerInfo> PlayerInfos { get; }
-        NetworkVariable<int> PlayerCountVariable { get; }
+        void RegisterPlayer(PlayerController player);
+        void UnregisterPlayer(PlayerController player);
+        void SetTeam(ulong clientId, Team team);
+        void SetLifeState(ulong clientId, LifeState lifeState);
+        void ResetLifeStates();
+        void ResetForLobby();
     }
 }

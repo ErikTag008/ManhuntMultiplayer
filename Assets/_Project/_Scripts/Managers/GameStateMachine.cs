@@ -78,6 +78,7 @@ namespace Project.Assets._Project._Scripts.Managers
             while (!token.IsCancellationRequested)
             {
                 _state.Value = GameState.Lobby;
+                _playerRegistry.ResetForLobby();
                 await _networkCoordinator.LoadNetworkScene(_gameScenes.LobbySceneName, token);
 
                 _state.Value = GameState.WaitingForPlayers;
@@ -94,6 +95,7 @@ namespace Project.Assets._Project._Scripts.Managers
                 _state.Value = GameState.LoadingGameplay;
                 await _networkCoordinator.LoadNetworkScene(_gameScenes.DefaultMap.SceneName, token);
 
+                _playerRegistry.ResetLifeStates();
                 _countdownEndTime.Value = NetworkManager.ServerTime.Time + _settings.RunnersHideWaitTime;
                 _state.Value = GameState.WaitForRunnerHide;
                 await WaitForRunnerHide(token);

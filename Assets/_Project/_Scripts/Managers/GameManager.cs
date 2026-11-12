@@ -69,16 +69,9 @@ namespace Project.Assets._Project._Scripts.Managers
 
         private Team GetPlayerTeam(ulong clientId)
         {
-            foreach (var playerInfo in _playerRegistry.PlayerInfos)
-            {
-                if (playerInfo.ClientId == clientId)
-                {
-                    _uiManager.ChangePlayerTeamText(playerInfo.Team.ToString());
-                    return playerInfo.Team;
-                }
-            }
+            if (_playerRegistry.TryGetSession(clientId, out var session)) return session.Team;
 
-            EUtils.Logger.LogError($"[GameManager] Player info not found for client ID: {clientId}");
+            EUtils.Logger.LogError($"[GameManager] No player session for client ID: {clientId}");
             return Team.None;
         }
 
@@ -94,7 +87,7 @@ namespace Project.Assets._Project._Scripts.Managers
                 EmptyLobbyUI();
                 SubscribeToServerChanges();
                 OnStateChanged(_gameStateMachine.CurrentState, _gameStateMachine.CurrentState);
-                OnPlayerCountChanged(_playerRegistry.PlayerCount, _playerRegistry.PlayerCount);
+                ShowPlayerCount();
 
                 _uiManager.OnRequestGameStart += HandleGameStartRequest;
             }
@@ -124,19 +117,19 @@ namespace Project.Assets._Project._Scripts.Managers
             EmptyLobbyUI();
             SubscribeToServerChanges();
             OnStateChanged(_gameStateMachine.CurrentState, _gameStateMachine.CurrentState);
-            OnPlayerCountChanged(_playerRegistry.PlayerCount, _playerRegistry.PlayerCount);
+            ShowPlayerCount();
         }
 
         private void SubscribeToServerChanges()
         {
             _gameStateMachine.OnStateChanged += OnStateChanged;
-            _playerRegistry.PlayerCountVariable.OnValueChanged += OnPlayerCountChanged;
+            _playerRegistry.OnSessionsChanged += ShowPlayerCount;
         }
 
         private void UnsubscribeFromServerChanges()
         {
             _gameStateMachine.OnStateChanged -= OnStateChanged;
-            _playerRegistry.PlayerCountVariable.OnValueChanged -= OnPlayerCountChanged;
+            _playerRegistry.OnSessionsChanged -= ShowPlayerCount;
         }
 
         private void EmptyLobbyUI()
@@ -146,11 +139,11 @@ namespace Project.Assets._Project._Scripts.Managers
             _uiManager.ChangeCountdownText("");
         }
 
-        private void OnPlayerCountChanged(int previousCount, int newCount)
+        private void ShowPlayerCount()
         {
             if(_gameStateMachine.CurrentState == GameState.Lobby || _gameStateMachine.CurrentState == GameState.WaitingForPlayers || _gameStateMachine.CurrentState == GameState.Countdown)
             {
-                _uiManager.ChangeJoinedPlayerAmount($"{newCount}/{_gameLobbySettings.MaxConnectedPlayers} players joined");
+                _uiManager.ChangeJoinedPlayerAmount($"{_playerRegistry.PlayerCount}/{_gameLobbySettings.MaxConnectedPlayers} players joined");
             }
         }
 
@@ -161,8 +154,6 @@ namespace Project.Assets._Project._Scripts.Managers
             {
                 case GameState.Lobby:
                     _uiManager.ChangeLobbyStatusText("Initializing Lobby...");
-                    // runners knocked in the last round must be able to move in the lobby
-                    ResetLifeStates();
                     break;
                 case GameState.WaitingForPlayers:
                     _uiManager.ChangeLobbyStatusText($"Waiting for players... ({_gameLobbySettings.MinRequiredPlayers} required)");
@@ -175,9 +166,6 @@ namespace Project.Assets._Project._Scripts.Managers
                 case GameState.AssigningTeams:
                     _uiManager.ChangeLobbyStatusText($"Assigning teams...");
                     break;
-                case GameState.WaitForRunnerHide:
-                    ResetLifeStates();
-                    break;
                 case GameState.Playing:
                     //_uiManager.ShowGameplayUI();
                     
@@ -189,15 +177,6 @@ namespace Project.Assets._Project._Scripts.Managers
                 case GameState.Results:
                     //_uiManager.ShowResults();
                     break;
-            }
-        }
-
-        // server-only inside ResetState, so clients running this switch are no-ops
-        private void ResetLifeStates()
-        {
-            foreach (var player in _playerRegistry.GetPlayers())
-            {
-                player.LifeState.ResetState();
             }
         }
 

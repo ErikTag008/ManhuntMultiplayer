@@ -6,6 +6,5 @@ namespace Project.Assets._Project._Scripts.Managers
     public interface ITeamAssignmentService
     {
         void AssignTeams();
-        Team GetPlayerTeam(ulong clientId);
     }
 }
