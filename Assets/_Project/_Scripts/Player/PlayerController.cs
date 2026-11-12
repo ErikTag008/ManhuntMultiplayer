@@ -35,6 +35,8 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField] private Transform _cameraTarget;
         [SerializeField] private Transform _cameraFollower;
 
+        private readonly StatModifierStack _statModifiers = new();
+        private ModifiedMovementStats _movementStats;
         private IPlayerMovement _movement;
         private ILobbyUI _lobbyUI;
 
@@ -42,6 +44,8 @@ namespace Project.Assets._Project._Scripts.Player
         public PlayerLifeState LifeState => _lifeState;
         public Transform CameraTarget => _cameraTarget;
         public InputReader InputReader => _inputReader;
+        // Owner side: movement runs on the owner, so features that change movement stats add their modifiers here
+        public StatModifierStack StatModifiers => _statModifiers;
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -117,7 +121,8 @@ namespace Project.Assets._Project._Scripts.Player
                 return;
             }
 
-            _movement = new PlayerMovement(_rb, _team.CurrentStats, _groundCheck, camera, _team.Model, _cameraFollower);
+            _movementStats = new ModifiedMovementStats(_team.CurrentStats, _statModifiers);
+            _movement = new PlayerMovement(_rb, _movementStats, _groundCheck, camera, _team.Model, _cameraFollower);
             _movement.ModelRotationChanged += _networkSync.SendModelYaw;
             _movement.CameraFollowerRotationChanged += _networkSync.SendCameraFollowerRotation;
             _movement.ToggleMovement(_lifeState.IsUp);
@@ -149,7 +154,12 @@ namespace Project.Assets._Project._Scripts.Player
             _lobbyUI = null;
         }
 
-        private void HandleStatsChanged(PlayerStats stats) => _movement?.ChangeStats(stats);
+        // A team change starts a new round or returns to the lobby, so effects from the last round end here
+        private void HandleStatsChanged(PlayerStats stats)
+        {
+            _statModifiers.Clear();
+            _movementStats?.ChangeBaseStats(stats);
+        }
 
         private void HandleModelChanged(Transform model) => _movement?.ChangeModel(model);
 

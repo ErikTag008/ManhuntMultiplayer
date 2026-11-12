@@ -46,6 +46,12 @@ namespace Project.Assets._Project._Scripts.Managers
             return index >= 0;
         }
 
+        public void CopySessionsTo(List<PlayerSession> buffer)
+        {
+            buffer.Clear();
+            foreach (var session in _sessions) buffer.Add(session);
+        }
+
         public void RegisterPlayer(PlayerController player)
         {
             if (!IsServer) return;

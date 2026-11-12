@@ -9,6 +9,8 @@ namespace Project.Assets._Project._Scripts.Player
         int PlayerCount { get; }
         event Action OnSessionsChanged;
         bool TryGetSession(ulong clientId, out PlayerSession session);
+        // Fills a caller-owned list so per-frame checks don't allocate
+        void CopySessionsTo(List<PlayerSession> buffer);
 
         // Server only
         List<PlayerController> GetPlayers();
