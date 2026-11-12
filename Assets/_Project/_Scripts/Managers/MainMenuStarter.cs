@@ -35,9 +35,11 @@ namespace Project.Assets._Project._Scripts.Managers
         private async UniTaskVoid HostSession(CancellationToken token)
         {
             _serverStarterUI.ToggleServerStarterUI(false);
-            if (!await _connectionService.Host(_connectionSettings.DefaultLobbyVisibility, token))
+            var isHosting = await _connectionService.Host(_connectionSettings.DefaultLobbyVisibility, token);
+            if (this == null) return;
+
+            if (!isHosting)
             {
-                if (this == null) return;
                 _serverStarterUI.ToggleServerStarterUI(true);
                 return;
             }

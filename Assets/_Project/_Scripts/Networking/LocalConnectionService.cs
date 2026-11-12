@@ -27,24 +27,26 @@ namespace Project.Assets._Project._Scripts.Networking
         public bool IsConnected => _sessionNetworkManager != null && _sessionNetworkManager.IsListening;
 
         // Visibility only applies to lobby-based services (Steam); a local host is reachable by address
-        public UniTask<bool> Host(LobbyVisibility visibility, CancellationToken token)
+        public async UniTask<bool> Host(LobbyVisibility visibility, CancellationToken token)
         {
-            if (!TryGetIdleNetworkManager(out var networkManager)) return UniTask.FromResult(false);
+            var networkManager = await GetIdleNetworkManager(token);
+            if (networkManager == null) return false;
 
             ConfigureTransport(networkManager, _settings.Address);
             if (!networkManager.StartHost())
             {
                 EUtils.Logger.LogError("[LocalConnectionService] StartHost failed.");
-                return UniTask.FromResult(false);
+                return false;
             }
 
             BeginSession(networkManager);
-            return UniTask.FromResult(true);
+            return true;
         }
 
         public async UniTask<bool> Join(string target, CancellationToken token)
         {
-            if (!TryGetIdleNetworkManager(out var networkManager)) return false;
+            var networkManager = await GetIdleNetworkManager(token);
+            if (networkManager == null) return false;
 
             var address = string.IsNullOrWhiteSpace(target) ? _settings.Address : target;
             ConfigureTransport(networkManager, address);
@@ -100,22 +102,29 @@ namespace Project.Assets._Project._Scripts.Networking
             _sessionNetworkManager.Shutdown();
         }
 
-        private static bool TryGetIdleNetworkManager(out NetworkManager networkManager)
+        // Shutdown() only completes on Netcode's next network update, so a Host/Join right after a failed join or Leave() waits for it
+        private static async UniTask<NetworkManager> GetIdleNetworkManager(CancellationToken token)
         {
-            networkManager = NetworkManager.Singleton;
+            var networkManager = NetworkManager.Singleton;
             if (networkManager == null)
             {
                 EUtils.Logger.LogError("[LocalConnectionService] No NetworkManager in the scene.");
-                return false;
+                return null;
+            }
+
+            if (networkManager.ShutdownInProgress)
+            {
+                await UniTask.WaitWhile(() => networkManager != null && networkManager.ShutdownInProgress, cancellationToken: token);
+                if (networkManager == null) return null;
             }
 
             if (networkManager.IsListening)
             {
                 EUtils.Logger.LogWarning("[LocalConnectionService] Already in a session.");
-                return false;
+                return null;
             }
 
-            return true;
+            return networkManager;
         }
 
         private void ConfigureTransport(NetworkManager networkManager, string address)
