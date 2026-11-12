@@ -37,7 +37,6 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void HandleInteractHeldChanged(bool isHeld)
         {
-            EUtils.Logger.Log($"[TEMP-RESCUE-DIAG] owner {OwnerClientId} held={isHeld}, sending RPC");
             if (isHeld) StartHoldServerRpc();
             else StopHoldServerRpc();
         }
@@ -51,8 +50,6 @@ namespace Project.Assets._Project._Scripts.Player
         // Server only
         private void ToggleInteractHeld(bool isHeld)
         {
-            EUtils.Logger.Log($"[TEMP-RESCUE-DIAG] server: player {OwnerClientId} held={isHeld} team={_team.Team} state={_lifeState.State} registry={(_playerRegistry != null)} players={(_playerRegistry != null ? _playerRegistry.GetPlayers().Count : -1)}");
-            if (isHeld) LogRescueCandidates();
             if (_isInteractHeld == isHeld) return;
 
             _isInteractHeld = isHeld;
@@ -94,17 +91,6 @@ namespace Project.Assets._Project._Scripts.Player
             }
         }
 
-        private void LogRescueCandidates()
-        {
-            foreach (var player in _playerRegistry.GetPlayers())
-            {
-                if (player.OwnerClientId == OwnerClientId) continue;
-                float distance = Vector3.Distance(player.transform.position, transform.position);
-                bool hasRescue = player.TryGetComponent(out PlayerRescue candidate);
-                EUtils.Logger.Log($"[TEMP-RESCUE-DIAG]   candidate {player.OwnerClientId}: team={player.Team} state={player.LifeState.State} dist={distance:F2} hasRescue={hasRescue} taken={(hasRescue && candidate._rescuer != null)}");
-            }
-        }
-
         private bool CanRescue() => _team.Team == Team.Runner && _lifeState.IsUp;
 
         // The nearest knocked runner in range that nobody else is already rescuing
@@ -138,7 +124,6 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void AttachTarget(PlayerRescue target)
         {
-            EUtils.Logger.Log($"[TEMP-RESCUE-DIAG] server: {OwnerClientId} attached to {target.OwnerClientId}");
             _target = target;
             target._rescuer = this;
             target._lifeState.PauseBleedOut();
@@ -161,7 +146,6 @@ namespace Project.Assets._Project._Scripts.Player
         private void DetachTarget(bool isResumingBleedOut)
         {
             if (_target == null) return;
-            EUtils.Logger.Log($"[TEMP-RESCUE-DIAG] server: {OwnerClientId} detached from {_target.OwnerClientId} resume={isResumingBleedOut} canRescue={CanRescue()} targetState={_target._lifeState.State}");
 
             if (_target.IsSpawned)
             {

@@ -2,7 +2,6 @@ using Project.Assets._Project._Scripts.Player;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
-using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Managers
 {
@@ -30,7 +29,7 @@ namespace Project.Assets._Project._Scripts.Managers
             EUtils.Logger.Log($"Assigning teams for {players.Count} players");
 
             var shuffled = players.OrderBy(_ => UnityEngine.Random.value).ToList();
-            int catcherCount = Mathf.Min(_settings.MaxCatcherPlayers, shuffled.Count - 1);
+            int catcherCount = _settings.GetCatcherCount(shuffled.Count);
 
             var catcherIds = shuffled.Take(catcherCount).Select(p => p.OwnerClientId).ToHashSet();
 

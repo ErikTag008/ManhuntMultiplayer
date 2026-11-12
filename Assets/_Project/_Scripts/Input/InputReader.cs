@@ -76,7 +76,6 @@ namespace Project.Assets._Project._Scripts.Input
 
         public void Interact(InputAction.CallbackContext context)
         {
-            Debug.Log($"[TEMP-RESCUE-DIAG] Interact phase={context.phase}");
             if (context.performed)
             {
                 OnInteract?.Invoke();
@@ -120,6 +119,15 @@ namespace Project.Assets._Project._Scripts.Input
             {
                 OnHealthPotionUsed?.Invoke();
             }
+        }
+
+        // Lets dev tools and bots drive the player through the same events as real input
+        public void SimulateMove(Vector2 direction) => MoveDirection = direction;
+
+        public void SimulateInteractHeld(bool isHeld)
+        {
+            if (isHeld) OnInteract?.Invoke();
+            OnInteractHeldChanged?.Invoke(isHeld);
         }
 
         public void StartButton(InputAction.CallbackContext context)

@@ -12,6 +12,8 @@ namespace Project.Assets._Project._Scripts.Managers
         [SerializeField] private NetworkObject _playerPrefab;
         [SerializeField] private Transform[] _spawnPoints;
         private readonly HashSet<ulong> _spawnedClients = new();
+        // spawn point index per client, so two players never share a point (client ids keep growing as players rejoin)
+        private readonly Dictionary<ulong, int> _spawnPointIndexByClient = new();
 
 
         private void Start()
@@ -23,6 +25,7 @@ namespace Project.Assets._Project._Scripts.Managers
                 return;
 
             NetworkManager.Singleton.OnClientConnectedCallback += SpawnPlayer;
+            NetworkManager.Singleton.OnClientDisconnectCallback += HandleClientDisconnected;
 
             SpawnExistingPlayers();
         }
@@ -32,6 +35,7 @@ namespace Project.Assets._Project._Scripts.Managers
             if (NetworkManager.Singleton)
             {
                 NetworkManager.Singleton.OnClientConnectedCallback -= SpawnPlayer;
+                NetworkManager.Singleton.OnClientDisconnectCallback -= HandleClientDisconnected;
             }
         }
 
@@ -54,7 +58,7 @@ namespace Project.Assets._Project._Scripts.Managers
             EUtils.Logger.LogColorized("Trying to spawn" + clientId, "Yellow");
             _spawnedClients.Add(clientId);
 
-            var spawnPoint = _spawnPoints[clientId % (ulong)_spawnPoints.Length];
+            var spawnPoint = ClaimSpawnPoint(clientId);
 
             // Players persist across Single-mode scene loads; returning from a round only moves them back
             if (TryGetExistingPlayer(clientId, out var existingPlayer))
@@ -83,6 +87,26 @@ namespace Project.Assets._Project._Scripts.Managers
                 EUtils.Logger.LogError("[PlayerSpawner] IPlayerRegistry not found in scene! Cannot register player.");
             }
             EUtils.Logger.Log($"Spawned OwnerClientId = {player.OwnerClientId}");
+        }
+
+        private Transform ClaimSpawnPoint(ulong clientId)
+        {
+            for (int i = 0; i < _spawnPoints.Length; i++)
+            {
+                if (_spawnPointIndexByClient.ContainsValue(i)) continue;
+
+                _spawnPointIndexByClient[clientId] = i;
+                return _spawnPoints[i];
+            }
+
+            EUtils.Logger.LogWarning($"[PlayerSpawner] No free spawn point for client {clientId}; add more spawn points to the lobby.");
+            return _spawnPoints[clientId % (ulong)_spawnPoints.Length];
+        }
+
+        private void HandleClientDisconnected(ulong clientId)
+        {
+            _spawnedClients.Remove(clientId);
+            _spawnPointIndexByClient.Remove(clientId);
         }
 
         private static bool TryGetExistingPlayer(ulong clientId, out PlayerController player)

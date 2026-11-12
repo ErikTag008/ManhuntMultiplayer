@@ -15,8 +15,9 @@ MonoBehaviour:
   <MinRequiredPlayers>k__BackingField: 3
   <MaxConnectedPlayers>k__BackingField: 10
   <MaxCatcherPlayers>k__BackingField: 2
+  <PlayersPerCatcher>k__BackingField: 6
   <MaxWaitForPlayersTimeInSeconds>k__BackingField: 5
   <GameStartWaitTimeInSeconds>k__BackingField: 3
   <RunnersHideWaitTime>k__BackingField: 5
-  <GameDurationInSeconds>k__BackingField: 77
+  <GameDurationInSeconds>k__BackingField: 25
   <ResultsDurationInSeconds>k__BackingField: 3

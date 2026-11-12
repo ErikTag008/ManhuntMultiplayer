@@ -81,6 +81,9 @@ namespace Project.Assets._Project._Scripts.Player
         public void TeleportRpc(Vector3 position, Quaternion rotation)
         {
             _movement?.ToggleMovement(false);
+            // momentum from before the teleport (falling, sliding) must not carry over to the new spot
+            _networkRb.SetLinearVelocity(Vector3.zero);
+            _networkRb.SetAngularVelocity(Vector3.zero);
             _networkRb.SetPosition(position);
             _networkRb.SetRotation(rotation);
             _movement?.ToggleMovement(_lifeState.CanMove);
