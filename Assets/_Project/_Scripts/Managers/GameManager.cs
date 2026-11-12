@@ -156,7 +156,9 @@ namespace Project.Assets._Project._Scripts.Managers
                     _uiManager.ChangeLobbyStatusText("Initializing Lobby...");
                     break;
                 case GameState.WaitingForPlayers:
-                    _uiManager.ChangeLobbyStatusText($"Waiting for players... ({_gameLobbySettings.MinRequiredPlayers} required)");
+                    // until the results screen exists, the lobby says who won the last round
+                    var lastRound = _gameStateMachine.LastRoundResult == RoundResult.None ? "" : $"Last round: {GetResultText(_gameStateMachine.LastRoundResult)}\n";
+                    _uiManager.ChangeLobbyStatusText($"{lastRound}Waiting for players... ({_gameLobbySettings.MinRequiredPlayers} required)");
                     break;
 
                 case GameState.Countdown:
@@ -179,6 +181,13 @@ namespace Project.Assets._Project._Scripts.Managers
                     break;
             }
         }
+
+        private static string GetResultText(RoundResult result) => result switch
+        {
+            RoundResult.CatchersWin => "Catchers won",
+            RoundResult.RunnersWin => "Runners won",
+            _ => string.Empty
+        };
 
         public override void OnDestroy()
         {

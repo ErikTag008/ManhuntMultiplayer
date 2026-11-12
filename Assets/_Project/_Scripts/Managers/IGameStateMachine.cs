@@ -7,6 +7,8 @@ namespace Project.Assets._Project._Scripts.Managers
     public interface IGameStateMachine
     {
         GameState CurrentState { get; }
+        // None until a round has finished
+        RoundResult LastRoundResult { get; }
         event Action<GameState, GameState> OnStateChanged;
 
         void StartGameLoop();

@@ -1,11 +1,11 @@
 using Cysharp.Threading.Tasks;
 using KBCore.Refs;
+using Project.Assets._Project._Scripts.Player;
 using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.UI;
 using Reflex.Attributes;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Unity.Netcode;
 using UnityEngine;
@@ -16,20 +16,25 @@ namespace Project.Assets._Project._Scripts.Managers
     {
         [Inject] private readonly IUIManager _uiManager;
         [Inject] private readonly ITeamAssignmentService _teamAssignmentService;
+        [Inject] private readonly IWinConditionEvaluator _winConditionEvaluator;
         [Inject] private readonly GameLobbySettings _settings;
         [Inject] private readonly GameScenes _gameScenes;
         [SerializeField, Self] private PlayerRegistry _playerRegistry;
         [SerializeField, Self] private NetworkCoordinator _networkCoordinator;
 
-        private NetworkVariable<GameState> _state = new();
-        private NetworkVariable<double> _countdownEndTime = new();
+        public event Action<GameState, GameState> OnStateChanged;
+
+        private readonly NetworkVariable<GameState> _state = new();
+        private readonly NetworkVariable<double> _countdownEndTime = new();
+        private readonly NetworkVariable<RoundResult> _lastRoundResult = new();
+        private readonly List<PlayerSession> _sessionBuffer = new();
         private CancellationTokenSource _gameLoopCTS;
         private CancellationTokenSource _countdownCTS;
-        private bool _gameStartRequested = false;
+        private bool _gameStartRequested;
         private GameSystemsRegistry _gameSystemsRegistry;
 
         public GameState CurrentState => _state.Value;
-        public event Action<GameState, GameState> OnStateChanged;
+        public RoundResult LastRoundResult => _lastRoundResult.Value;
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -46,24 +51,13 @@ namespace Project.Assets._Project._Scripts.Managers
             _countdownEndTime.OnValueChanged += StartCountdown;
         }
 
-        public override void OnNetworkDespawn()
-        {
-            _state.OnValueChanged -= HandleStateChanged;
-            _countdownEndTime.OnValueChanged -= StartCountdown;
-        }
-
-
         public void StartGameLoop()
         {
-            _gameLoopCTS = new();
+            RestartCTS(ref _gameLoopCTS);
             GameLoop(_gameLoopCTS.Token).Forget();
         }
 
-        public void StopGameLoop()
-        {
-            _gameLoopCTS?.Cancel();
-            _gameLoopCTS?.Dispose();
-        }
+        public void StopGameLoop() => DisposeCTS(ref _gameLoopCTS);
 
         public void RequestGameStart()
         {
@@ -86,11 +80,11 @@ namespace Project.Assets._Project._Scripts.Managers
 
                 _countdownEndTime.Value = NetworkManager.ServerTime.Time + _settings.GameStartWaitTimeInSeconds;
                 _state.Value = GameState.Countdown;
-                await CountdownToGameStart(token);
+                await WaitForCountdownEnd(token);
 
                 _state.Value = GameState.AssigningTeams;
+                _lastRoundResult.Value = RoundResult.None;
                 _teamAssignmentService.AssignTeams();
-
 
                 _state.Value = GameState.LoadingGameplay;
                 await _networkCoordinator.LoadNetworkScene(_gameScenes.DefaultMap.SceneName, token);
@@ -100,15 +94,19 @@ namespace Project.Assets._Project._Scripts.Managers
                 _state.Value = GameState.WaitForRunnerHide;
                 await WaitForRunnerHide(token);
 
+                // the round timer reuses the countdown text, so players see the time left
+                _countdownEndTime.Value = NetworkManager.ServerTime.Time + _settings.GameDurationInSeconds;
                 _state.Value = GameState.Playing;
-                await PlayRound(token);
+                var result = await PlayRound(token);
 
                 _state.Value = GameState.DeterminingWinner;
-                DetermineWinner();
+                _countdownEndTime.Value = NetworkManager.ServerTime.Time;
+                _lastRoundResult.Value = result;
+                EUtils.Logger.Log($"[GameStateMachine] Round over: {result}");
 
                 _state.Value = GameState.Results;
                 // the next iteration loads the lobby again
-                await ShowResults(token);
+                await UniTask.WaitForSeconds(_settings.ResultsDurationInSeconds, cancellationToken: token);
             }
         }
 
@@ -118,7 +116,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _gameStartRequested = false;
         }
 
-        private async UniTask CountdownToGameStart(CancellationToken token)
+        private async UniTask WaitForCountdownEnd(CancellationToken token)
         {
             await UniTask.WaitUntil(() => NetworkManager.ServerTime.Time >= _countdownEndTime.Value, cancellationToken: token);
         }
@@ -133,28 +131,29 @@ namespace Project.Assets._Project._Scripts.Managers
             }
 
             await spawnDistributor.DistributePlayersToSpawns(_playerRegistry.GetPlayers());
-            await UniTask.WaitUntil(() => NetworkManager.ServerTime.Time >= _countdownEndTime.Value, cancellationToken: token);
-
+            await WaitForCountdownEnd(token);
         }
 
-        private async UniTask PlayRound(CancellationToken token)
+        // Ends early once the evaluator has a winner; otherwise the timer decides
+        private async UniTask<RoundResult> PlayRound(CancellationToken token)
         {
-            await UniTask.WaitForSeconds(_settings.GameDurationInSeconds, cancellationToken: token);
+            var result = RoundResult.None;
+            await UniTask.WaitUntil(() =>
+            {
+                bool isTimeUp = NetworkManager.ServerTime.Time >= _countdownEndTime.Value;
+                _playerRegistry.CopySessionsTo(_sessionBuffer);
+                result = _winConditionEvaluator.Evaluate(_sessionBuffer, isTimeUp);
+                return result != RoundResult.None;
+            }, cancellationToken: token);
+
+            return result;
         }
 
-        private void DetermineWinner() { }
-
-        private async UniTask ShowResults(CancellationToken token)
-        {
-            await UniTask.WaitForEndOfFrame(cancellationToken: token);
-        }
-
-        private void HandleStateChanged(GameState prev, GameState curr) => OnStateChanged?.Invoke(prev, curr);
+        private void HandleStateChanged(GameState previous, GameState current) => OnStateChanged?.Invoke(previous, current);
 
         private void StartCountdown(double _, double endTime)
         {
-            _countdownCTS?.Cancel();
-            _countdownCTS = new();
+            RestartCTS(ref _countdownCTS);
             CountdownLoop(endTime, _countdownCTS.Token).Forget();
         }
 
@@ -162,19 +161,41 @@ namespace Project.Assets._Project._Scripts.Managers
         {
             while (!token.IsCancellationRequested)
             {
-                var remaining = endTime - NetworkManager.Singleton.ServerTime.Time;
-                if (remaining <= 0) 
+                var remaining = endTime - NetworkManager.ServerTime.Time;
+                if (remaining <= 0)
                 {
                     _uiManager.ChangeCountdownText(string.Empty);
-                    break; 
+                    break;
                 }
                 _uiManager.ChangeCountdownText(Mathf.CeilToInt((float)remaining).ToString());
                 await UniTask.Yield(cancellationToken: token);
             }
         }
 
+        private static void RestartCTS(ref CancellationTokenSource cts)
+        {
+            DisposeCTS(ref cts);
+            cts = new();
+        }
+
+        private static void DisposeCTS(ref CancellationTokenSource cts)
+        {
+            cts?.Cancel();
+            cts?.Dispose();
+            cts = null;
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            _state.OnValueChanged -= HandleStateChanged;
+            _countdownEndTime.OnValueChanged -= StartCountdown;
+            DisposeCTS(ref _countdownCTS);
+        }
+
         public override void OnDestroy()
         {
+            DisposeCTS(ref _gameLoopCTS);
+            DisposeCTS(ref _countdownCTS);
             _gameSystemsRegistry?.Unregister(this);
             base.OnDestroy();
         }

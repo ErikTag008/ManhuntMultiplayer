@@ -7,11 +7,11 @@
   <Project Path="Project.Input.csproj" />
   <Project Path="SceneReference.csproj" />
   <Project Path="Project.DI.csproj" />
+  <Project Path="Project.Tests.EditMode.csproj" />
   <Project Path="Project.Core.csproj" />
   <Project Path="Project.Weapons.csproj" />
   <Project Path="Project.UI.csproj" />
   <Project Path="Project.SceneFlow.csproj" />
-  <Project Path="Project.Tests.EditMode.csproj" />
   <Project Path="Project.DevTools.csproj" />
   <Project Path="SceneReference.Editor.csproj" />
 </Solution>

@@ -9,6 +9,7 @@ namespace Project.Assets._Project.Tests.EditMode
         private class FakeGameStateMachine : IGameStateMachine
         {
             public GameState CurrentState => GameState.Lobby;
+            public RoundResult LastRoundResult => RoundResult.None;
             public event Action<GameState, GameState> OnStateChanged { add { } remove { } }
             public void StartGameLoop() { }
             public void StopGameLoop() { }
