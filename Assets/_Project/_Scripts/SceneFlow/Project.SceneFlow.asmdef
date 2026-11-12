@@ -2,7 +2,9 @@
     "name": "Project.SceneFlow",
     "rootNamespace": "Project",
     "references": [
-        "GUID:babdd7067507bc245a5b1b27f86b9d33"
+        "GUID:babdd7067507bc245a5b1b27f86b9d33",
+        "GUID:d139b368566142e395b68b3bfe8f8738",
+        "GUID:5594b4b19a4a437b88b6ff074f53f802"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

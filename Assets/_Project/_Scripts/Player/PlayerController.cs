@@ -6,7 +6,6 @@ using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.UI;
 using Project.Assets._Project._Scripts.Weapons;
 using Reflex.Attributes;
-using Reflex.Core;
 using Reflex.Extensions;
 using Reflex.Injectors;
 using System;
@@ -49,7 +48,9 @@ namespace Project.Assets._Project._Scripts.Player
 
         [Inject] private PlayerStats _playerStats;
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
-        [Inject] private readonly GameScenes _gameScenes;
+        [Inject] private readonly SceneContextProvider _sceneContextProvider;
+        [Inject] private readonly CatcherStats _catcherStats;
+        [Inject] private readonly RunnerStats _runnerStats;
         [Inject] private readonly IPlayerRegistry _playerRegistry;
 
         private NetworkVariable<float> _modelRotation = new(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
@@ -203,38 +204,21 @@ namespace Project.Assets._Project._Scripts.Player
             GameObjectInjector.InjectObject(gameObject, container);
         }
 
-        private void InjectLobbyDependencies()
+        // The scene's installer registers its context before sceneLoaded triggers InitializeSceneReferences
+        private void ApplySceneContext(SceneType sceneType)
         {
-            
-            var container = SceneManager.GetSceneByName(_gameScenes.LobbySceneName).GetSceneContainer();
-            if (container == null) return;
-            try
+            if (!_sceneContextProvider.TryGetCurrent(sceneType, out var sceneContext))
             {
-                _gameplayCamera = container.Resolve<Camera>();
-                _lobbyUI = container.Resolve<ILobbyUI>();
-                _fpCameraInstaller = container.Resolve<FPCameraInstaller>();
+                EUtils.Logger.LogError($"[PlayerController] No {sceneType} scene context registered.");
+                _gameplayCamera = null;
+                _fpCameraInstaller = null;
+                return;
             }
-            catch (Exception e)
-            {
-                EUtils.Logger.LogWarning($"[PlayerController] Could not resolve Lobby Dependencies: {e.Message}");
-            }
-        }
 
-        private void InjectGameDependencies()
-        {
-            // the loaded map is the active scene; its name comes from a MapDefinition, not GameScenes
-            var container = SceneManager.GetActiveScene().GetSceneContainer();
-            if (container == null) return;
-
-            try
-            {
-                _gameplayCamera = container.Resolve<Camera>();
-                _fpCameraInstaller = container.Resolve<FPCameraInstaller>();
-            }
-            catch (Exception e)
-            {
-                EUtils.Logger.LogWarning($"[PlayerController] Could not resolve Gameplay dependencies: {e.Message}");
-            }
+            _gameplayCamera = sceneContext.GameplayCamera;
+            _fpCameraInstaller = sceneContext.FPCameraInstaller;
+            // kept outside the lobby so ClearSceneReferences(Lobby) unsubscribes the same instance whatever the callback order
+            if (sceneType == SceneType.Lobby) _lobbyUI = sceneContext.LobbyUI;
         }
 
         public void InitializeSceneReferences(SceneType scene)
@@ -244,7 +228,7 @@ namespace Project.Assets._Project._Scripts.Player
                 case SceneType.Lobby:
                     if (IsOwner)
                     {
-                        InjectLobbyDependencies();
+                        ApplySceneContext(SceneType.Lobby);
                         EUtils.Logger.Log("Creating movement");
                         if (_fpCameraInstaller != null)
                         {
@@ -302,7 +286,7 @@ namespace Project.Assets._Project._Scripts.Player
                 case SceneType.Gameplay:
                     if (IsOwner)
                     {
-                        InjectGameDependencies();
+                        ApplySceneContext(SceneType.Gameplay);
                         if (_fpCameraInstaller != null)
                         {
                             _fpCameraInstaller.BindCameraToPlayer(this);
@@ -391,16 +375,15 @@ namespace Project.Assets._Project._Scripts.Player
         [Rpc(SendTo.Everyone)]
         private void UpdateGlobalRpc(Team team)
         {
-            var container = SceneManager.GetActiveScene().GetSceneContainer();
             PlayerStats stats = null;
             if (team == Team.Catcher)
             {
-                stats = container.Resolve<CatcherStats>();
+                stats = _catcherStats;
                 GetWeapon(stats.WeaponPrefab);
             }
             else if (team == Team.Runner)
             {
-                stats = container.Resolve<RunnerStats>();
+                stats = _runnerStats;
                 DestroyWeapon();
             }
             if (stats == null) return;

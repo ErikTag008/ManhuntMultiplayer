@@ -12,14 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 283f674daebb1394aabd730001ffa7a5, type: 3}
   m_Name: GameLobbySettings
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.Managers.GameLobbySettings
-  <LobbyScene>k__BackingField: Assets/_Project/Scenes/2_LobbyScene.unity
-  <GameScene>k__BackingField: Assets/_Project/Scenes/3_GameplayScene.unity
-  <MainMenuScene>k__BackingField: Assets/_Project/Scenes/1_MainMenuScene.unity
   <MinRequiredPlayers>k__BackingField: 3
   <MaxConnectedPlayers>k__BackingField: 10
   <MaxCatcherPlayers>k__BackingField: 2
   <MaxWaitForPlayersTimeInSeconds>k__BackingField: 5
-  <GameStartWaitTimeInSeconds>k__BackingField: 5
-  <RunnersHideWaitTime>k__BackingField: 15
-  <GameDurationInSeconds>k__BackingField: 120
-  <ResultsDurationInSeconds>k__BackingField: 15
+  <GameStartWaitTimeInSeconds>k__BackingField: 3
+  <RunnersHideWaitTime>k__BackingField: 5
+  <GameDurationInSeconds>k__BackingField: 20
+  <ResultsDurationInSeconds>k__BackingField: 3
