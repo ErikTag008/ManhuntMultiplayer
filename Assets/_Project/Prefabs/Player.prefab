@@ -260,6 +260,7 @@ GameObject:
   - component: {fileID: 91084392635682791}
   - component: {fileID: 4982083531400345192}
   - component: {fileID: 36421261748081134}
+  - component: {fileID: 1916059384330318201}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -473,7 +474,19 @@ MonoBehaviour:
     m_ActionId: c16d8774-d174-4db9-8436-47e747e1bfe0
     m_ActionName: 'Player/Jump[/Keyboard/space]'
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4851020409925496502}
+        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Input.InputReader, Project.Input
+        m_MethodName: Interact
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: 63942c4f-88c1-4110-828f-402d6e8012f4
     m_ActionName: 'Player/Interact[/Keyboard/e]'
   - m_PersistentCalls:
@@ -643,3 +656,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d6c88cfddec759429ffad45e789ee6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerCameraBinder
+--- !u!114 &1916059384330318201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71ccee7bebcea6641bd187675f59ba36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerRescue
+  ShowTopMostFoldoutHeaderGroup: 1
+  _team: {fileID: 2895491558510482950}
+  _lifeState: {fileID: 1513991399820021913}
+  _inputReader: {fileID: 4851020409925496502}

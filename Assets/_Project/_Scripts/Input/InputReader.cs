@@ -14,6 +14,7 @@ namespace Project.Assets._Project._Scripts.Input
         public event Action OnAttack;
         public event Action<bool> OnJump;
         public event Action OnInteract;
+        public event Action<bool> OnInteractHeldChanged;
         public event Action OnReload;
         public event Action PrimaryWeaponSwitch;
         public event Action SecondaryWeaponSwitch;
@@ -75,9 +76,15 @@ namespace Project.Assets._Project._Scripts.Input
 
         public void Interact(InputAction.CallbackContext context)
         {
+            Debug.Log($"[TEMP-RESCUE-DIAG] Interact phase={context.phase}");
             if (context.performed)
             {
                 OnInteract?.Invoke();
+                OnInteractHeldChanged?.Invoke(true);
+            }
+            else if (context.canceled)
+            {
+                OnInteractHeldChanged?.Invoke(false);
             }
         }
 

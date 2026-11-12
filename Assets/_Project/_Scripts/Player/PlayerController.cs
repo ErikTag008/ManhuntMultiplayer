@@ -17,7 +17,7 @@ namespace Project.Assets._Project._Scripts.Player
     // Thin coordinator: wires input, movement and the scene's camera to the focused player components
     [RequireComponent(typeof(PlayerInput), typeof(InputReader), typeof(Rigidbody))]
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerLifeState), typeof(PlayerCombat))]
-    [RequireComponent(typeof(PlayerNetworkSync), typeof(PlayerCameraBinder))]
+    [RequireComponent(typeof(PlayerNetworkSync), typeof(PlayerCameraBinder), typeof(PlayerRescue))]
     public class PlayerController : NetworkBehaviour, ISceneInitialized, IFirstPersonCameraTarget
     {
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;

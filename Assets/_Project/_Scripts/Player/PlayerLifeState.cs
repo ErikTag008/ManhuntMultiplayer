@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Project.Assets._Project._Scripts.Player
 {
     // Up / Knocked / Eliminated read from this player's session; PlayerRegistry owns the value.
-    // The server runs the bleed-out timer while the player is knocked.
+    // The server runs the bleed-out timer while the player is knocked; a rescue pauses it.
     public class PlayerLifeState : NetworkBehaviour
     {
         [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
@@ -18,15 +18,30 @@ namespace Project.Assets._Project._Scripts.Player
         public event Action<LifeState> OnLifeStateChanged;
 
         private readonly NetworkVariable<double> _bleedOutEndTime = new();
+        private readonly NetworkVariable<bool> _isBleedOutPaused = new();
+        private readonly NetworkVariable<float> _pausedBleedOutRemainingInSeconds = new();
         private CancellationTokenSource _bleedOutCTS;
         private LifeState _state;
+        // Server only
+        private double _invulnerableUntil;
 
         public LifeState State => _state;
         public bool IsUp => _state == LifeState.Up;
         public bool IsKnocked => _state == LifeState.Knocked;
         // Knocked runners still crawl; only elimination stops movement
         public bool CanMove => _state != LifeState.Eliminated;
-        public float BleedOutRemainingInSeconds => IsKnocked ? Mathf.Max(0f, (float)(_bleedOutEndTime.Value - NetworkManager.ServerTime.Time)) : 0f;
+        public bool IsBleedOutPaused => IsKnocked && _isBleedOutPaused.Value;
+        public float BleedOutRemainingInSeconds
+        {
+            get
+            {
+                if (!IsKnocked) return 0f;
+                if (_isBleedOutPaused.Value) return _pausedBleedOutRemainingInSeconds.Value;
+                return Mathf.Max(0f, (float)(_bleedOutEndTime.Value - NetworkManager.ServerTime.Time));
+            }
+        }
+        // Server only
+        public bool IsInvulnerable => NetworkManager.ServerTime.Time < _invulnerableUntil;
 
         public override void OnNetworkSpawn()
         {
@@ -37,7 +52,7 @@ namespace Project.Assets._Project._Scripts.Player
         // Server only; players are spawned after GameSystems, so the registry is injected on the server
         public void Knock()
         {
-            if (!IsServer || !IsUp) return;
+            if (!IsServer || !IsUp || IsInvulnerable) return;
             if (_playerRegistry == null)
             {
                 EUtils.Logger.LogError($"[PlayerLifeState] No player registry; can't knock player {OwnerClientId}.");
@@ -45,6 +60,37 @@ namespace Project.Assets._Project._Scripts.Player
             }
 
             _playerRegistry.SetLifeState(OwnerClientId, LifeState.Knocked);
+        }
+
+        // Server only: a finished rescue stands the player back up
+        public void Revive()
+        {
+            if (!IsServer || !IsKnocked) return;
+            if (_playerRegistry == null)
+            {
+                EUtils.Logger.LogError($"[PlayerLifeState] No player registry; can't revive player {OwnerClientId}.");
+                return;
+            }
+
+            _invulnerableUntil = NetworkManager.ServerTime.Time + _runnerStats.ReviveInvulnerabilityDurationInSeconds;
+            _playerRegistry.SetLifeState(OwnerClientId, LifeState.Up);
+        }
+
+        // Server only: a rescue in progress holds the timer and keeps what was left for a cancelled rescue
+        public void PauseBleedOut()
+        {
+            if (!IsServer || !IsKnocked || _isBleedOutPaused.Value) return;
+
+            _pausedBleedOutRemainingInSeconds.Value = BleedOutRemainingInSeconds;
+            _isBleedOutPaused.Value = true;
+            DisposeCTS(ref _bleedOutCTS);
+        }
+
+        // Server only
+        public void ResumeBleedOut()
+        {
+            if (!IsServer || !IsKnocked || !_isBleedOutPaused.Value) return;
+            StartBleedOut(_pausedBleedOutRemainingInSeconds.Value);
         }
 
         private void HandleSessionChanged(PlayerSession session)
@@ -55,18 +101,25 @@ namespace Project.Assets._Project._Scripts.Player
             // every path into or out of Knocked (catch, rescue, round reset) passes through here on the server
             if (IsServer)
             {
-                if (IsKnocked) StartBleedOut();
-                else StopBleedOut();
+                if (IsKnocked) StartBleedOut(_runnerStats.BleedOutDurationInSeconds);
+                else EndBleedOut();
             }
 
             OnLifeStateChanged?.Invoke(_state);
         }
 
-        private void StartBleedOut()
+        private void StartBleedOut(float durationInSeconds)
         {
             RestartCTS(ref _bleedOutCTS);
-            _bleedOutEndTime.Value = NetworkManager.ServerTime.Time + _runnerStats.BleedOutDurationInSeconds;
+            _isBleedOutPaused.Value = false;
+            _bleedOutEndTime.Value = NetworkManager.ServerTime.Time + durationInSeconds;
             BleedOutAsync(_bleedOutCTS.Token).Forget();
+        }
+
+        private void EndBleedOut()
+        {
+            StopBleedOut();
+            _isBleedOutPaused.Value = false;
         }
 
         private void StopBleedOut() => DisposeCTS(ref _bleedOutCTS);

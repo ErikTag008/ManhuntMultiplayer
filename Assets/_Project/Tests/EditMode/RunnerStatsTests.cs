@@ -28,6 +28,20 @@ namespace Project.Assets._Project.Tests.EditMode
         }
 
         [Test]
+        public void RescueTuning_DefaultsToPositive()
+        {
+            Assert.Greater(_runnerStats.RescueDurationInSeconds, 0f);
+            Assert.Greater(_runnerStats.RescueRange, 0f);
+            Assert.Greater(_runnerStats.ReviveInvulnerabilityDurationInSeconds, 0f);
+        }
+
+        [Test]
+        public void RescueDuration_IsShorterThanBleedOut()
+        {
+            Assert.Less(_runnerStats.RescueDurationInSeconds, _runnerStats.BleedOutDurationInSeconds);
+        }
+
+        [Test]
         public void KnockedModifiers_SlowMovementWithoutStoppingIt()
         {
             foreach (var modifier in _runnerStats.KnockedModifiers) _stack.Add(modifier);

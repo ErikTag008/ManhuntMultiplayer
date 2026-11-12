@@ -7,6 +7,10 @@ namespace Project.Assets._Project._Scripts.Player
     {
         [field: Header("Knocked Stats")]
         [field: SerializeField] public float BleedOutDurationInSeconds { get; private set; } = 30f;
+        [field: SerializeField] public float RescueDurationInSeconds { get; private set; } = 5f;
+        [field: SerializeField] public float RescueRange { get; private set; } = 2.5f;
+        // catches are ignored for this long after a rescue, so a camping catcher can't knock the runner straight back
+        [field: SerializeField] public float ReviveInvulnerabilityDurationInSeconds { get; private set; } = 3f;
         // applied on the owner while knocked: a slow crawl with no jumping
         [field: SerializeField] public StatModifier[] KnockedModifiers { get; private set; } =
         {
