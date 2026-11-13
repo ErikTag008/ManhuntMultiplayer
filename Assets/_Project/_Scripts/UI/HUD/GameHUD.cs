@@ -1,7 +1,9 @@
+using Project.Assets._Project._Scripts.Settings;
 using Project.Assets._Project._Scripts.UI.Shared;
 using Reflex.Attributes;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
@@ -9,6 +11,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
     public class GameHUD : MonoBehaviour
     {
         [Inject] private readonly GameHUDState _state;
+        [Inject] private readonly KeybindService _keybinds;
+        [Inject] private readonly GameSettingsService _settings;
+        [Inject] private readonly ControlSchemeState _controlScheme;
         [SerializeField] private TMP_Text _runnerCountsText;
         [SerializeField] private string _runnerCountsFormat = "Up {0}  ·  Knocked {1}  ·  Out {2}";
         [SerializeField] private FadePanel _bleedOutPanel;
@@ -21,6 +26,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         // the shade drains as the cooldown runs; the label shows the seconds left, or the ability's ready hint
         [SerializeField] private FillMeter _abilityCooldownMeter;
         [SerializeField] private string _abilityCooldownLabelFormat = "{0}";
+        // fills the ready hint's {0}, so the slot names the key as currently bound on the device in use
+        [SerializeField] private InputActionReference _abilityAction;
 
         private int _shownBleedOutSeconds = -1;
         private int _shownAbilitySeconds = -1;
@@ -31,6 +38,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnBleedOutChanged += HandleBleedOutChanged;
             _state.OnRescueChanged += HandleRescueChanged;
             _state.OnAbilityChanged += HandleAbilityChanged;
+            _settings.OnChanged += HandleSettingsChanged;
+            _controlScheme.OnChanged += HandleControlSchemeChanged;
             // values set before this scene's UI started
             HandleRunnerCountsChanged();
             HandleBleedOutChanged();
@@ -75,7 +84,24 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             if (seconds == _shownAbilitySeconds && !isNewAbility) return;
 
             _shownAbilitySeconds = seconds;
-            _abilityCooldownMeter.SetLabel(seconds > 0 ? string.Format(_abilityCooldownLabelFormat, seconds) : _state.AbilityReadyHint);
+            _abilityCooldownMeter.SetLabel(seconds > 0 ? string.Format(_abilityCooldownLabelFormat, seconds) : GetAbilityReadyHint());
+        }
+
+        private string GetAbilityReadyHint() =>
+            string.Format(_state.AbilityReadyHint ?? string.Empty, _keybinds.GetDisplayText(_abilityAction, _controlScheme.IsGamepad));
+
+        private void HandleSettingsChanged(SettingsCategory category)
+        {
+            if (category == SettingsCategory.Controls) RefreshAbilityLabel();
+        }
+
+        private void HandleControlSchemeChanged(bool _) => RefreshAbilityLabel();
+
+        // forgets the shown seconds so the next update rewrites the label with the new key
+        private void RefreshAbilityLabel()
+        {
+            _shownAbilitySeconds = -1;
+            HandleAbilityChanged();
         }
 
         private static void TogglePanel(FadePanel panel, bool isShown)
@@ -92,6 +118,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnBleedOutChanged -= HandleBleedOutChanged;
             _state.OnRescueChanged -= HandleRescueChanged;
             _state.OnAbilityChanged -= HandleAbilityChanged;
+            _settings.OnChanged -= HandleSettingsChanged;
+            _controlScheme.OnChanged -= HandleControlSchemeChanged;
         }
     }
 }

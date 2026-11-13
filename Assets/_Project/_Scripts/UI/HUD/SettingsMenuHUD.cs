@@ -20,6 +20,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private List<SettingsTab> _tabs = new();
 
         private readonly List<(int id, string label)> _tabBuffer = new();
+        private readonly List<List<Selectable>> _navigationRows = new();
         private int _currentTab;
 
         private void Start()
@@ -60,6 +61,29 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _currentTab = index;
             _tabList.Select(index);
             for (int i = 0; i < _tabs.Count; i++) _tabs[i].Page.SetActive(i == index);
+            LinkNavigation();
+        }
+
+        // tabs, then the page's rows, then reset and back; the page's first row goes up to the open tab.
+        // The page builds its rows when it turns on, so this runs after SetActive and settles its layout first.
+        private void LinkNavigation()
+        {
+            _navigationRows.Clear();
+            var tabRow = new List<Selectable>();
+            _tabList.AddSelectables(tabRow);
+            _navigationRows.Add(tabRow);
+
+            var page = _tabs[_currentTab].Page.transform;
+            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)_tabList.transform);
+            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)page);
+            NavigationGrid.AddRows(page, _navigationRows);
+            bool hasPageRows = _navigationRows.Count > 1;
+
+            _navigationRows.Add(new List<Selectable> { _resetButton, _backButton });
+            NavigationGrid.Link(_navigationRows);
+
+            var openTab = _tabList.GetSelectedSelectable();
+            if (hasPageRows && openTab != null) NavigationGrid.SetUp(_navigationRows[1], openTab);
         }
 
         private void ResetCurrentTab()

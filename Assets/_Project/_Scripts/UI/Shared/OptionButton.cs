@@ -19,6 +19,7 @@ namespace Project.Assets._Project._Scripts.UI.Shared
         private int _id;
 
         public int Id => _id;
+        public Selectable Selectable => _button;
 
         private void Awake() => _button.onClick.AddListener(HandleClicked);
 

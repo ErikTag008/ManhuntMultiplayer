@@ -2746,6 +2746,7 @@ MonoBehaviour:
   _abilityNameText: {fileID: 623625894}
   _abilityCooldownMeter: {fileID: 985122210}
   _abilityCooldownLabelFormat: '{0}'
+  _abilityAction: {fileID: 7415530987008885037, guid: c396ece31d49f4148abf609015547b3f, type: 3}
 --- !u!114 &1087015186 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2978486862313408525, guid: 4fe61f1375fc58342ac762569820df73, type: 3}

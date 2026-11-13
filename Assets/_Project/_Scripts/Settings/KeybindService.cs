@@ -35,6 +35,13 @@ namespace Project.Assets._Project._Scripts.Settings
         public string GetDisplayText(KeybindEntry entry, bool isGamepad) =>
             TryGetBinding(entry, isGamepad, out var action, out int bindingIndex) ? action.GetBindingDisplayString(bindingIndex) : string.Empty;
 
+        // A plain action's first binding for the device, for key hints outside the settings menu; empty when it has none
+        public string GetDisplayText(InputActionReference actionReference, bool isGamepad)
+        {
+            var action = FindAction(actionReference);
+            return action != null && TryFindBindingIndex(action, null, isGamepad, out int bindingIndex) ? action.GetBindingDisplayString(bindingIndex) : string.Empty;
+        }
+
         public bool HasBinding(KeybindEntry entry, bool isGamepad) => TryGetBinding(entry, isGamepad, out _, out _);
 
         // Every action is off while listening, so the pressed key can't also pause, jump or attack.
@@ -156,19 +163,29 @@ namespace Project.Assets._Project._Scripts.Settings
 
         private bool TryGetBinding(KeybindEntry entry, bool isGamepad, out InputAction action, out int bindingIndex)
         {
-            action = entry.Action != null ? _data.InputActions.FindAction(entry.Action.action.id) : null;
+            action = FindAction(entry.Action);
             bindingIndex = -1;
             if (action == null || (isGamepad && !entry.HasGamepadBinding)) return false;
 
+            return TryFindBindingIndex(action, entry.CompositePart, isGamepad, out bindingIndex);
+        }
+
+        // The rebound asset's copy of the action, so the text shows the player's overrides
+        private InputAction FindAction(InputActionReference actionReference) =>
+            actionReference != null && actionReference.action != null ? _data.InputActions.FindAction(actionReference.action.id) : null;
+
+        private bool TryFindBindingIndex(InputAction action, string compositePart, bool isGamepad, out int bindingIndex)
+        {
+            bindingIndex = -1;
             var group = isGamepad ? _data.GamepadGroup : _data.KeyboardMouseGroup;
-            bool hasPart = !string.IsNullOrEmpty(entry.CompositePart);
+            bool hasPart = !string.IsNullOrEmpty(compositePart);
             var bindings = action.bindings;
             for (int i = 0; i < bindings.Count; i++)
             {
                 var binding = bindings[i];
                 if (binding.isComposite) continue;
                 if (hasPart != binding.isPartOfComposite) continue;
-                if (hasPart && !string.Equals(binding.name, entry.CompositePart, StringComparison.OrdinalIgnoreCase)) continue;
+                if (hasPart && !string.Equals(binding.name, compositePart, StringComparison.OrdinalIgnoreCase)) continue;
                 if (!InputBinding.MaskByGroup(group).Matches(binding)) continue;
 
                 bindingIndex = i;

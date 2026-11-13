@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Project.Assets._Project._Scripts.UI.Shared
 {
@@ -42,6 +43,18 @@ namespace Project.Assets._Project._Scripts.UI.Shared
 
             var target = _buttons.Find(button => button.Id == _selectedId) ?? _buttons[0];
             target.Focus();
+        }
+
+        // the options left to right, as one navigation row
+        public void AddSelectables(List<Selectable> row)
+        {
+            foreach (var button in _buttons) row.Add(button.Selectable);
+        }
+
+        public Selectable GetSelectedSelectable()
+        {
+            var target = _buttons.Find(button => button.Id == _selectedId);
+            return target != null ? target.Selectable : null;
         }
 
         private void HandleButtonClicked(int id) => OnOptionClicked?.Invoke(id);

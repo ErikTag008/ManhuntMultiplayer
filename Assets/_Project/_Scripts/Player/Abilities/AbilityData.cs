@@ -8,8 +8,8 @@ namespace Project.Assets._Project._Scripts.Player.Abilities
         [field: SerializeField] public int Id { get; private set; }
         [field: SerializeField] public string DisplayName { get; private set; } = "Ability";
         [field: SerializeField, Min(0f)] public float CooldownInSeconds { get; private set; } = 15f;
-        // what the HUD slot shows while the ability is ready, e.g. the key that triggers it
-        [field: SerializeField] public string ReadyHint { get; private set; } = "Q";
+        // what the HUD slot shows while the ability is ready; {0} is the ability key as currently bound, e.g. "Air" needs none
+        [field: SerializeField] public string ReadyHint { get; private set; } = "{0}";
         // Animator trigger played when the ability is used; empty when the regular animation already shows it
         [field: SerializeField] public string AnimationTrigger { get; private set; } = "";
 

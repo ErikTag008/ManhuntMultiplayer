@@ -27,18 +27,23 @@ namespace Project.Assets._Project._Scripts.UI
         private InputAction _backAction;
         private bool _isListeningForBack;
         private bool _hasEnabledBackAction;
+        private bool _isSettingsOpenedHere;
+
         private void Awake()
         {
-            _serverStarterCanvas = GetComponent<Canvas>();            
+            _serverStarterCanvas = GetComponent<Canvas>();
         }
+
         private void Start()
         {
-
             StartHostButton.onClick.AddListener(_uiManager.RaiseHostStart);
             StartClientButton.onClick.AddListener(_uiManager.RaiseClientStart);
             SettingsButton.onClick.AddListener(OpenSettings);
             _settingsMenuState.OnOpenChanged += HandleSettingsOpenChanged;
             _backAction = _settings.Data.InputActions.FindAction(_backActionName);
+            // a gamepad has no cursor, so the menu needs a focused button to start from
+            ToggleButtonsInteractable(_serverStarterCanvas.enabled);
+            if (_serverStarterCanvas.enabled) StartHostButton.Select();
         }
 
 
@@ -53,13 +58,21 @@ namespace Project.Assets._Project._Scripts.UI
 
         private void OpenSettings()
         {
+            _isSettingsOpenedHere = true;
+            // automatic navigation crosses canvases, so these buttons must not be reachable from the settings menu
+            ToggleButtonsInteractable(false);
             _settingsMenuState.ToggleOpen(true);
             ToggleBackListening(true);
         }
 
         private void HandleSettingsOpenChanged(bool isOpen)
         {
-            if (!isOpen) ToggleBackListening(false);
+            if (isOpen || !_isSettingsOpenedHere) return;
+
+            _isSettingsOpenedHere = false;
+            ToggleBackListening(false);
+            ToggleButtonsInteractable(_serverStarterCanvas.enabled);
+            if (_serverStarterCanvas.enabled) SettingsButton.Select();
         }
 
         private void HandleBackPerformed(InputAction.CallbackContext _) => _settingsMenuState.ToggleOpen(false);
@@ -89,6 +102,16 @@ namespace Project.Assets._Project._Scripts.UI
         public void ToggleServerStarterUI(bool enabled)
         {
             _serverStarterCanvas.enabled = enabled;
+            // a hidden canvas still has selectables, and navigation from the lobby or pause menu could reach them
+            ToggleButtonsInteractable(enabled && !_isSettingsOpenedHere);
+            if (enabled && !_isSettingsOpenedHere) StartHostButton.Select();
+        }
+
+        private void ToggleButtonsInteractable(bool isInteractable)
+        {
+            StartHostButton.interactable = isInteractable;
+            StartClientButton.interactable = isInteractable;
+            SettingsButton.interactable = isInteractable;
         }
 
         // An empty reason hides the label
