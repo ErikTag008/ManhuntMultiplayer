@@ -11,8 +11,6 @@ namespace Project.Assets._Project._Scripts.CameraUtils
     {
         [Inject] private readonly ICameraStats _cameraStats;
         private InputReader _inputReader;
-        private const int XINDEX = 0;
-        private const int YINDEX = 1;
         [SerializeField, Self] private CinemachineCamera _camera;
         [SerializeField, Self] private CinemachineInputAxisController _cinemachineInputAxisController;
         [SerializeField, Self] private CinemachinePanTilt _cinemachinePanTilt;
@@ -39,11 +37,7 @@ namespace Project.Assets._Project._Scripts.CameraUtils
         private void Update()
         {
             if(_inputReader == null) return;
-            _cinemachineInputAxisController.Controllers[XINDEX].Input.Gain = _inputReader.IsUsingMouse ? _cameraStats.MouseLookXSensitivity : _cameraStats.GamepadLookXSensitivity;
-            _cinemachineInputAxisController.Controllers[YINDEX].Input.Gain = _inputReader.IsUsingMouse ? -_cameraStats.MouseLookYSensitivity : -_cameraStats.GamepadLookYSensitivity;
-            // Mouse delta is already a per-frame amount; scaling it by deltaTime again makes look speed follow the frame rate (stutter)
-            _cinemachineInputAxisController.Controllers[XINDEX].Input.CancelDeltaTime = _inputReader.IsUsingMouse;
-            _cinemachineInputAxisController.Controllers[YINDEX].Input.CancelDeltaTime = _inputReader.IsUsingMouse;
+            LookInputSettings.Apply(_cinemachineInputAxisController, _inputReader, _cameraStats);
             _cinemachinePanTilt.TiltAxis.Range = new Vector2(-_cameraStats.MaxPitch, _cameraStats.MaxPitch);
         }
 

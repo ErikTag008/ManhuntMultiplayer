@@ -18,12 +18,14 @@ namespace Project.Assets._Project._Scripts.Player
     [RequireComponent(typeof(PlayerInput), typeof(InputReader), typeof(Rigidbody))]
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerLifeState), typeof(PlayerCombat))]
     [RequireComponent(typeof(PlayerNetworkSync), typeof(PlayerCameraBinder), typeof(PlayerRescue))]
+    [RequireComponent(typeof(PlayerSpectator))]
     public class PlayerController : NetworkBehaviour, ISceneInitialized, IFirstPersonCameraTarget
     {
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
         [Inject] private readonly SceneContextProvider _sceneContextProvider;
         [Inject] private readonly IPlayerRegistry _playerRegistry;
         [Inject] private readonly RunnerStats _runnerStats;
+        [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
         [SerializeField, Self] private PlayerInput _playerInput;
         [SerializeField, Self] private InputReader _inputReader;
         [SerializeField, Self] private Rigidbody _rb;
@@ -32,6 +34,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerLifeState _lifeState;
         [SerializeField, Self] private PlayerNetworkSync _networkSync;
         [SerializeField, Self] private PlayerCameraBinder _cameraBinder;
+        [SerializeField, Self] private PlayerSpectator _spectator;
         [SerializeField] private Transform _groundCheck;
         [SerializeField] private Transform _cameraTarget;
         [SerializeField] private Transform _cameraFollower;
@@ -46,6 +49,8 @@ namespace Project.Assets._Project._Scripts.Player
         public PlayerLifeState LifeState => _lifeState;
         public Transform CameraTarget => _cameraTarget;
         public InputReader InputReader => _inputReader;
+        // Where the player faces; the model's yaw is synced to every instance
+        public float HeadingInDegrees => _team.Model != null ? _team.Model.eulerAngles.y : transform.eulerAngles.y;
         // Owner side: movement runs on the owner, so features that change movement stats add their modifiers here
         public StatModifierStack StatModifiers => _statModifiers;
 
@@ -61,6 +66,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         public override void OnNetworkSpawn()
         {
+            _spawnedPlayers.Add(OwnerClientId, this);
             _team.OnStatsChanged += HandleStatsChanged;
             _team.OnModelChanged += HandleModelChanged;
             _lifeState.OnLifeStateChanged += HandleLifeStateChanged;
@@ -99,10 +105,12 @@ namespace Project.Assets._Project._Scripts.Player
             {
                 EUtils.Logger.LogError($"[PlayerController] No {sceneType} scene context registered.");
                 _cameraBinder.Unbind();
+                _spectator.ChangeSpectatorCamera(null);
                 return;
             }
 
             _cameraBinder.Bind(sceneContext, this);
+            _spectator.ChangeSpectatorCamera(sceneContext.SpectatorCamera);
             CreateMovementIfNeeded();
             if (_movement != null && _cameraBinder.Camera != null) _movement.ChangeCamera(_cameraBinder.Camera);
 
@@ -112,6 +120,8 @@ namespace Project.Assets._Project._Scripts.Player
         public void ClearSceneReferences(SceneType sceneType)
         {
             if (!IsOwner) return;
+
+            _spectator.ChangeSpectatorCamera(null);
             if (sceneType == SceneType.Lobby) UnbindLobbyInput();
         }
 
@@ -194,6 +204,7 @@ namespace Project.Assets._Project._Scripts.Player
         public override void OnNetworkDespawn()
         {
             if (IsServer) _playerRegistry?.UnregisterPlayer(this);
+            _spawnedPlayers.Remove(OwnerClientId, this);
             _sceneLifecycleManager.Unregister(this);
             _team.OnStatsChanged -= HandleStatsChanged;
             _team.OnModelChanged -= HandleModelChanged;

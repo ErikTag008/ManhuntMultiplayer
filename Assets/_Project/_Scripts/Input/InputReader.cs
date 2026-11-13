@@ -19,6 +19,8 @@ namespace Project.Assets._Project._Scripts.Input
         public event Action PrimaryWeaponSwitch;
         public event Action SecondaryWeaponSwitch;
         public event Action OnHealthPotionUsed;
+        public event Action OnSpectateNext;
+        public event Action OnSpectatePrevious;
 
         public event Action OnStartButtonKeyPressed;
         public bool IsUsingMouse => _playerInput.currentControlScheme == _keyboardMouseControlScheme;
@@ -119,6 +121,16 @@ namespace Project.Assets._Project._Scripts.Input
             {
                 OnHealthPotionUsed?.Invoke();
             }
+        }
+
+        public void SpectateNext(InputAction.CallbackContext context)
+        {
+            if (context.performed) OnSpectateNext?.Invoke();
+        }
+
+        public void SpectatePrevious(InputAction.CallbackContext context)
+        {
+            if (context.performed) OnSpectatePrevious?.Invoke();
         }
 
         // Lets dev tools and bots drive the player through the same events as real input

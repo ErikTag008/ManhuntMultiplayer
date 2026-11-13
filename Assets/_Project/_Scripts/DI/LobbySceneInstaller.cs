@@ -21,6 +21,7 @@ namespace Project.Assets._Project._Scripts.DI
         public SceneType SceneType => SceneType.Lobby;
         public Camera GameplayCamera => _gameplayCamera;
         public FPCameraInstaller FPCameraInstaller => _fpcameraInstaller;
+        public SpectatorCamera SpectatorCamera => null;
         public ILobbyUI LobbyUI => _lobbyUI;
 
         [Inject]

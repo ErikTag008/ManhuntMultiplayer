@@ -48,3 +48,14 @@ MonoBehaviour:
   <MaxHealth>k__BackingField: 100
   <PotionHealAmount>k__BackingField: 50
   <Model>k__BackingField: {fileID: 8515208621651819804, guid: d719e7bb4b9b9da46970ca84bfda5a22, type: 3}
+  <BleedOutDurationInSeconds>k__BackingField: 5.5
+  <RescueDurationInSeconds>k__BackingField: 5
+  <RescueRange>k__BackingField: 2.5
+  <ReviveInvulnerabilityDurationInSeconds>k__BackingField: 3
+  <KnockedModifiers>k__BackingField:
+  - _stat: 0
+    _kind: 1
+    _value: 0.2
+  - _stat: 1
+    _kind: 1
+    _value: 0

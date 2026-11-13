@@ -19,5 +19,5 @@ MonoBehaviour:
   <MaxWaitForPlayersTimeInSeconds>k__BackingField: 5
   <GameStartWaitTimeInSeconds>k__BackingField: 3
   <RunnersHideWaitTime>k__BackingField: 5
-  <GameDurationInSeconds>k__BackingField: 25
+  <GameDurationInSeconds>k__BackingField: 75.8
   <ResultsDurationInSeconds>k__BackingField: 3

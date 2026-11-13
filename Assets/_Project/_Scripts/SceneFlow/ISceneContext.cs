@@ -10,6 +10,8 @@ namespace Project.Assets._Project._Scripts.SceneFlow
         SceneType SceneType { get; }
         Camera GameplayCamera { get; }
         FPCameraInstaller FPCameraInstaller { get; }
+        // Null outside gameplay
+        SpectatorCamera SpectatorCamera { get; }
         // Null outside the lobby
         ILobbyUI LobbyUI { get; }
     }

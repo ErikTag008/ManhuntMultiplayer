@@ -12,6 +12,7 @@ namespace Project.Assets._Project._Scripts.DI
     {
         [SerializeField] private Camera _gameplayCamera;
         [SerializeField, Scene] private FPCameraInstaller _fpcameraInstaller;
+        [SerializeField, Scene] private SpectatorCamera _spectatorCamera;
 
         private ActiveCameraProvider _activeCameraProvider;
         private SceneContextProvider _sceneContextProvider;
@@ -19,6 +20,7 @@ namespace Project.Assets._Project._Scripts.DI
         public SceneType SceneType => SceneType.Gameplay;
         public Camera GameplayCamera => _gameplayCamera;
         public FPCameraInstaller FPCameraInstaller => _fpcameraInstaller;
+        public SpectatorCamera SpectatorCamera => _spectatorCamera;
         public ILobbyUI LobbyUI => null;
 
         [Inject]

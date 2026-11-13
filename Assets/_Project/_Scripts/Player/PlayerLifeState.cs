@@ -28,6 +28,7 @@ namespace Project.Assets._Project._Scripts.Player
         public LifeState State => _state;
         public bool IsUp => _state == LifeState.Up;
         public bool IsKnocked => _state == LifeState.Knocked;
+        public bool IsEliminated => _state == LifeState.Eliminated;
         // Knocked runners still crawl; only elimination stops movement
         public bool CanMove => _state != LifeState.Eliminated;
         public bool IsBleedOutPaused => IsKnocked && _isBleedOutPaused.Value;
