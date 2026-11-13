@@ -8,8 +8,12 @@ namespace Project.Assets._Project._Scripts.Player
     public class PlayerSessionDirectory
     {
         private readonly Dictionary<ulong, PlayerSession> _sessions = new();
+        private readonly List<ulong> _clearedIds = new();
 
         public event Action<PlayerSession> OnSessionChanged;
+        public event Action<ulong> OnSessionRemoved;
+
+        public IReadOnlyCollection<PlayerSession> Sessions => _sessions.Values;
 
         public bool TryGetSession(ulong clientId, out PlayerSession session) => _sessions.TryGetValue(clientId, out session);
 
@@ -21,8 +25,17 @@ namespace Project.Assets._Project._Scripts.Player
             OnSessionChanged?.Invoke(session);
         }
 
-        public void Remove(ulong clientId) => _sessions.Remove(clientId);
+        public void Remove(ulong clientId)
+        {
+            if (_sessions.Remove(clientId)) OnSessionRemoved?.Invoke(clientId);
+        }
 
-        public void Clear() => _sessions.Clear();
+        public void Clear()
+        {
+            _clearedIds.Clear();
+            _clearedIds.AddRange(_sessions.Keys);
+            _sessions.Clear();
+            foreach (ulong clientId in _clearedIds) OnSessionRemoved?.Invoke(clientId);
+        }
     }
 }

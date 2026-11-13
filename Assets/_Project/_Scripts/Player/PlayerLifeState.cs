@@ -117,10 +117,12 @@ namespace Project.Assets._Project._Scripts.Player
             BleedOutAsync(_bleedOutCTS.Token).Forget();
         }
 
+        // a cleared end time reads as zero remaining, so a later knock never shows this one's leftover time
         private void EndBleedOut()
         {
             StopBleedOut();
             _isBleedOutPaused.Value = false;
+            _bleedOutEndTime.Value = 0;
         }
 
         private void StopBleedOut() => DisposeCTS(ref _bleedOutCTS);

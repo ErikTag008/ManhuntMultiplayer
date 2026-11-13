@@ -115,6 +115,18 @@ namespace Project.Assets._Project._Scripts
 
         }
 
+        public static class Format
+        {
+            private const int SecondsPerMinute = 60;
+
+            // 0:05, 1:30; partial seconds round up so the display reaches 0:00 only when time is up
+            public static string MinutesSeconds(float seconds)
+            {
+                int totalSeconds = Mathf.Max(0, Mathf.CeilToInt(seconds));
+                return $"{totalSeconds / SecondsPerMinute}:{totalSeconds % SecondsPerMinute:00}";
+            }
+        }
+
         public static class Random
         {
             public static Vector2 Vector2(float max) => new Vector2(UnityEngine.Random.Range(-max, max), UnityEngine.Random.Range(-max, max));

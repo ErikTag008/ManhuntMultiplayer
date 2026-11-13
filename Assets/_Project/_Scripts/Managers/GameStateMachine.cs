@@ -180,7 +180,7 @@ namespace Project.Assets._Project._Scripts.Managers
                     _uiManager.ChangeCountdownText(string.Empty);
                     break;
                 }
-                _uiManager.ChangeCountdownText(Mathf.CeilToInt((float)remaining).ToString());
+                _uiManager.ChangeCountdownText(EUtils.Format.MinutesSeconds((float)remaining));
                 await UniTask.Yield(cancellationToken: token);
             }
         }
