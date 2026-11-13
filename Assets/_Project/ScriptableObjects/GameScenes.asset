@@ -15,3 +15,5 @@ MonoBehaviour:
   <LobbyScene>k__BackingField: Assets/_Project/Scenes/2_LobbyScene.unity
   <MainMenuScene>k__BackingField: Assets/_Project/Scenes/1_MainMenuScene.unity
   <DefaultMap>k__BackingField: {fileID: 11400000, guid: 838e98f0e77258d4596ca772c8b625f8, type: 2}
+  <Maps>k__BackingField:
+  - {fileID: 11400000, guid: 838e98f0e77258d4596ca772c8b625f8, type: 2}

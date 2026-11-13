@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ad14e11760b9c04cae060a9a2d71036, type: 3}
+  m_Name: LobbyConfigData
+  m_EditorClassIdentifier: Project.Networking::Project.Assets._Project._Scripts.Networking.LobbyConfigData
+  <DefaultName>k__BackingField: Manhunt lobby
+  <MaxNameLength>k__BackingField: 32
+  <DefaultVisibility>k__BackingField: 0
+  <DefaultMapIndex>k__BackingField: 0
+  <MinMaxPlayers>k__BackingField: 4
+  <MaxMaxPlayers>k__BackingField: 10
+  <DefaultMaxPlayers>k__BackingField: 10
+  <MaxPlayersStep>k__BackingField: 1
+  <MinHideDurationInSeconds>k__BackingField: 15
+  <MaxHideDurationInSeconds>k__BackingField: 60
+  <DefaultHideDurationInSeconds>k__BackingField: 30
+  <HideDurationStepInSeconds>k__BackingField: 5
+  <MinRoundDurationInSeconds>k__BackingField: 180
+  <MaxRoundDurationInSeconds>k__BackingField: 600
+  <DefaultRoundDurationInSeconds>k__BackingField: 300
+  <RoundDurationStepInSeconds>k__BackingField: 30

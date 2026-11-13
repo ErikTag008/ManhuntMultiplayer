@@ -22,6 +22,7 @@ namespace Project.Assets._Project._Scripts.DI
         [SerializeField, AssetsOnly] private GameLobbySettings _gameLobbySettings;
         [SerializeField, AssetsOnly] private GameScenes _gameScenes;
         [SerializeField, AssetsOnly] private ConnectionSettings _connectionSettings;
+        [SerializeField, AssetsOnly] private LobbyConfigData _lobbyConfigData;
         [SerializeField, AssetsOnly] private AbilityCatalog _abilityCatalog;
         [SerializeField, AssetsOnly] private SettingsData _settingsData;
         public void InstallBindings(ContainerBuilder builder)
@@ -48,6 +49,8 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(typeof(WinConditionEvaluator), new Type[] { typeof(IWinConditionEvaluator) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             builder.RegisterType(typeof(UIManager), new Type[] { typeof(IUIManager) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(LocalConnectionService), new Type[] { typeof(IConnectionService) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
+            builder.RegisterType(typeof(LocalLobbyDirectory), new Type[] { typeof(ILobbyDirectory) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
+            builder.RegisterType(typeof(ActiveLobbyConfig), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             // Eager so it listens for disconnects from the first session on
             builder.RegisterType(typeof(SessionEndHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PauseMenuLeaveHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
@@ -60,8 +63,9 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterFactory(p => _catcherStats, new Type[] { typeof(CatcherStats)},Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterFactory(p => _runnerStats, new Type[] { typeof(RunnerStats)},Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterValue(_gameLobbySettings);
-            builder.RegisterValue(_gameScenes);
+            builder.RegisterValue(_gameScenes, new Type[] { typeof(GameScenes), typeof(IMapCatalog) });
             builder.RegisterValue(_connectionSettings);
+            builder.RegisterValue(_lobbyConfigData);
             builder.RegisterValue(_abilityCatalog);
             builder.RegisterValue(_settingsData);
         }

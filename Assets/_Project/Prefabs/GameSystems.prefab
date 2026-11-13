@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 2195926799005246414}
   - component: {fileID: 8383161310462518707}
   - component: {fileID: 1276794458824371617}
+  - component: {fileID: 5497104063243791242}
+  - component: {fileID: 8188318079639113506}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -78,6 +80,11 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _playerRegistry: {fileID: 8383161310462518707}
   _gameStateMachine: {fileID: 2195926799005246414}
+  _catchersWinTitle: Catchers win!
+  _runnersWinTitle: Runners win!
+  _localWinSubtitle: You won
+  _localLossSubtitle: You lost
+  _playerCountFormat: "{0}/{1} players joined  \xB7  {2} ready"
 --- !u!114 &2195926799005246414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -93,6 +100,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _playerRegistry: {fileID: 8383161310462518707}
   _networkCoordinator: {fileID: 1276794458824371617}
+  _lobbyConfigSync: {fileID: 5497104063243791242}
 --- !u!114 &8383161310462518707
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -106,11 +114,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.Managers.PlayerRegistry
   ShowTopMostFoldoutHeaderGroup: 1
-  _players: []
-  _playerInfos:
-    UpdateTraits:
-      MinSecondsBetweenUpdates: 0
-      MaxSecondsBetweenUpdates: 0
+  _defaultDisplayNameFormat: Player {0}
 --- !u!114 &1276794458824371617
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -124,3 +128,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.Managers.NetworkCoordinator
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &5497104063243791242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7613318948758467133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e73a73d11197ae40b5b16a7a19a460d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Managers::Project.Assets._Project._Scripts.Managers.LobbyConfigSync
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &8188318079639113506
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7613318948758467133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fbc698a10c24894ebfff7486332e26a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Managers::Project.Assets._Project._Scripts.Managers.LobbyAdvertiser
+  ShowTopMostFoldoutHeaderGroup: 1
+  _gameStateMachine: {fileID: 2195926799005246414}

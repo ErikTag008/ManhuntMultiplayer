@@ -22,6 +22,7 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly HidePhase _hidePhase;
         [SerializeField, Self] private PlayerRegistry _playerRegistry;
         [SerializeField, Self] private NetworkCoordinator _networkCoordinator;
+        [SerializeField, Self] private LobbyConfigSync _lobbyConfigSync;
 
         public event Action<GameState, GameState> OnStateChanged;
         public event Action<RoundResult> OnLastRoundResultChanged;
@@ -92,20 +93,22 @@ namespace Project.Assets._Project._Scripts.Managers
                 }
                 while (!await WaitForCountdownWhileReady(token));
 
+                // read once per round, so a lobby change only applies from the next round on
+                var config = _lobbyConfigSync.Config;
                 _state.Value = GameState.AssigningTeams;
                 _lastRoundResult.Value = RoundResult.None;
                 _teamAssignmentService.AssignTeams();
 
                 _state.Value = GameState.LoadingGameplay;
-                await _networkCoordinator.LoadNetworkScene(_gameScenes.DefaultMap.SceneName, token);
+                await _networkCoordinator.LoadNetworkScene(_gameScenes.GetMap(config.MapIndex).SceneName, token);
 
                 _playerRegistry.ResetLifeStates();
-                _countdownEndTime.Value = NetworkManager.ServerTime.Time + _settings.RunnersHideWaitTime;
+                _countdownEndTime.Value = NetworkManager.ServerTime.Time + config.HideDurationInSeconds;
                 _state.Value = GameState.WaitForRunnerHide;
                 await WaitForRunnerHide(token);
 
                 // the round timer reuses the countdown text, so players see the time left
-                _countdownEndTime.Value = NetworkManager.ServerTime.Time + _settings.GameDurationInSeconds;
+                _countdownEndTime.Value = NetworkManager.ServerTime.Time + config.RoundDurationInSeconds;
                 _state.Value = GameState.Playing;
                 var result = await PlayRound(token);
 

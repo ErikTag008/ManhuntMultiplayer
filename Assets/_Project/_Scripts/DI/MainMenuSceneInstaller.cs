@@ -1,6 +1,7 @@
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.CameraUtils;
 using Project.Assets._Project._Scripts.UI;
+using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Attributes;
 using Reflex.Core;
 using UnityEngine;
@@ -24,6 +25,7 @@ namespace Project.Assets._Project._Scripts.DI
         {
             builder.RegisterValue(_mainCamera);
             builder.RegisterValue(_serverStarterUI);
+            builder.RegisterType(typeof(MainMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
         }
 
         private void OnDestroy() => _activeCameraProvider?.Unregister(_mainCamera);

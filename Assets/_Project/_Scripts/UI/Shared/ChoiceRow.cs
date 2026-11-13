@@ -19,6 +19,7 @@ namespace Project.Assets._Project._Scripts.UI.Shared
         private readonly List<string> _options = new();
         private int _index;
 
+        public int Index => _index;
         public Selectable Selectable => _nextButton;
 
         private void Awake()

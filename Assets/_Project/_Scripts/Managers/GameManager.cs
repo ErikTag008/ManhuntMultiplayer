@@ -1,4 +1,5 @@
 using KBCore.Refs;
+using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player;
 using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.UI;
@@ -19,6 +20,7 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly ITeamAssignmentService _teamAssignmentService;
         [Inject] private readonly GameLobbySettings _gameLobbySettings;
         [Inject] private readonly GameScenes _gameScenes;
+        [Inject] private readonly ActiveLobbyConfig _activeLobbyConfig;
         [SerializeField, Self] private PlayerRegistry _playerRegistry;
         [SerializeField, Self] private GameStateMachine _gameStateMachine;
         [SerializeField] private string _catchersWinTitle = "Catchers win!";
@@ -135,6 +137,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _gameStateMachine.OnStateChanged += OnStateChanged;
             _gameStateMachine.OnLastRoundResultChanged += HandleLastRoundResultChanged;
             _playerRegistry.OnSessionsChanged += ShowPlayerCount;
+            _activeLobbyConfig.OnChanged += HandleLobbyConfigChanged;
         }
 
         private void UnsubscribeFromServerChanges()
@@ -142,6 +145,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _gameStateMachine.OnStateChanged -= OnStateChanged;
             _gameStateMachine.OnLastRoundResultChanged -= HandleLastRoundResultChanged;
             _playerRegistry.OnSessionsChanged -= ShowPlayerCount;
+            if (_activeLobbyConfig != null) _activeLobbyConfig.OnChanged -= HandleLobbyConfigChanged;
         }
 
         private void EmptyLobbyUI()
@@ -151,13 +155,15 @@ namespace Project.Assets._Project._Scripts.Managers
             _uiManager.ChangeCountdownText("");
         }
 
+        private void HandleLobbyConfigChanged(LobbyConfig _) => ShowPlayerCount();
+
         private void ShowPlayerCount()
         {
             RefreshStartAvailability();
             if(_gameStateMachine.CurrentState == GameState.Lobby || _gameStateMachine.CurrentState == GameState.WaitingForPlayers || _gameStateMachine.CurrentState == GameState.Countdown)
             {
                 _playerRegistry.CopySessionsTo(_sessionBuffer);
-                _uiManager.ChangeJoinedPlayerAmount(string.Format(_playerCountFormat, _sessionBuffer.Count, _gameLobbySettings.MaxConnectedPlayers, LobbyReadiness.CountReady(_sessionBuffer)));
+                _uiManager.ChangeJoinedPlayerAmount(string.Format(_playerCountFormat, _sessionBuffer.Count, _activeLobbyConfig.Config.MaxPlayers, LobbyReadiness.CountReady(_sessionBuffer)));
             }
         }
 

@@ -17,3 +17,11 @@ MonoBehaviour:
   <ServerListenAddress>k__BackingField: 127.0.0.1
   <ConnectTimeoutInSeconds>k__BackingField: 10
   <DefaultLobbyVisibility>k__BackingField: 1
+  <LobbyFolderName>k__BackingField: Lobbies
+  <AdvertHeartbeatInSeconds>k__BackingField: 2
+  <AdvertStaleAgeInSeconds>k__BackingField: 8
+  <LocalRegionLabel>k__BackingField: Local
+  <LobbyFullReason>k__BackingField: Lobby is full
+  <HostFailedReason>k__BackingField: Could not create the lobby
+  <JoinFailedReason>k__BackingField: Could not join the lobby
+  <JoinTimedOutReasonFormat>k__BackingField: Timed out after {0}s
