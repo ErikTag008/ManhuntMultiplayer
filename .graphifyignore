@@ -1,0 +1,14 @@
+# Unity-generated and build output
+WindowsBuild/
+Library/
+Temp/
+Logs/
+obj/
+UserSettings/
+Packages/
+ProjectSettings/
+.ai-runs/
+# Third-party code and assets inside Assets
+Assets/Plugins/
+Assets/TextMesh Pro/
+Assets/graphify-out/
