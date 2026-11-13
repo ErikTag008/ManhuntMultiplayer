@@ -266,6 +266,7 @@ GameObject:
   - component: {fileID: 4859089908487619711}
   - component: {fileID: 5068892008710688985}
   - component: {fileID: 1196470119741336347}
+  - component: {fileID: 5802237443212687060}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -824,3 +825,28 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _team: {fileID: 2895491558510482950}
   _inputReader: {fileID: 4851020409925496502}
+--- !u!114 &5802237443212687060
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccb69e02e2d5a2742a83a550ad106217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerAnimator
+  _team: {fileID: 2895491558510482950}
+  _lifeState: {fileID: 1513991399820021913}
+  _rescue: {fileID: 1916059384330318201}
+  _ability: {fileID: 5068892008710688985}
+  _moveSpeedParameter: MoveSpeed
+  _verticalSpeedParameter: VerticalSpeed
+  _isGroundedParameter: IsGrounded
+  _lifeStateParameter: LifeState
+  _isRescuingParameter: IsRescuing
+  _speedSmoothing: 12
+  _groundProbeHeight: 0.1
+  _groundProbeDistance: 0.25
+  _maxSampleDistance: 3

@@ -16,4 +16,5 @@ MonoBehaviour:
   <DisplayName>k__BackingField: Double Jump
   <CooldownInSeconds>k__BackingField: 20
   <ReadyHint>k__BackingField: Air
+  <AnimationTrigger>k__BackingField: 
   <JumpForceMultiplier>k__BackingField: 1

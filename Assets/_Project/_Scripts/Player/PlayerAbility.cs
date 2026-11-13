@@ -2,6 +2,7 @@ using KBCore.Refs;
 using Project.Assets._Project._Scripts.Input;
 using Project.Assets._Project._Scripts.Player.Abilities;
 using Reflex.Attributes;
+using System;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -21,6 +22,9 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerHideHold _hideHold;
         [SerializeField, Self] private InputReader _inputReader;
         [SerializeField, Min(0f)] private float _serverToleranceInSeconds = 0.25f;
+
+        // Every instance: an accepted use moves the end time forward, which animation and effects can react to
+        public event Action<AbilityData> OnAbilityUsed;
 
         private readonly NetworkVariable<double> _cooldownEndTime = new();
         // Owner only: keeps the ability locked until the server's new end time arrives
@@ -44,6 +48,7 @@ namespace Project.Assets._Project._Scripts.Player
         public override void OnNetworkSpawn()
         {
             _team.OnStatsChanged += HandleStatsChanged;
+            _cooldownEndTime.OnValueChanged += HandleCooldownEndTimeChanged;
             if (!IsOwner) return;
 
             _inputReader.OnAbility += HandleAbilityPressed;
@@ -51,6 +56,15 @@ namespace Project.Assets._Project._Scripts.Player
         }
 
         private void HandleAbilityPressed() => TryUse(AbilityTrigger.AbilityKey);
+
+        // the cooldown reset between rounds moves the end time back to zero, which isn't a use
+        private void HandleCooldownEndTimeChanged(double previous, double current)
+        {
+            if (current <= previous) return;
+
+            var ability = Ability;
+            if (ability != null) OnAbilityUsed?.Invoke(ability);
+        }
 
         private void HandleJumpChanged(bool isButtonDown)
         {
@@ -96,6 +110,7 @@ namespace Project.Assets._Project._Scripts.Player
         public override void OnNetworkDespawn()
         {
             _team.OnStatsChanged -= HandleStatsChanged;
+            _cooldownEndTime.OnValueChanged -= HandleCooldownEndTimeChanged;
             if (!IsOwner) return;
 
             _inputReader.OnAbility -= HandleAbilityPressed;

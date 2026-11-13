@@ -16,4 +16,5 @@ MonoBehaviour:
   <DisplayName>k__BackingField: Dash
   <CooldownInSeconds>k__BackingField: 15
   <ReadyHint>k__BackingField: Q
+  <AnimationTrigger>k__BackingField: Dash
   <DashSpeed>k__BackingField: 45

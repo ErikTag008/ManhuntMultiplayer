@@ -2,6 +2,7 @@ using Reflex.Attributes;
 using System;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Project.Assets._Project._Scripts.Player
 {
@@ -59,9 +60,17 @@ namespace Project.Assets._Project._Scripts.Player
             if (_model != null) Destroy(_model.gameObject);
             _model = Instantiate(modelPrefab, transform);
 
-            // the owner looks through the model's eyes, so it must not see its own body
-            if (IsOwner) _model.GetComponentInChildren<Renderer>().enabled = false;
+            // the owner looks through the model's eyes, so it must not see its own body, but its shadow stays
+            if (IsOwner) HideFromOwnCamera(_model);
             OnModelChanged?.Invoke(_model);
+        }
+
+        private static void HideFromOwnCamera(Transform model)
+        {
+            foreach (var renderer in model.GetComponentsInChildren<Renderer>(true))
+            {
+                renderer.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+            }
         }
 
         public override void OnNetworkDespawn() => _sessionDirectory.OnSessionChanged -= HandleSessionChanged;

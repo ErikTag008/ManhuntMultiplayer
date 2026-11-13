@@ -10,6 +10,8 @@ namespace Project.Assets._Project._Scripts.Player.Abilities
         [field: SerializeField, Min(0f)] public float CooldownInSeconds { get; private set; } = 15f;
         // what the HUD slot shows while the ability is ready, e.g. the key that triggers it
         [field: SerializeField] public string ReadyHint { get; private set; } = "Q";
+        // Animator trigger played when the ability is used; empty when the regular animation already shows it
+        [field: SerializeField] public string AnimationTrigger { get; private set; } = "";
 
         public abstract AbilityTrigger Trigger { get; }
 
