@@ -47,6 +47,9 @@ namespace Project.Assets._Project._Scripts.Player
         [field: SerializeField] public int MaxHealth { get; private set; } = 100;
         [field: SerializeField] public int PotionHealAmount { get; private set; } = 50;
 
+        // applied while the walk key is held: slower than the footstep threshold, so walking is silent
+        [field: SerializeField] public StatModifier WalkModifier { get; private set; } = new(ModifiableStat.MaxMoveSpeed, StatModifierKind.Multiply, 0.25f);
+
         [field: Header("Model Stats")]
         [field: SerializeField] public Transform Model { get; private set; }
     }

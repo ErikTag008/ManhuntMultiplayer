@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bc0014ce586df74f94590275f682555, type: 3}
+  m_Name: DefaultFootstepSoundSet
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.FootstepSoundSet
+  <Clips>k__BackingField:
+  - {fileID: 8300000, guid: 1ef18eb760257a74ab566092c5b49494, type: 3}
+  - {fileID: 8300000, guid: 30e4fdc1caba56e42880d96fa0f967d0, type: 3}
+  - {fileID: 8300000, guid: 5d00761a2d6a3be45a99e232fe8133b0, type: 3}
+  - {fileID: 8300000, guid: 3ad04d3bc02b2f64aa2634520f1a0c07, type: 3}
+  <Volume>k__BackingField: 0.6
+  <PitchRange>k__BackingField: {x: 0.92, y: 1.08}

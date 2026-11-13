@@ -4,17 +4,18 @@ using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player
 {
-    // Feeds the current model's Animator from this player's movement and synced state on every instance, so remote
+    // Feeds the current model's Animator from this player's estimated movement and synced state on every instance, so remote
     // players animate too. The parameter names are the contract any model's Animator Controller must match
     // (the placeholder now, the human-made one later).
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerLifeState), typeof(PlayerRescue))]
-    [RequireComponent(typeof(PlayerAbility))]
+    [RequireComponent(typeof(PlayerAbility), typeof(PlayerMotion))]
     public class PlayerAnimator : ValidatedMonoBehaviour
     {
         [SerializeField, Self] private PlayerTeam _team;
         [SerializeField, Self] private PlayerLifeState _lifeState;
         [SerializeField, Self] private PlayerRescue _rescue;
         [SerializeField, Self] private PlayerAbility _ability;
+        [SerializeField, Self] private PlayerMotion _motion;
         // the owner's look rotation, synced and smoothed on remote instances by PlayerNetworkSync
         [SerializeField] private Transform _cameraFollower;
         [SerializeField] private string _moveSpeedParameter = "MoveSpeed";
@@ -22,12 +23,6 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField] private string _isGroundedParameter = "IsGrounded";
         [SerializeField] private string _lifeStateParameter = "LifeState";
         [SerializeField] private string _isRescuingParameter = "IsRescuing";
-        // remote players move in network steps, so raw per-frame speed would flicker the blend
-        [SerializeField] private float _speedSmoothing = 12f;
-        [SerializeField] private float _groundProbeHeight = 0.1f;
-        [SerializeField] private float _groundProbeDistance = 0.25f;
-        // a bigger jump between two frames is a teleport (respawn, spawn point), not movement
-        [SerializeField] private float _maxSampleDistance = 3f;
         // looking up or down tilts the head, and the spine takes the rest so the body follows the gaze
         [SerializeField, Range(0f, 1f)] private float _headLookShare = 0.6f;
         [SerializeField] private float _maxLookPitchInDegrees = 70f;
@@ -41,9 +36,6 @@ namespace Project.Assets._Project._Scripts.Player
         private int _isRescuingId;
         // the last ability trigger set, so it can be cleared if the player goes down before it plays
         private int _pendingAbilityTriggerId;
-        private Vector3 _lastPosition;
-        private float _smoothedPlanarSpeed;
-        private float _smoothedVerticalSpeed;
 
         private void Awake()
         {
@@ -52,7 +44,6 @@ namespace Project.Assets._Project._Scripts.Player
             _isGroundedId = Animator.StringToHash(_isGroundedParameter);
             _lifeStateId = Animator.StringToHash(_lifeStateParameter);
             _isRescuingId = Animator.StringToHash(_isRescuingParameter);
-            _lastPosition = transform.position;
 
             // subscribed before any OnNetworkSpawn, so the first team model is caught too
             _team.OnModelChanged += HandleModelChanged;
@@ -64,22 +55,11 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void LateUpdate()
         {
-            Vector3 position = transform.position;
-            Vector3 delta = position - _lastPosition;
-            _lastPosition = position;
-            if (_animator == null || _team.CurrentStats == null) return;
+            if (_animator == null) return;
 
-            if (delta.magnitude <= _maxSampleDistance && Time.deltaTime > 0f)
-            {
-                Vector3 velocity = delta / Time.deltaTime;
-                _smoothedPlanarSpeed = EUtils.Math.Lerp(_smoothedPlanarSpeed, new Vector2(velocity.x, velocity.z).magnitude, _speedSmoothing);
-                _smoothedVerticalSpeed = EUtils.Math.Lerp(_smoothedVerticalSpeed, velocity.y, _speedSmoothing);
-            }
-            float maxMoveSpeed = _team.CurrentStats.MaxMoveSpeed;
-
-            _animator.SetFloat(_moveSpeedId, maxMoveSpeed > 0f ? _smoothedPlanarSpeed / maxMoveSpeed : 0f);
-            _animator.SetFloat(_verticalSpeedId, _smoothedVerticalSpeed);
-            _animator.SetBool(_isGroundedId, IsGrounded());
+            _animator.SetFloat(_moveSpeedId, _motion.NormalizedPlanarSpeed);
+            _animator.SetFloat(_verticalSpeedId, _motion.VerticalSpeed);
+            _animator.SetBool(_isGroundedId, _motion.IsGrounded);
             _animator.SetInteger(_lifeStateId, (int)_lifeState.State);
             // progress runs on both the rescuer and the knocked runner; only the one standing kneels to help
             _animator.SetBool(_isRescuingId, _lifeState.IsUp && _rescue.RescueProgress > 0f);
@@ -97,10 +77,6 @@ namespace Project.Assets._Project._Scripts.Player
             if (_rig.Spine != null) _rig.Spine.localRotation *= Quaternion.Euler(lookDown * (1f - _headLookShare), 0f, 0f);
             if (_rig.Head != null) _rig.Head.localRotation *= Quaternion.Euler(lookDown * _headLookShare, 0f, 0f);
         }
-
-        // Owner-side movement isn't available on remote instances, so grounding is probed here for everyone
-        private bool IsGrounded() =>
-            Physics.Raycast(transform.position + Vector3.up * _groundProbeHeight, Vector3.down, _groundProbeHeight + _groundProbeDistance, _team.CurrentStats.GroundCheckLayers);
 
         private void HandleModelChanged(Transform model)
         {

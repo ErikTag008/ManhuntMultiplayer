@@ -1,0 +1,6 @@
+Footstep sounds in this folder (Footstep_*.ogg)
+
+Source:  "Different steps on wood, stone, leaves, gravel and mud" by TinyWorlds
+URL:     https://opengameart.org/content/different-steps-on-wood-stone-leaves-gravel-and-mud
+License: CC0 (public domain dedication), no attribution required
+Notes:   human-recorded sounds, published 2011-08-03. Files were renamed with a Footstep_ prefix; audio unchanged.

@@ -23,9 +23,11 @@ namespace Project.Assets._Project._Scripts.Input
         public event Action OnSpectatePrevious;
         public event Action OnAbility;
         public event Action OnToggleMenu;
+        public event Action<bool> OnWalkHeldChanged;
 
         public event Action OnStartButtonKeyPressed;
         public bool IsUsingMouse => _playerInput.currentControlScheme == _keyboardMouseControlScheme;
+        public bool IsWalkHeld { get; private set; }
 
         public void Move(InputAction.CallbackContext context)
         {
@@ -117,6 +119,20 @@ namespace Project.Assets._Project._Scripts.Input
             {
                 OnHealthPotionUsed?.Invoke();
             }
+        }
+
+        public void Walk(InputAction.CallbackContext context)
+        {
+            if (context.performed) ToggleWalkHeld(true);
+            else if (context.canceled) ToggleWalkHeld(false);
+        }
+
+        private void ToggleWalkHeld(bool isHeld)
+        {
+            if (IsWalkHeld == isHeld) return;
+
+            IsWalkHeld = isHeld;
+            OnWalkHeldChanged?.Invoke(isHeld);
         }
 
         public void ToggleMenu(InputAction.CallbackContext context)

@@ -239,6 +239,135 @@ Transform:
   m_Children: []
   m_Father: {fileID: 3526512074580094625}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6568168192830367346
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3361131102615231294}
+  - component: {fileID: 7764177460173050544}
+  m_Layer: 0
+  m_Name: Footsteps
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3361131102615231294
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6568168192830367346}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6284144716852822933}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!82 &7764177460173050544
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6568168192830367346}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 2
+  MaxDistance: 30
+  Pan2D: 0
+  rolloffMode: 1
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &8003451599721298038
 GameObject:
   m_ObjectHideFlags: 0
@@ -267,6 +396,8 @@ GameObject:
   - component: {fileID: 5068892008710688985}
   - component: {fileID: 1196470119741336347}
   - component: {fileID: 5802237443212687060}
+  - component: {fileID: 5939890056578459048}
+  - component: {fileID: 39154995949995008}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -291,6 +422,7 @@ Transform:
   - {fileID: 7460693758395271466}
   - {fileID: 4853491123650079907}
   - {fileID: 3526512074580094625}
+  - {fileID: 3361131102615231294}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6746026668882122894
@@ -594,6 +726,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: ab5ef029-914d-4a46-b3a7-26570ee97f2b
     m_ActionName: Player/ToggleMenu
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4851020409925496502}
+        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Input.InputReader, Project.Input
+        m_MethodName: Walk
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: d474dda2-c3a7-453d-8f55-ecea48970491
+    m_ActionName: Player/Walk
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -841,15 +989,48 @@ MonoBehaviour:
   _lifeState: {fileID: 1513991399820021913}
   _rescue: {fileID: 1916059384330318201}
   _ability: {fileID: 5068892008710688985}
+  _motion: {fileID: 5939890056578459048}
   _cameraFollower: {fileID: 3526512074580094625}
   _moveSpeedParameter: MoveSpeed
   _verticalSpeedParameter: VerticalSpeed
   _isGroundedParameter: IsGrounded
   _lifeStateParameter: LifeState
   _isRescuingParameter: IsRescuing
+  _headLookShare: 0.6
+  _maxLookPitchInDegrees: 70
+--- !u!114 &5939890056578459048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb9877ee15763d8409aebb02bd6c615c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerMotion
+  _team: {fileID: 2895491558510482950}
   _speedSmoothing: 12
   _groundProbeHeight: 0.1
   _groundProbeDistance: 0.25
   _maxSampleDistance: 3
-  _headLookShare: 0.6
-  _maxLookPitchInDegrees: 70
+--- !u!114 &39154995949995008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35277cdf51fd81a459da4e44a616de38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerFootsteps
+  _motion: {fileID: 5939890056578459048}
+  _lifeState: {fileID: 1513991399820021913}
+  _audioSource: {fileID: 7764177460173050544}
+  _soundSet: {fileID: 11400000, guid: 31e2c5d105f09674cb35b544aff956ee, type: 2}
+  _silentSpeedShare: 0.4
+  _stepsPerSecondAtFullSpeed: 4.5
+  _firstStepHead: 0.6

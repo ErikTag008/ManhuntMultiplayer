@@ -48,6 +48,8 @@ namespace Project.Assets._Project._Scripts.Player
         private IPlayerMovement _movement;
         private ILobbyUI _lobbyUI;
         private bool _isKnockedCrawlApplied;
+        // the exact instance added, since the stack removes modifiers by reference
+        private StatModifier _appliedWalkModifier;
 
         public Team Team => _team.Team;
         public PlayerLifeState LifeState => _lifeState;
@@ -83,6 +85,7 @@ namespace Project.Assets._Project._Scripts.Player
 
             _playerInput.enabled = true;
             _lobbyMenuState.OnOpenChanged += HandleLobbyMenuOpenChanged;
+            _inputReader.OnWalkHeldChanged += HandleWalkHeldChanged;
             ToggleCursorFree(_lobbyMenuState.IsOpen);
         }
 
@@ -195,7 +198,24 @@ namespace Project.Assets._Project._Scripts.Player
         {
             _statModifiers.Clear();
             _isKnockedCrawlApplied = false;
+            _appliedWalkModifier = null;
             _movementStats?.ChangeBaseStats(stats);
+            if (IsOwner) HandleWalkHeldChanged(_inputReader.IsWalkHeld);
+        }
+
+        // Owner only: holding walk caps the speed below the footstep threshold, so the player moves silently
+        private void HandleWalkHeldChanged(bool isHeld)
+        {
+            if (_appliedWalkModifier != null)
+            {
+                _statModifiers.Remove(_appliedWalkModifier);
+                _appliedWalkModifier = null;
+            }
+
+            if (!isHeld || _team.CurrentStats == null) return;
+
+            _appliedWalkModifier = _team.CurrentStats.WalkModifier;
+            _statModifiers.Add(_appliedWalkModifier);
         }
 
         private void HandleModelChanged(Transform model) => _movement?.ChangeModel(model);
@@ -253,6 +273,7 @@ namespace Project.Assets._Project._Scripts.Player
             if (!IsOwner) return;
 
             _lobbyMenuState.OnOpenChanged -= HandleLobbyMenuOpenChanged;
+            _inputReader.OnWalkHeldChanged -= HandleWalkHeldChanged;
             // the session is over (back to the main menu), so its buttons need the cursor
             ToggleCursorFree(true);
 
