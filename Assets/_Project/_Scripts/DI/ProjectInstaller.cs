@@ -3,6 +3,7 @@ using Project.Assets._Project._Scripts.CameraUtils;
 using Project.Assets._Project._Scripts.Managers;
 using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player;
+using Project.Assets._Project._Scripts.Player.Abilities;
 using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.UI;
 using Project.Assets._Project._Scripts.UI.HUD;
@@ -20,6 +21,7 @@ namespace Project.Assets._Project._Scripts.DI
         [SerializeField, AssetsOnly] private GameLobbySettings _gameLobbySettings;
         [SerializeField, AssetsOnly] private GameScenes _gameScenes;
         [SerializeField, AssetsOnly] private ConnectionSettings _connectionSettings;
+        [SerializeField, AssetsOnly] private AbilityCatalog _abilityCatalog;
         public void InstallBindings(ContainerBuilder builder)
         {
 
@@ -50,6 +52,7 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterValue(_gameLobbySettings);
             builder.RegisterValue(_gameScenes);
             builder.RegisterValue(_connectionSettings);
+            builder.RegisterValue(_abilityCatalog);
         }
     }
 }

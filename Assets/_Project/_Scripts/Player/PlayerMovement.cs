@@ -17,6 +17,7 @@ namespace Project.Assets._Project._Scripts.Player
         private float _lastJumpPressedTime = -Mathf.Infinity;
         private Vector3 _lastGroundNormal = Vector3.up;
         private bool _movementEnabled = true;
+        private int _airJumpFrame = -1;
         public event Action<float> ModelRotationChanged;
         public event Action<Quaternion> CameraFollowerRotationChanged;
 
@@ -66,6 +67,8 @@ namespace Project.Assets._Project._Scripts.Player
 
             if (isButtonDown)
             {
+                // this press was already spent on an air jump; buffering it too would give a third jump on landing
+                if (Time.frameCount == _airJumpFrame) return;
 
                 _lastJumpPressedTime = Time.time;
                 if ((IsGrounded() || Time.time - _lastGroundedTime <= _stats.CoyoteTime) && GetVelocityAlongGroundNormal() < _stats.GroundCheckMaxYVelocity)
@@ -74,12 +77,6 @@ namespace Project.Assets._Project._Scripts.Player
                     _lastJumpPressedTime = -Mathf.Infinity;
                     return;
                 }
-                //if (_canDoubleJump && !_doubleJumpUsed)
-                //{
-                //    PerformJump(isDoubleJump: true);
-                //    _doubleJumpUsed = true;
-                //    _lastJumpPressedTime = -Mathf.Infinity;
-                //}
             }
             else
             {
@@ -129,7 +126,6 @@ namespace Project.Assets._Project._Scripts.Player
             if (grounded)
             {
                 _lastGroundedTime = Time.time;
-                //_doubleJumpUsed = false;
                 _rb.linearDamping = _stats.HorizontalDamping;
             }
             else
@@ -220,17 +216,39 @@ namespace Project.Assets._Project._Scripts.Player
                 _lastJumpPressedTime = -Mathf.Infinity;
                 return;
             }
-
-            //if (!_doubleJumpUsed && _canDoubleJump)
-            //{
-
-            //    PerformJump(isDoubleJump: true);
-            //    _doubleJumpUsed = true;
-            //    _lastJumpPressedTime = -Mathf.Infinity;
-            //}
         }
 
-        private void PerformJump(bool isDoubleJump = false)
+        // True when a jump press now would be an ordinary jump: on the ground or within coyote time
+        public bool CanJumpFromGround() =>
+            _stats != null && (IsGrounded() || Time.time - _lastGroundedTime <= _stats.CoyoteTime);
+
+        // Replaces the fall with a fresh upward push. HandleJump may see the same press after this, so it's marked as spent.
+        public void AirJump(float jumpForceMultiplier)
+        {
+            if (!_movementEnabled || _stats == null) return;
+
+            Vector3 velocity = _rb.linearVelocity;
+            _rb.linearVelocity = new Vector3(velocity.x, 0f, velocity.z);
+            _rb.AddForce(Vector3.up * (_stats.JumpForce * jumpForceMultiplier), ForceMode.VelocityChange);
+            _lastJumpPressedTime = -Mathf.Infinity;
+            _airJumpFrame = Time.frameCount;
+        }
+
+        // A burst along the view direction, flattened so looking up or down doesn't launch the player
+        public void Dash(float speed)
+        {
+            if (!_movementEnabled || !_camera) return;
+
+            Vector3 direction = _camera.transform.forward;
+            direction.y = 0f;
+            if (direction.sqrMagnitude <= 0f) return;
+
+            direction.Normalize();
+            float verticalVelocity = _rb.linearVelocity.y;
+            _rb.linearVelocity = direction * speed + Vector3.up * verticalVelocity;
+        }
+
+        private void PerformJump()
         {
             if (!_movementEnabled) return;
             // remove any velocity component that points into the ground normal

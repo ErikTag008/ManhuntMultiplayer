@@ -54,6 +54,8 @@ namespace Project.Assets._Project._Scripts.Player
         public float HeadingInDegrees => _team.Model != null ? _team.Model.eulerAngles.y : transform.eulerAngles.y;
         // Owner side: movement runs on the owner, so features that change movement stats add their modifiers here
         public StatModifierStack StatModifiers => _statModifiers;
+        // Owner only, and null until the first scene gives the player a camera
+        public IPlayerMovement Movement => _movement;
         // Eliminated players and catchers held during the hide phase stand still
         private bool CanMove => _lifeState.CanMove && !_hideHold.IsHeld;
 

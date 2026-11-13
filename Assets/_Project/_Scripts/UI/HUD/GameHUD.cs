@@ -16,18 +16,26 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private string _bleedOutLabelFormat = "{0:0}s";
         [SerializeField] private FadePanel _rescuePanel;
         [SerializeField] private FillMeter _rescueMeter;
+        [SerializeField] private FadePanel _abilityPanel;
+        [SerializeField] private TMP_Text _abilityNameText;
+        // the shade drains as the cooldown runs; the label shows the seconds left, or the ability's ready hint
+        [SerializeField] private FillMeter _abilityCooldownMeter;
+        [SerializeField] private string _abilityCooldownLabelFormat = "{0}";
 
         private int _shownBleedOutSeconds = -1;
+        private int _shownAbilitySeconds = -1;
 
         private void Start()
         {
             _state.OnRunnerCountsChanged += HandleRunnerCountsChanged;
             _state.OnBleedOutChanged += HandleBleedOutChanged;
             _state.OnRescueChanged += HandleRescueChanged;
+            _state.OnAbilityChanged += HandleAbilityChanged;
             // values set before this scene's UI started
             HandleRunnerCountsChanged();
             HandleBleedOutChanged();
             HandleRescueChanged();
+            HandleAbilityChanged();
         }
 
         private void HandleRunnerCountsChanged() =>
@@ -53,6 +61,23 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             if (_state.IsRescueShown) _rescueMeter.SetValue(_state.RescueProgress);
         }
 
+        private void HandleAbilityChanged()
+        {
+            TogglePanel(_abilityPanel, _state.IsAbilityShown);
+            if (!_state.IsAbilityShown) return;
+
+            _abilityCooldownMeter.SetValue(_state.AbilityCooldownProgress);
+            // the remaining time changes every frame; the labels only need new strings when they actually change
+            bool isNewAbility = _abilityNameText.text != _state.AbilityName;
+            if (isNewAbility) _abilityNameText.text = _state.AbilityName;
+
+            int seconds = Mathf.CeilToInt(_state.AbilityCooldownRemainingInSeconds);
+            if (seconds == _shownAbilitySeconds && !isNewAbility) return;
+
+            _shownAbilitySeconds = seconds;
+            _abilityCooldownMeter.SetLabel(seconds > 0 ? string.Format(_abilityCooldownLabelFormat, seconds) : _state.AbilityReadyHint);
+        }
+
         private static void TogglePanel(FadePanel panel, bool isShown)
         {
             if (panel.IsShown == isShown) return;
@@ -66,6 +91,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnRunnerCountsChanged -= HandleRunnerCountsChanged;
             _state.OnBleedOutChanged -= HandleBleedOutChanged;
             _state.OnRescueChanged -= HandleRescueChanged;
+            _state.OnAbilityChanged -= HandleAbilityChanged;
         }
     }
 }

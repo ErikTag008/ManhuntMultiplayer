@@ -14,10 +14,16 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private float _bleedOutProgress;
         private bool _isRescueShown;
         private float _rescueProgress;
+        private bool _isAbilityShown;
+        private string _abilityName;
+        private string _abilityReadyHint;
+        private float _abilityCooldownRemainingInSeconds;
+        private float _abilityCooldownProgress;
 
         public event Action OnRunnerCountsChanged;
         public event Action OnBleedOutChanged;
         public event Action OnRescueChanged;
+        public event Action OnAbilityChanged;
 
         public int RunnersUp => _runnersUp;
         public int RunnersKnocked => _runnersKnocked;
@@ -28,6 +34,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public float BleedOutProgress => _bleedOutProgress;
         public bool IsRescueShown => _isRescueShown;
         public float RescueProgress => _rescueProgress;
+        public bool IsAbilityShown => _isAbilityShown;
+        public string AbilityName => _abilityName;
+        public string AbilityReadyHint => _abilityReadyHint;
+        public float AbilityCooldownRemainingInSeconds => _abilityCooldownRemainingInSeconds;
+        // 1 right after use, 0 when ready
+        public float AbilityCooldownProgress => _abilityCooldownProgress;
 
         public void SetRunnerCounts(int up, int knocked, int eliminated)
         {
@@ -56,6 +68,19 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _isRescueShown = isShown;
             _rescueProgress = progress;
             OnRescueChanged?.Invoke();
+        }
+
+        public void SetAbility(bool isShown, string abilityName, string readyHint, float cooldownRemainingInSeconds, float cooldownProgress)
+        {
+            if (_isAbilityShown == isShown && _abilityName == abilityName && _abilityReadyHint == readyHint
+                && _abilityCooldownRemainingInSeconds == cooldownRemainingInSeconds && _abilityCooldownProgress == cooldownProgress) return;
+
+            _isAbilityShown = isShown;
+            _abilityName = abilityName;
+            _abilityReadyHint = readyHint;
+            _abilityCooldownRemainingInSeconds = cooldownRemainingInSeconds;
+            _abilityCooldownProgress = cooldownProgress;
+            OnAbilityChanged?.Invoke();
         }
     }
 }

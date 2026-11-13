@@ -10,6 +10,9 @@ namespace Project.Assets._Project._Scripts.Player
         void HandleFixedMovement(Vector2 moveDirection);
         void HandleRotation();
         bool IsGrounded();
+        bool CanJumpFromGround();
+        void AirJump(float jumpForceMultiplier);
+        void Dash(float speed);
         void DrawGizmos();
         void ChangeCamera(Camera camera);
         void ChangeStats(IMovementStats stats);

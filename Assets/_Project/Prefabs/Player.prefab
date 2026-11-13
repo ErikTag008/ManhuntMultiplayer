@@ -264,6 +264,7 @@ GameObject:
   - component: {fileID: 3464033196263984798}
   - component: {fileID: 7900401039691343269}
   - component: {fileID: 4859089908487619711}
+  - component: {fileID: 5068892008710688985}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -558,6 +559,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: a3203129-f749-474e-a3c8-a71f6634b412
     m_ActionName: Player/SpectatePrevious
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4851020409925496502}
+        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Input.InputReader, Project.Input
+        m_MethodName: Ability
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 272f5f1c-f859-4047-bded-e7f7535bee0e
+    m_ActionName: Player/Ability
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -754,3 +771,23 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _lifeState: {fileID: 1513991399820021913}
   _rescue: {fileID: 1916059384330318201}
+  _ability: {fileID: 5068892008710688985}
+--- !u!114 &5068892008710688985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f05a05b3a16df54d82da11b7a13a1dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerAbility
+  ShowTopMostFoldoutHeaderGroup: 1
+  _controller: {fileID: 7194238487740375515}
+  _team: {fileID: 2895491558510482950}
+  _lifeState: {fileID: 1513991399820021913}
+  _hideHold: {fileID: 7900401039691343269}
+  _inputReader: {fileID: 4851020409925496502}
+  _serverToleranceInSeconds: 0.25

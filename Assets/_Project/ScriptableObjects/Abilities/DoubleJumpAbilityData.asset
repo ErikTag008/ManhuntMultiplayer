@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdd7cb5e358998f44b89413f46a788b1, type: 3}
+  m_Name: DoubleJumpAbilityData
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.Abilities.DoubleJumpAbilityData
+  <Id>k__BackingField: 2
+  <DisplayName>k__BackingField: Double Jump
+  <CooldownInSeconds>k__BackingField: 20
+  <ReadyHint>k__BackingField: Air
+  <JumpForceMultiplier>k__BackingField: 1

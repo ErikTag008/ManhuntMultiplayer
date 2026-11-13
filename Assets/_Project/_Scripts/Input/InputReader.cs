@@ -21,6 +21,7 @@ namespace Project.Assets._Project._Scripts.Input
         public event Action OnHealthPotionUsed;
         public event Action OnSpectateNext;
         public event Action OnSpectatePrevious;
+        public event Action OnAbility;
 
         public event Action OnStartButtonKeyPressed;
         public bool IsUsingMouse => _playerInput.currentControlScheme == _keyboardMouseControlScheme;
@@ -121,6 +122,11 @@ namespace Project.Assets._Project._Scripts.Input
             {
                 OnHealthPotionUsed?.Invoke();
             }
+        }
+
+        public void Ability(InputAction.CallbackContext context)
+        {
+            if (context.performed) OnAbility?.Invoke();
         }
 
         public void SpectateNext(InputAction.CallbackContext context)

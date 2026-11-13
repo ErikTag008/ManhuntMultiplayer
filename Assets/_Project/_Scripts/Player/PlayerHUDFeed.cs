@@ -6,8 +6,8 @@ using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player
 {
-    // Owner only: pushes the round's runner counts and this player's bleed-out and rescue progress into the gameplay HUD
-    [RequireComponent(typeof(PlayerLifeState), typeof(PlayerRescue))]
+    // Owner only: pushes the round's runner counts and this player's bleed-out, rescue progress and ability cooldown into the gameplay HUD
+    [RequireComponent(typeof(PlayerLifeState), typeof(PlayerRescue), typeof(PlayerAbility))]
     public class PlayerHUDFeed : NetworkBehaviour
     {
         [Inject] private readonly GameHUDState _hudState;
@@ -15,6 +15,7 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly RunnerStats _runnerStats;
         [SerializeField, Self] private PlayerLifeState _lifeState;
         [SerializeField, Self] private PlayerRescue _rescue;
+        [SerializeField, Self] private PlayerAbility _ability;
 
         private bool _hasBleedOutStarted;
 
@@ -36,6 +37,7 @@ namespace Project.Assets._Project._Scripts.Player
 
             RefreshBleedOut();
             RefreshRescue();
+            RefreshAbility();
         }
 
         private void HandleSessionChanged(PlayerSession _) => RefreshRunnerCounts();
@@ -71,6 +73,21 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetRescue(progress > 0f, progress);
         }
 
+        // only runners have an ability, so catchers and the lobby show no slot
+        private void RefreshAbility()
+        {
+            var ability = _ability.Ability;
+            if (ability == null)
+            {
+                _hudState.SetAbility(false, null, null, 0f, 0f);
+                return;
+            }
+
+            float remaining = _ability.CooldownRemainingInSeconds;
+            float progress = ability.CooldownInSeconds > 0f ? remaining / ability.CooldownInSeconds : 0f;
+            _hudState.SetAbility(true, ability.DisplayName, ability.ReadyHint, remaining, progress);
+        }
+
         public override void OnNetworkDespawn()
         {
             if (!IsOwner) return;
@@ -80,6 +97,7 @@ namespace Project.Assets._Project._Scripts.Player
             _lifeState.OnLifeStateChanged -= HandleLifeStateChanged;
             _hudState.SetBleedOut(false, 0f, 0f);
             _hudState.SetRescue(false, 0f);
+            _hudState.SetAbility(false, null, null, 0f, 0f);
         }
     }
 }
