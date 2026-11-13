@@ -5,6 +5,7 @@ using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player;
 using Project.Assets._Project._Scripts.Player.Abilities;
 using Project.Assets._Project._Scripts.SceneFlow;
+using Project.Assets._Project._Scripts.Settings;
 using Project.Assets._Project._Scripts.UI;
 using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Core;
@@ -22,6 +23,7 @@ namespace Project.Assets._Project._Scripts.DI
         [SerializeField, AssetsOnly] private GameScenes _gameScenes;
         [SerializeField, AssetsOnly] private ConnectionSettings _connectionSettings;
         [SerializeField, AssetsOnly] private AbilityCatalog _abilityCatalog;
+        [SerializeField, AssetsOnly] private SettingsData _settingsData;
         public void InstallBindings(ContainerBuilder builder)
         {
 
@@ -35,6 +37,11 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(typeof(HidePhase), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(GameHUDState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(LobbyMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(PauseMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(SettingsMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            // Eager so saved settings and key bindings are loaded before the first player or camera reads them
+            builder.RegisterType(typeof(GameSettingsService), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(KeybindService), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PersistentObjectRegistry), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(TeamAssignmentService), new Type[] { typeof(ITeamAssignmentService) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             builder.RegisterType(typeof(WinConditionEvaluator), new Type[] { typeof(IWinConditionEvaluator) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
@@ -42,6 +49,7 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(typeof(LocalConnectionService), new Type[] { typeof(IConnectionService) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             // Eager so it listens for disconnects from the first session on
             builder.RegisterType(typeof(SessionEndHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(PauseMenuLeaveHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
 
             // Network-spawned systems register themselves in GameSystemsRegistry; transient so each resolve sees the live instance
             builder.RegisterFactory(p => p.Resolve<GameSystemsRegistry>().PlayerRegistry, new Type[] { typeof(IPlayerRegistry) }, Reflex.Enums.Lifetime.Transient, Reflex.Enums.Resolution.Lazy);
@@ -54,6 +62,7 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterValue(_gameScenes);
             builder.RegisterValue(_connectionSettings);
             builder.RegisterValue(_abilityCatalog);
+            builder.RegisterValue(_settingsData);
         }
     }
 }

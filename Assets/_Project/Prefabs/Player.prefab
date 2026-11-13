@@ -280,7 +280,7 @@ AudioSource:
   m_GameObject: {fileID: 6568168192830367346}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: -5143933677483925203, guid: caed166129723c046ac1b100690ff6df, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
@@ -631,22 +631,6 @@ MonoBehaviour:
     m_ActionId: 63942c4f-88c1-4110-828f-402d6e8012f4
     m_ActionName: 'Player/Interact[/Keyboard/e]'
   - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: ede8dbee-f588-441a-baf7-2441148d250c
-    m_ActionName: 'Player/Reload[/Keyboard/r]'
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: c86ace77-7423-43d6-a7ad-fa1534e05200
-    m_ActionName: 'Player/PrimaryWeapon[/Keyboard/1]'
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 44393f45-304a-4718-8315-613ef093bb43
-    m_ActionName: 'Player/SecondaryWeapon[/Keyboard/2]'
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: df7913d1-a33c-4a0d-b0bc-a82b77d30214
-    m_ActionName: 'Player/UsePotion[/Keyboard/h]'
-  - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 4851020409925496502}
         m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Player.InputReader, ProjectAssembly
@@ -742,6 +726,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: d474dda2-c3a7-453d-8f55-ecea48970491
     m_ActionName: Player/Walk
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4851020409925496502}
+        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Input.InputReader, Project.Input
+        m_MethodName: Pause
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: a22f4ee6-46f4-4e83-b4a5-95e517b7823d
+    m_ActionName: Player/Pause
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -761,6 +761,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.Player.InputReader
   _playerInput: {fileID: 5189175634887361945}
   _keyboardMouseControlScheme: Keyboard&Mouse
+  _pauseActionName: Pause
 --- !u!54 &4515986925934261871
 Rigidbody:
   m_ObjectHideFlags: 0

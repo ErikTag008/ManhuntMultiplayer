@@ -1,5 +1,6 @@
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.Input;
+using Project.Assets._Project._Scripts.Settings;
 using Reflex.Attributes;
 using System;
 using Unity.Cinemachine;
@@ -10,11 +11,16 @@ namespace Project.Assets._Project._Scripts.CameraUtils
     public class FPCameraInstaller : ValidatedMonoBehaviour
     {
         [Inject] private readonly ICameraStats _cameraStats;
+        [Inject] private readonly GameSettingsService _settings;
         private InputReader _inputReader;
         [SerializeField, Self] private CinemachineCamera _camera;
         [SerializeField, Self] private CinemachineInputAxisController _cinemachineInputAxisController;
         [SerializeField, Self] private CinemachinePanTilt _cinemachinePanTilt;
         public event Action OnCameraRotationChanged;
+
+        // the owner's PlayerInput enables its actions; Cinemachine enabling Look itself would undo the pause menu turning it off
+        private void Awake() => _cinemachineInputAxisController.AutoEnableInputs = false;
+
         private void Start()
         {
             CinemachineCore.CameraUpdatedEvent.AddListener(OnCameraUpdate);
@@ -37,7 +43,8 @@ namespace Project.Assets._Project._Scripts.CameraUtils
         private void Update()
         {
             if(_inputReader == null) return;
-            LookInputSettings.Apply(_cinemachineInputAxisController, _inputReader, _cameraStats);
+            LookInputSettings.Apply(_cinemachineInputAxisController, _inputReader, _cameraStats, _settings.Values);
+            _camera.Lens.FieldOfView = _settings.Values.FieldOfView;
             _cinemachinePanTilt.TiltAxis.Range = new Vector2(-_cameraStats.MaxPitch, _cameraStats.MaxPitch);
         }
 

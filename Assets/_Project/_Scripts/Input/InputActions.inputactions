@@ -52,42 +52,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Reload",
-                    "type": "Button",
-                    "id": "ede8dbee-f588-441a-baf7-2441148d250c",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "PrimaryWeapon",
-                    "type": "Button",
-                    "id": "c86ace77-7423-43d6-a7ad-fa1534e05200",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "SecondaryWeapon",
-                    "type": "Button",
-                    "id": "44393f45-304a-4718-8315-613ef093bb43",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "UsePotion",
-                    "type": "Button",
-                    "id": "df7913d1-a33c-4a0d-b0bc-a82b77d30214",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "StartButton",
                     "type": "Button",
                     "id": "a9a8af69-d8e0-4c88-afa6-b22a0722e900",
@@ -136,6 +100,15 @@
                     "name": "Walk",
                     "type": "Button",
                     "id": "d474dda2-c3a7-453d-8f55-ecea48970491",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Pause",
+                    "type": "Button",
+                    "id": "a22f4ee6-46f4-4e83-b4a5-95e517b7823d",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -343,61 +316,6 @@
                 },
                 {
                     "name": "",
-                    "id": "1726bad7-3d2a-4090-8a2f-0d8ecdda572e",
-                    "path": "<Keyboard>/r",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "Reload",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "67831bf2-9a66-4e84-8256-1585d99f2c7e",
-                    "path": "<Gamepad>/buttonWest",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Gamepad",
-                    "action": "Reload",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "08c175da-69ba-43a6-8210-248ff33be213",
-                    "path": "<Keyboard>/1",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "PrimaryWeapon",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "587c5cb3-3341-4c12-b154-76f05e08dab2",
-                    "path": "<Keyboard>/2",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "SecondaryWeapon",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "9cc49201-6313-4da4-861f-bacdc9271425",
-                    "path": "<Keyboard>/h",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "UsePotion",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "7bb5ac80-87be-47d3-ba13-49e0378effa6",
                     "path": "<Keyboard>/p",
                     "interactions": "",
@@ -514,6 +432,28 @@
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "Walk",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0edb8b1b-f73f-48c3-8766-65818c233ef1",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "007db798-0f9f-4d8e-8f1f-6af7da57450c",
+                    "path": "<Gamepad>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "Pause",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

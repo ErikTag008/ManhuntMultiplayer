@@ -9,25 +9,25 @@ namespace Project.Assets._Project._Scripts.Input
     {
         [SerializeField, Self] private PlayerInput _playerInput;
         [SerializeField] private string _keyboardMouseControlScheme = "Keyboard&Mouse";
+        // stays on while gameplay input is off, so the pause menu can still be closed
+        [SerializeField] private string _pauseActionName = "Pause";
         public Vector2 MoveDirection { get; private set; }
         public Vector2 LookDirection { get; private set; }
         public event Action OnAttack;
         public event Action<bool> OnJump;
         public event Action OnInteract;
         public event Action<bool> OnInteractHeldChanged;
-        public event Action OnReload;
-        public event Action PrimaryWeaponSwitch;
-        public event Action SecondaryWeaponSwitch;
-        public event Action OnHealthPotionUsed;
         public event Action OnSpectateNext;
         public event Action OnSpectatePrevious;
         public event Action OnAbility;
         public event Action OnToggleMenu;
+        public event Action OnPause;
         public event Action<bool> OnWalkHeldChanged;
 
         public event Action OnStartButtonKeyPressed;
         public bool IsUsingMouse => _playerInput.currentControlScheme == _keyboardMouseControlScheme;
         public bool IsWalkHeld { get; private set; }
+        public InputActionAsset Actions => _playerInput.actions;
 
         public void Move(InputAction.CallbackContext context)
         {
@@ -87,40 +87,6 @@ namespace Project.Assets._Project._Scripts.Input
             }
         }
 
-        public void Reload(InputAction.CallbackContext context)
-        {
-            if (context.performed)
-            {
-                OnReload?.Invoke();
-            }
-
-        }
-
-        public void PrimaryWeapon(InputAction.CallbackContext context)
-        {
-            if (context.performed)
-            {
-                PrimaryWeaponSwitch?.Invoke();
-            }
-        }
-
-        public void SecondaryWeapon(InputAction.CallbackContext context)
-        {
-            if (context.performed)
-            {
-                SecondaryWeaponSwitch?.Invoke();
-            }
-
-        }
-
-        public void HealthPotion(InputAction.CallbackContext context)
-        {
-            if (context.performed)
-            {
-                OnHealthPotionUsed?.Invoke();
-            }
-        }
-
         public void Walk(InputAction.CallbackContext context)
         {
             if (context.performed) ToggleWalkHeld(true);
@@ -138,6 +104,25 @@ namespace Project.Assets._Project._Scripts.Input
         public void ToggleMenu(InputAction.CallbackContext context)
         {
             if (context.performed) OnToggleMenu?.Invoke();
+        }
+
+        public void Pause(InputAction.CallbackContext context)
+        {
+            if (context.performed) OnPause?.Invoke();
+        }
+
+        // Off while a menu takes over: disabling cancels held actions (walk, interact, move), so nothing stays pressed
+        public void ToggleGameplayActions(bool isEnabled)
+        {
+            if (_playerInput.currentActionMap == null) return;
+
+            foreach (var action in _playerInput.currentActionMap.actions)
+            {
+                if (action.name == _pauseActionName) continue;
+
+                if (isEnabled) action.Enable();
+                else action.Disable();
+            }
         }
 
         public void Ability(InputAction.CallbackContext context)

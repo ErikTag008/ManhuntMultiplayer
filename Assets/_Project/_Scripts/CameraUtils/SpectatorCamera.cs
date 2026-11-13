@@ -1,5 +1,6 @@
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.Input;
+using Project.Assets._Project._Scripts.Settings;
 using Reflex.Attributes;
 using Unity.Cinemachine;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace Project.Assets._Project._Scripts.CameraUtils
     public class SpectatorCamera : ValidatedMonoBehaviour
     {
         [Inject] private readonly ICameraStats _cameraStats;
+        [Inject] private readonly GameSettingsService _settings;
         [SerializeField, Self] private CinemachineCamera _camera;
         [SerializeField, Self] private CinemachineOrbitalFollow _orbitalFollow;
         [SerializeField, Self] private CinemachineInputAxisController _inputAxisController;
@@ -20,12 +22,17 @@ namespace Project.Assets._Project._Scripts.CameraUtils
         public bool IsWatching => _camera.enabled;
         public Transform Target => _camera.Target.TrackingTarget;
 
-        private void Awake() => ToggleCamera(false);
+        // the owner's PlayerInput enables its actions; Cinemachine enabling Look itself would undo the pause menu turning it off
+        private void Awake()
+        {
+            _inputAxisController.AutoEnableInputs = false;
+            ToggleCamera(false);
+        }
 
         private void Update()
         {
             if (!IsWatching || _inputReader == null) return;
-            LookInputSettings.Apply(_inputAxisController, _inputReader, _cameraStats);
+            LookInputSettings.Apply(_inputAxisController, _inputReader, _cameraStats, _settings.Values);
         }
 
         // A new target starts the orbit behind them at the default pitch, facing the given heading

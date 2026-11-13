@@ -1,0 +1,122 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adbd51c86423f494c95585ebb76657ef, type: 3}
+  m_Name: SettingsData
+  m_EditorClassIdentifier: Project.Core::Project.Assets._Project._Scripts.Settings.SettingsData
+  <SaveKey>k__BackingField: GameSettings
+  <DefaultWindowMode>k__BackingField: 1
+  <DefaultIsVSyncOn>k__BackingField: 1
+  <DefaultQualityLevel>k__BackingField: 1
+  <DefaultFrameCap>k__BackingField: 0
+  <FrameCapOptions>k__BackingField: 000000001e0000003c0000007800000090000000a5000000f0000000i
+  <DefaultFieldOfView>k__BackingField: 70
+  <MinFieldOfView>k__BackingField: 60
+  <MaxFieldOfView>k__BackingField: 100
+  <Mixer>k__BackingField: {fileID: 24100000, guid: caed166129723c046ac1b100690ff6df, type: 2}
+  <MasterVolumeParameter>k__BackingField: MasterVolume
+  <MusicVolumeParameter>k__BackingField: MusicVolume
+  <SfxVolumeParameter>k__BackingField: SfxVolume
+  <UiVolumeParameter>k__BackingField: UiVolume
+  <MinVolumeInDecibels>k__BackingField: -80
+  <DefaultMasterVolume>k__BackingField: 1
+  <DefaultMusicVolume>k__BackingField: 0.7
+  <DefaultSfxVolume>k__BackingField: 1
+  <DefaultUiVolume>k__BackingField: 1
+  <DefaultSensitivity>k__BackingField: 1
+  <MinSensitivity>k__BackingField: 0.1
+  <MaxSensitivity>k__BackingField: 3
+  <InputActions>k__BackingField: {fileID: -944628639613478452, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+  <Keybinds>k__BackingField:
+  - <DisplayName>k__BackingField: Move forward
+    <Action>k__BackingField: {fileID: -1246895598473198080, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: up
+    <HasGamepadBinding>k__BackingField: 0
+    <ShareGroup>k__BackingField: 
+  - <DisplayName>k__BackingField: Move back
+    <Action>k__BackingField: {fileID: -1246895598473198080, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: down
+    <HasGamepadBinding>k__BackingField: 0
+    <ShareGroup>k__BackingField: 
+  - <DisplayName>k__BackingField: Move left
+    <Action>k__BackingField: {fileID: -1246895598473198080, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: left
+    <HasGamepadBinding>k__BackingField: 0
+    <ShareGroup>k__BackingField: 
+  - <DisplayName>k__BackingField: Move right
+    <Action>k__BackingField: {fileID: -1246895598473198080, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: right
+    <HasGamepadBinding>k__BackingField: 0
+    <ShareGroup>k__BackingField: 
+  - <DisplayName>k__BackingField: Jump
+    <Action>k__BackingField: {fileID: 335763634227698153, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: 
+    <HasGamepadBinding>k__BackingField: 1
+    <ShareGroup>k__BackingField: 
+  - <DisplayName>k__BackingField: Walk (quiet)
+    <Action>k__BackingField: {fileID: 8374245644581523595, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: 
+    <HasGamepadBinding>k__BackingField: 1
+    <ShareGroup>k__BackingField: 
+  - <DisplayName>k__BackingField: Interact / Rescue
+    <Action>k__BackingField: {fileID: -5548793354506133487, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: 
+    <HasGamepadBinding>k__BackingField: 1
+    <ShareGroup>k__BackingField: 
+  - <DisplayName>k__BackingField: Catch
+    <Action>k__BackingField: {fileID: 1903506563957944628, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: 
+    <HasGamepadBinding>k__BackingField: 1
+    <ShareGroup>k__BackingField: Catch/Spectate
+  - <DisplayName>k__BackingField: Ability
+    <Action>k__BackingField: {fileID: 7415530987008885037, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: 
+    <HasGamepadBinding>k__BackingField: 1
+    <ShareGroup>k__BackingField: 
+  - <DisplayName>k__BackingField: Lobby menu
+    <Action>k__BackingField: {fileID: -7801919325872487568, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: 
+    <HasGamepadBinding>k__BackingField: 1
+    <ShareGroup>k__BackingField: 
+  - <DisplayName>k__BackingField: Spectate next
+    <Action>k__BackingField: {fileID: -756349785758388124, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: 
+    <HasGamepadBinding>k__BackingField: 1
+    <ShareGroup>k__BackingField: Catch/Spectate
+  - <DisplayName>k__BackingField: Spectate previous
+    <Action>k__BackingField: {fileID: -3242120720471163448, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: 
+    <HasGamepadBinding>k__BackingField: 1
+    <ShareGroup>k__BackingField: Catch/Spectate
+  - <DisplayName>k__BackingField: Pause menu
+    <Action>k__BackingField: {fileID: -8338598726356848359, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: 
+    <HasGamepadBinding>k__BackingField: 1
+    <ShareGroup>k__BackingField: 
+  - <DisplayName>k__BackingField: Start match (host)
+    <Action>k__BackingField: {fileID: -665073760888656299, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: 
+    <HasGamepadBinding>k__BackingField: 0
+    <ShareGroup>k__BackingField: 
+  <KeyboardMouseGroup>k__BackingField: Keyboard&Mouse
+  <GamepadGroup>k__BackingField: Gamepad
+  <KeyboardMouseRebindPaths>k__BackingField:
+  - <Keyboard>
+  - <Mouse>
+  <GamepadRebindPaths>k__BackingField:
+  - <Gamepad>
+  <ExcludedRebindPaths>k__BackingField:
+  - <Pointer>/position
+  - <Pointer>/delta
+  - <Mouse>/scroll
+  - <Keyboard>/anyKey
+  <RebindCancelPath>k__BackingField: <Keyboard>/escape
+  <RebindTimeoutInSeconds>k__BackingField: 6

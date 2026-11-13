@@ -91,6 +91,15 @@ namespace Project.Assets._Project._Scripts
             public static Quaternion SlerpRounded(Quaternion a, Quaternion b, float speed = 3f, float roundingMagnitude = 0.02f) =>
                 Quaternion.Angle(a, b) < roundingMagnitude ? b : Quaternion.Slerp(a, b, 1f - Mathf.Exp(-speed * Time.deltaTime));
 
+            private const float DecibelsPerDecade = 20f;
+
+            // Audio Mixers work in decibels; a linear 0..1 volume maps to 20*log10(v), and silence is clamped to minDecibels
+            public static float LinearToDecibels(float linear, float minDecibels)
+            {
+                if (linear <= 0f) return minDecibels;
+                return Mathf.Max(minDecibels, Mathf.Log10(linear) * DecibelsPerDecade);
+            }
+
             public static float Percent(float percentage) => percentage * 0.01f;
             public static float Percent(int percentage) => percentage * 0.01f;
 

@@ -2,6 +2,7 @@ using KBCore.Refs;
 using Project.Assets._Project._Scripts.CameraUtils;
 using Project.Assets._Project._Scripts.Input;
 using Project.Assets._Project._Scripts.SceneFlow;
+using Project.Assets._Project._Scripts.Settings;
 using Project.Assets._Project._Scripts.UI;
 using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Attributes;
@@ -28,6 +29,9 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly RunnerStats _runnerStats;
         [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
         [Inject] private readonly LobbyMenuState _lobbyMenuState;
+        [Inject] private readonly PauseMenuState _pauseMenuState;
+        [Inject] private readonly GameSettingsService _settings;
+        [Inject] private readonly KeybindService _keybinds;
         [SerializeField, Self] private PlayerInput _playerInput;
         [SerializeField, Self] private InputReader _inputReader;
         [SerializeField, Self] private Rigidbody _rb;
@@ -61,8 +65,9 @@ namespace Project.Assets._Project._Scripts.Player
         public StatModifierStack StatModifiers => _statModifiers;
         // Owner only, and null until the first scene gives the player a camera
         public IPlayerMovement Movement => _movement;
-        // Eliminated players, catchers held during the hide phase and anyone with the lobby menu open stand still
-        private bool CanMove => _lifeState.CanMove && !_hideHold.IsHeld && !(IsOwner && _lobbyMenuState.IsOpen);
+        // Eliminated players, catchers held during the hide phase and anyone with a menu open stand still
+        private bool CanMove => _lifeState.CanMove && !_hideHold.IsHeld && !(IsOwner && IsAnyMenuOpen);
+        private bool IsAnyMenuOpen => _lobbyMenuState.IsOpen || _pauseMenuState.IsOpen;
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -84,9 +89,14 @@ namespace Project.Assets._Project._Scripts.Player
             if (!IsOwner) return;
 
             _playerInput.enabled = true;
-            _lobbyMenuState.OnOpenChanged += HandleLobbyMenuOpenChanged;
+            ApplyKeybinds();
+            _lobbyMenuState.OnOpenChanged += HandleMenuOpenChanged;
+            _pauseMenuState.OnOpenChanged += HandleMenuOpenChanged;
+            _pauseMenuState.ChangeDoesLeavingEndSession(IsHost);
+            _settings.OnChanged += HandleSettingsChanged;
+            _inputReader.OnPause += HandlePausePressed;
             _inputReader.OnWalkHeldChanged += HandleWalkHeldChanged;
-            ToggleCursorFree(_lobbyMenuState.IsOpen);
+            HandleMenuOpenChanged(IsAnyMenuOpen);
         }
 
         // After every component's OnNetworkSpawn, so team stats and model are applied before movement is built.
@@ -129,6 +139,8 @@ namespace Project.Assets._Project._Scripts.Player
             _spectator.ChangeSpectatorCamera(sceneContext.SpectatorCamera);
             CreateMovementIfNeeded();
             if (_movement != null && _cameraBinder.Camera != null) _movement.ChangeCamera(_cameraBinder.Camera);
+            // a menu can stay open across the load (pause is project-wide), and the new scene's rig starts with look on
+            HandleMenuOpenChanged(IsAnyMenuOpen);
 
             if (sceneType == SceneType.Lobby)
             {
@@ -233,12 +245,39 @@ namespace Project.Assets._Project._Scripts.Player
             if (IsOwner) _movement?.ToggleMovement(CanMove);
         }
 
-        // Owner only: an open menu frees the cursor and stops walking and looking
-        private void HandleLobbyMenuOpenChanged(bool isOpen)
+        // Owner only: an open menu frees the cursor and stops walking and looking; the pause menu also stops every other action
+        private void HandleMenuOpenChanged(bool _)
         {
-            ToggleCursorFree(isOpen);
-            _cameraBinder.ToggleLook(!isOpen);
+            bool isAnyMenuOpen = IsAnyMenuOpen;
+            ToggleCursorFree(isAnyMenuOpen);
+            _cameraBinder.ToggleLook(!isAnyMenuOpen);
+            _inputReader.ToggleGameplayActions(!_pauseMenuState.IsOpen);
             _movement?.ToggleMovement(CanMove);
+        }
+
+        // Owner only: the pause key opens the menu, and while it is open steps back out of it
+        private void HandlePausePressed()
+        {
+            if (_pauseMenuState.IsOpen)
+            {
+                _pauseMenuState.RequestBack();
+                return;
+            }
+
+            // one menu at a time; the lobby menu opens again with its own key
+            _lobbyMenuState.ToggleOpen(false);
+            _pauseMenuState.ToggleOpen(true);
+        }
+
+        private void HandleSettingsChanged(SettingsCategory category)
+        {
+            if (category == SettingsCategory.Controls) ApplyKeybinds();
+        }
+
+        // A lone local PlayerInput uses the rebound asset itself; a copy of it needs the overrides loaded
+        private void ApplyKeybinds()
+        {
+            if (_inputReader.Actions != _settings.Data.InputActions) _keybinds.ApplyTo(_inputReader.Actions);
         }
 
         // Owner only; other players' objects must never touch the local cursor
@@ -272,8 +311,13 @@ namespace Project.Assets._Project._Scripts.Player
             _hideHold.OnHeldChanged -= HandleHeldChanged;
             if (!IsOwner) return;
 
-            _lobbyMenuState.OnOpenChanged -= HandleLobbyMenuOpenChanged;
+            _lobbyMenuState.OnOpenChanged -= HandleMenuOpenChanged;
+            _pauseMenuState.OnOpenChanged -= HandleMenuOpenChanged;
+            _settings.OnChanged -= HandleSettingsChanged;
+            _inputReader.OnPause -= HandlePausePressed;
             _inputReader.OnWalkHeldChanged -= HandleWalkHeldChanged;
+            // the menu belongs to this session
+            _pauseMenuState.ToggleOpen(false);
             // the session is over (back to the main menu), so its buttons need the cursor
             ToggleCursorFree(true);
 
