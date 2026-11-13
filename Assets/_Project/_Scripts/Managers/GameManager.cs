@@ -5,6 +5,7 @@ using Project.Assets._Project._Scripts.UI;
 using Reflex.Attributes;
 using Reflex.Extensions;
 using Reflex.Injectors;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -24,6 +25,9 @@ namespace Project.Assets._Project._Scripts.Managers
         [SerializeField] private string _runnersWinTitle = "Runners win!";
         [SerializeField] private string _localWinSubtitle = "You won";
         [SerializeField] private string _localLossSubtitle = "You lost";
+        [SerializeField] private string _playerCountFormat = "{0}/{1} players joined  ·  {2} ready";
+
+        private readonly List<PlayerSession> _sessionBuffer = new();
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -85,7 +89,7 @@ namespace Project.Assets._Project._Scripts.Managers
             EUtils.Logger.LogColorized($"[GameManager] IsHost = {IsHost}...", "yellow");
             EUtils.Logger.LogColorized($"[GameManager] IsClient = {IsClient}...", "yellow");
 
-            _uiManager.ChangeStartGameButtonAvailability(IsHost);
+            RefreshStartAvailability();
             if (IsHost)
             {
                 EmptyLobbyUI();
@@ -149,15 +153,32 @@ namespace Project.Assets._Project._Scripts.Managers
 
         private void ShowPlayerCount()
         {
+            RefreshStartAvailability();
             if(_gameStateMachine.CurrentState == GameState.Lobby || _gameStateMachine.CurrentState == GameState.WaitingForPlayers || _gameStateMachine.CurrentState == GameState.Countdown)
             {
-                _uiManager.ChangeJoinedPlayerAmount($"{_playerRegistry.PlayerCount}/{_gameLobbySettings.MaxConnectedPlayers} players joined");
+                _playerRegistry.CopySessionsTo(_sessionBuffer);
+                _uiManager.ChangeJoinedPlayerAmount(string.Format(_playerCountFormat, _sessionBuffer.Count, _gameLobbySettings.MaxConnectedPlayers, LobbyReadiness.CountReady(_sessionBuffer)));
             }
+        }
+
+        // Host only: the start button works once enough players are in and everyone is ready
+        private void RefreshStartAvailability()
+        {
+            if (!IsHost)
+            {
+                _uiManager.ChangeStartGameButtonAvailability(false);
+                return;
+            }
+
+            _playerRegistry.CopySessionsTo(_sessionBuffer);
+            bool canStart = _gameStateMachine.CurrentState == GameState.WaitingForPlayers && LobbyReadiness.CanStart(_sessionBuffer, _gameLobbySettings.MinRequiredPlayers);
+            _uiManager.ChangeStartGameButtonAvailability(canStart);
         }
 
         private void OnStateChanged(GameState previous, GameState current)
         {
             print($"Game State Changed to {current}");
+            RefreshStartAvailability();
             switch (current)
             {
                 case GameState.Lobby:

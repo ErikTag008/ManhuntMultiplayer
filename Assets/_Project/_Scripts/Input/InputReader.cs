@@ -22,15 +22,10 @@ namespace Project.Assets._Project._Scripts.Input
         public event Action OnSpectateNext;
         public event Action OnSpectatePrevious;
         public event Action OnAbility;
+        public event Action OnToggleMenu;
 
         public event Action OnStartButtonKeyPressed;
         public bool IsUsingMouse => _playerInput.currentControlScheme == _keyboardMouseControlScheme;
-
-        private void Awake()
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
 
         public void Move(InputAction.CallbackContext context)
         {
@@ -122,6 +117,11 @@ namespace Project.Assets._Project._Scripts.Input
             {
                 OnHealthPotionUsed?.Invoke();
             }
+        }
+
+        public void ToggleMenu(InputAction.CallbackContext context)
+        {
+            if (context.performed) OnToggleMenu?.Invoke();
         }
 
         public void Ability(InputAction.CallbackContext context)

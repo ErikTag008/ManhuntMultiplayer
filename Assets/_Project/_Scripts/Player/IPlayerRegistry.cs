@@ -18,6 +18,8 @@ namespace Project.Assets._Project._Scripts.Player
         void UnregisterPlayer(PlayerController player);
         void SetTeam(ulong clientId, Team team);
         void SetLifeState(ulong clientId, LifeState lifeState);
+        void SetAbility(ulong clientId, int abilityId);
+        void SetReady(ulong clientId, bool isReady);
         void ResetLifeStates();
         void ResetForLobby();
     }

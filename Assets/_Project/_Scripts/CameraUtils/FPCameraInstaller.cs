@@ -41,6 +41,9 @@ namespace Project.Assets._Project._Scripts.CameraUtils
             _cinemachinePanTilt.TiltAxis.Range = new Vector2(-_cameraStats.MaxPitch, _cameraStats.MaxPitch);
         }
 
+        // a menu with a free cursor stops the mouse from turning the camera
+        public void ToggleLookInput(bool isEnabled) => _cinemachineInputAxisController.enabled = isEnabled;
+
         public void BindCameraToPlayer(IFirstPersonCameraTarget player)
         {
             print(EUtils.Logger.Colorize("Bind Camera Was Called", "blue"));

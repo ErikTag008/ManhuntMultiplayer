@@ -265,6 +265,7 @@ GameObject:
   - component: {fileID: 7900401039691343269}
   - component: {fileID: 4859089908487619711}
   - component: {fileID: 5068892008710688985}
+  - component: {fileID: 1196470119741336347}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -341,6 +342,7 @@ MonoBehaviour:
   _cameraBinder: {fileID: 36421261748081134}
   _spectator: {fileID: 3464033196263984798}
   _hideHold: {fileID: 7900401039691343269}
+  _lobbyChoices: {fileID: 1196470119741336347}
   _groundCheck: {fileID: 7460693758395271466}
   _cameraTarget: {fileID: 4853491123650079907}
   _cameraFollower: {fileID: 3526512074580094625}
@@ -575,6 +577,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 272f5f1c-f859-4047-bded-e7f7535bee0e
     m_ActionName: Player/Ability
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4851020409925496502}
+        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Input.InputReader, Project.Input
+        m_MethodName: ToggleMenu
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: ab5ef029-914d-4a46-b3a7-26570ee97f2b
+    m_ActionName: Player/ToggleMenu
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -791,3 +809,18 @@ MonoBehaviour:
   _hideHold: {fileID: 7900401039691343269}
   _inputReader: {fileID: 4851020409925496502}
   _serverToleranceInSeconds: 0.25
+--- !u!114 &1196470119741336347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a42fb9a2001e2f649b9b91ab1eab1177, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerLobbyChoices
+  ShowTopMostFoldoutHeaderGroup: 1
+  _team: {fileID: 2895491558510482950}
+  _inputReader: {fileID: 4851020409925496502}

@@ -84,6 +84,10 @@ namespace Project.Assets._Project._Scripts.Managers
 
         public void SetLifeState(ulong clientId, LifeState lifeState) => UpdateSession(clientId, (ref PlayerSession session) => session.LifeState = lifeState);
 
+        public void SetAbility(ulong clientId, int abilityId) => UpdateSession(clientId, (ref PlayerSession session) => session.AbilityId = abilityId);
+
+        public void SetReady(ulong clientId, bool isReady) => UpdateSession(clientId, (ref PlayerSession session) => session.IsReady = isReady);
+
         public void ResetLifeStates()
         {
             for (int i = 0; i < _sessions.Count; i++)
@@ -92,7 +96,8 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
-        // Teams are rolled each round, so the lobby is neutral: default model, no weapon, everyone up
+        // Teams are rolled each round, so the lobby is neutral: default model, no weapon, everyone up and not ready.
+        // The ability pick is kept between rounds.
         public void ResetForLobby()
         {
             for (int i = 0; i < _sessions.Count; i++)
@@ -101,6 +106,7 @@ namespace Project.Assets._Project._Scripts.Managers
                 {
                     session.Team = Team.None;
                     session.LifeState = LifeState.Up;
+                    session.IsReady = false;
                 });
             }
         }

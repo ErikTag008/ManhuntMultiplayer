@@ -64,12 +64,13 @@ namespace Project.Assets._Project._Scripts.Managers
 
         public void StopGameLoop() => DisposeCTS(ref _gameLoopCTS);
 
+        // Only once enough players are in and every one of them is ready
         public void RequestGameStart()
         {
-            if (IsServer && _state.Value == GameState.WaitingForPlayers && _playerRegistry.PlayerCount >= _settings.MinRequiredPlayers)
-            {
-                _gameStartRequested = true;
-            }
+            if (!IsServer || _state.Value != GameState.WaitingForPlayers) return;
+
+            _playerRegistry.CopySessionsTo(_sessionBuffer);
+            if (LobbyReadiness.CanStart(_sessionBuffer, _settings.MinRequiredPlayers)) _gameStartRequested = true;
         }
 
         private async UniTaskVoid GameLoop(CancellationToken token)
@@ -80,12 +81,16 @@ namespace Project.Assets._Project._Scripts.Managers
                 _playerRegistry.ResetForLobby();
                 await _networkCoordinator.LoadNetworkScene(_gameScenes.LobbySceneName, token);
 
-                _state.Value = GameState.WaitingForPlayers;
-                await WaitForEnoughPlayers(token);
+                // someone un-readying (or leaving) during the countdown sends the lobby back to waiting
+                do
+                {
+                    _state.Value = GameState.WaitingForPlayers;
+                    await WaitForEnoughPlayers(token);
 
-                _countdownEndTime.Value = NetworkManager.ServerTime.Time + _settings.GameStartWaitTimeInSeconds;
-                _state.Value = GameState.Countdown;
-                await WaitForCountdownEnd(token);
+                    _countdownEndTime.Value = NetworkManager.ServerTime.Time + _settings.GameStartWaitTimeInSeconds;
+                    _state.Value = GameState.Countdown;
+                }
+                while (!await WaitForCountdownWhileReady(token));
 
                 _state.Value = GameState.AssigningTeams;
                 _lastRoundResult.Value = RoundResult.None;
@@ -124,6 +129,21 @@ namespace Project.Assets._Project._Scripts.Managers
         private async UniTask WaitForCountdownEnd(CancellationToken token)
         {
             await UniTask.WaitUntil(() => NetworkManager.ServerTime.Time >= _countdownEndTime.Value, cancellationToken: token);
+        }
+
+        // False when the lobby stopped being startable before the countdown ran out; the countdown text is cleared then
+        private async UniTask<bool> WaitForCountdownWhileReady(CancellationToken token)
+        {
+            bool isStillReady = true;
+            await UniTask.WaitUntil(() =>
+            {
+                _playerRegistry.CopySessionsTo(_sessionBuffer);
+                isStillReady = LobbyReadiness.CanStart(_sessionBuffer, _settings.MinRequiredPlayers);
+                return !isStillReady || NetworkManager.ServerTime.Time >= _countdownEndTime.Value;
+            }, cancellationToken: token);
+
+            if (!isStillReady) _countdownEndTime.Value = NetworkManager.ServerTime.Time;
+            return isStillReady;
         }
 
         private async UniTask WaitForRunnerHide(CancellationToken token)

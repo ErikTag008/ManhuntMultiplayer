@@ -31,6 +31,11 @@ namespace Project.Assets._Project._Scripts.Player
             _fpCameraInstaller.OnCameraRotationChanged += HandleCameraRotationChanged;
         }
 
+        public void ToggleLook(bool isEnabled)
+        {
+            if (_fpCameraInstaller != null) _fpCameraInstaller.ToggleLookInput(isEnabled);
+        }
+
         // the previous scene's rig may already be destroyed; `is not null` skips Unity's fake-null so the plain C# event still drops us
         public void Unbind()
         {

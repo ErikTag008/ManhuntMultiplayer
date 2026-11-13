@@ -3,6 +3,7 @@ using Project.Assets._Project._Scripts.CameraUtils;
 using Project.Assets._Project._Scripts.Input;
 using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.UI;
+using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Attributes;
 using Reflex.Extensions;
 using Reflex.Injectors;
@@ -18,7 +19,7 @@ namespace Project.Assets._Project._Scripts.Player
     [RequireComponent(typeof(PlayerInput), typeof(InputReader), typeof(Rigidbody))]
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerLifeState), typeof(PlayerCombat))]
     [RequireComponent(typeof(PlayerNetworkSync), typeof(PlayerCameraBinder), typeof(PlayerRescue))]
-    [RequireComponent(typeof(PlayerSpectator), typeof(PlayerHideHold))]
+    [RequireComponent(typeof(PlayerSpectator), typeof(PlayerHideHold), typeof(PlayerLobbyChoices))]
     public class PlayerController : NetworkBehaviour, ISceneInitialized, IFirstPersonCameraTarget
     {
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
@@ -26,6 +27,7 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly IPlayerRegistry _playerRegistry;
         [Inject] private readonly RunnerStats _runnerStats;
         [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
+        [Inject] private readonly LobbyMenuState _lobbyMenuState;
         [SerializeField, Self] private PlayerInput _playerInput;
         [SerializeField, Self] private InputReader _inputReader;
         [SerializeField, Self] private Rigidbody _rb;
@@ -36,6 +38,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerCameraBinder _cameraBinder;
         [SerializeField, Self] private PlayerSpectator _spectator;
         [SerializeField, Self] private PlayerHideHold _hideHold;
+        [SerializeField, Self] private PlayerLobbyChoices _lobbyChoices;
         [SerializeField] private Transform _groundCheck;
         [SerializeField] private Transform _cameraTarget;
         [SerializeField] private Transform _cameraFollower;
@@ -56,8 +59,8 @@ namespace Project.Assets._Project._Scripts.Player
         public StatModifierStack StatModifiers => _statModifiers;
         // Owner only, and null until the first scene gives the player a camera
         public IPlayerMovement Movement => _movement;
-        // Eliminated players and catchers held during the hide phase stand still
-        private bool CanMove => _lifeState.CanMove && !_hideHold.IsHeld;
+        // Eliminated players, catchers held during the hide phase and anyone with the lobby menu open stand still
+        private bool CanMove => _lifeState.CanMove && !_hideHold.IsHeld && !(IsOwner && _lobbyMenuState.IsOpen);
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -76,7 +79,11 @@ namespace Project.Assets._Project._Scripts.Player
             _team.OnModelChanged += HandleModelChanged;
             _lifeState.OnLifeStateChanged += HandleLifeStateChanged;
             _hideHold.OnHeldChanged += HandleHeldChanged;
-            if (IsOwner) _playerInput.enabled = true;
+            if (!IsOwner) return;
+
+            _playerInput.enabled = true;
+            _lobbyMenuState.OnOpenChanged += HandleLobbyMenuOpenChanged;
+            ToggleCursorFree(_lobbyMenuState.IsOpen);
         }
 
         // After every component's OnNetworkSpawn, so team stats and model are applied before movement is built.
@@ -120,7 +127,11 @@ namespace Project.Assets._Project._Scripts.Player
             CreateMovementIfNeeded();
             if (_movement != null && _cameraBinder.Camera != null) _movement.ChangeCamera(_cameraBinder.Camera);
 
-            if (sceneType == SceneType.Lobby) BindLobbyInput(sceneContext.LobbyUI);
+            if (sceneType == SceneType.Lobby)
+            {
+                BindLobbyInput(sceneContext.LobbyUI);
+                _lobbyChoices.EnterLobby();
+            }
         }
 
         public void ClearSceneReferences(SceneType sceneType)
@@ -128,7 +139,10 @@ namespace Project.Assets._Project._Scripts.Player
             if (!IsOwner) return;
 
             _spectator.ChangeSpectatorCamera(null);
-            if (sceneType == SceneType.Lobby) UnbindLobbyInput();
+            if (sceneType != SceneType.Lobby) return;
+
+            UnbindLobbyInput();
+            _lobbyChoices.ExitLobby();
         }
 
         private void CreateMovementIfNeeded()
@@ -199,6 +213,21 @@ namespace Project.Assets._Project._Scripts.Player
             if (IsOwner) _movement?.ToggleMovement(CanMove);
         }
 
+        // Owner only: an open menu frees the cursor and stops walking and looking
+        private void HandleLobbyMenuOpenChanged(bool isOpen)
+        {
+            ToggleCursorFree(isOpen);
+            _cameraBinder.ToggleLook(!isOpen);
+            _movement?.ToggleMovement(CanMove);
+        }
+
+        // Owner only; other players' objects must never touch the local cursor
+        private static void ToggleCursorFree(bool isFree)
+        {
+            Cursor.lockState = isFree ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = isFree;
+        }
+
         // Owner only: the session's life state reaches every instance, so the owner applies the crawl itself
         private void RefreshKnockedCrawl()
         {
@@ -222,6 +251,10 @@ namespace Project.Assets._Project._Scripts.Player
             _lifeState.OnLifeStateChanged -= HandleLifeStateChanged;
             _hideHold.OnHeldChanged -= HandleHeldChanged;
             if (!IsOwner) return;
+
+            _lobbyMenuState.OnOpenChanged -= HandleLobbyMenuOpenChanged;
+            // the session is over (back to the main menu), so its buttons need the cursor
+            ToggleCursorFree(true);
 
             UnbindLobbyInput();
             _cameraBinder.Unbind();
