@@ -18,7 +18,7 @@ namespace Project.Assets._Project._Scripts.Player
     [RequireComponent(typeof(PlayerInput), typeof(InputReader), typeof(Rigidbody))]
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerLifeState), typeof(PlayerCombat))]
     [RequireComponent(typeof(PlayerNetworkSync), typeof(PlayerCameraBinder), typeof(PlayerRescue))]
-    [RequireComponent(typeof(PlayerSpectator))]
+    [RequireComponent(typeof(PlayerSpectator), typeof(PlayerHideHold))]
     public class PlayerController : NetworkBehaviour, ISceneInitialized, IFirstPersonCameraTarget
     {
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
@@ -35,6 +35,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerNetworkSync _networkSync;
         [SerializeField, Self] private PlayerCameraBinder _cameraBinder;
         [SerializeField, Self] private PlayerSpectator _spectator;
+        [SerializeField, Self] private PlayerHideHold _hideHold;
         [SerializeField] private Transform _groundCheck;
         [SerializeField] private Transform _cameraTarget;
         [SerializeField] private Transform _cameraFollower;
@@ -53,6 +54,8 @@ namespace Project.Assets._Project._Scripts.Player
         public float HeadingInDegrees => _team.Model != null ? _team.Model.eulerAngles.y : transform.eulerAngles.y;
         // Owner side: movement runs on the owner, so features that change movement stats add their modifiers here
         public StatModifierStack StatModifiers => _statModifiers;
+        // Eliminated players and catchers held during the hide phase stand still
+        private bool CanMove => _lifeState.CanMove && !_hideHold.IsHeld;
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -70,6 +73,7 @@ namespace Project.Assets._Project._Scripts.Player
             _team.OnStatsChanged += HandleStatsChanged;
             _team.OnModelChanged += HandleModelChanged;
             _lifeState.OnLifeStateChanged += HandleLifeStateChanged;
+            _hideHold.OnHeldChanged += HandleHeldChanged;
             if (IsOwner) _playerInput.enabled = true;
         }
 
@@ -92,7 +96,7 @@ namespace Project.Assets._Project._Scripts.Player
             _networkRb.SetAngularVelocity(Vector3.zero);
             _networkRb.SetPosition(position);
             _networkRb.SetRotation(rotation);
-            _movement?.ToggleMovement(_lifeState.CanMove);
+            _movement?.ToggleMovement(CanMove);
         }
 
         public void InitializeSceneReferences(SceneType sceneType)
@@ -140,7 +144,7 @@ namespace Project.Assets._Project._Scripts.Player
             _movement = new PlayerMovement(_rb, _movementStats, _groundCheck, camera, _team.Model, _cameraFollower);
             _movement.ModelRotationChanged += _networkSync.SendModelYaw;
             _movement.CameraFollowerRotationChanged += _networkSync.SendCameraFollowerRotation;
-            _movement.ToggleMovement(_lifeState.CanMove);
+            _movement.ToggleMovement(CanMove);
             RefreshKnockedCrawl();
             _cameraBinder.OnCameraRotationChanged += _movement.HandleRotation;
             _inputReader.OnJump += _movement.HandleJump;
@@ -184,8 +188,13 @@ namespace Project.Assets._Project._Scripts.Player
         {
             if (!IsOwner) return;
 
-            _movement?.ToggleMovement(_lifeState.CanMove);
+            _movement?.ToggleMovement(CanMove);
             RefreshKnockedCrawl();
+        }
+
+        private void HandleHeldChanged(bool _)
+        {
+            if (IsOwner) _movement?.ToggleMovement(CanMove);
         }
 
         // Owner only: the session's life state reaches every instance, so the owner applies the crawl itself
@@ -209,6 +218,7 @@ namespace Project.Assets._Project._Scripts.Player
             _team.OnStatsChanged -= HandleStatsChanged;
             _team.OnModelChanged -= HandleModelChanged;
             _lifeState.OnLifeStateChanged -= HandleLifeStateChanged;
+            _hideHold.OnHeldChanged -= HandleHeldChanged;
             if (!IsOwner) return;
 
             UnbindLobbyInput();

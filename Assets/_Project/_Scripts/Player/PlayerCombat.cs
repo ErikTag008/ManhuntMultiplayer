@@ -8,11 +8,12 @@ using UnityEngine;
 namespace Project.Assets._Project._Scripts.Player
 {
     // Holds the team's weapon; the owner attacks, the server resolves the catch
-    [RequireComponent(typeof(PlayerTeam), typeof(InputReader))]
+    [RequireComponent(typeof(PlayerTeam), typeof(InputReader), typeof(PlayerHideHold))]
     public class PlayerCombat : NetworkBehaviour
     {
         [SerializeField, Self] private PlayerTeam _team;
         [SerializeField, Self] private InputReader _inputReader;
+        [SerializeField, Self] private PlayerHideHold _hideHold;
         [SerializeField] private Transform _weaponPivot;
         [SerializeField] private int _maxCatchTargets = 3;
 
@@ -28,7 +29,11 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void Awake() => _catchTargets = new Collider[_maxCatchTargets];
 
-        public override void OnNetworkSpawn() => _team.OnStatsChanged += HandleStatsChanged;
+        public override void OnNetworkSpawn()
+        {
+            _team.OnStatsChanged += HandleStatsChanged;
+            _hideHold.OnHeldChanged += HandleHeldChanged;
+        }
 
         // every OnNetworkSpawn has run by now, so PlayerTeam's stats are applied whatever the component order
         protected override void OnNetworkPostSpawn() => HandleStatsChanged(_team.CurrentStats);
@@ -38,8 +43,13 @@ namespace Project.Assets._Project._Scripts.Player
             if (stats == null) return;
 
             ReplaceWeapon(stats.WeaponPrefab);
-            ToggleAttackInput(IsOwner && _team.Team == Team.Catcher && _currentWeapon != null);
+            RefreshAttackInput();
         }
+
+        private void HandleHeldChanged(bool _) => RefreshAttackInput();
+
+        // a catcher held during the hide phase can't swing
+        private void RefreshAttackInput() => ToggleAttackInput(IsOwner && _team.Team == Team.Catcher && _currentWeapon != null && !_hideHold.IsHeld);
 
         private void ReplaceWeapon(MeleeWeaponBase weaponPrefab)
         {
@@ -78,7 +88,7 @@ namespace Project.Assets._Project._Scripts.Player
         [Rpc(SendTo.Server)]
         private void RequestCatchServerRpc(Vector3 hitOrigin, float radius)
         {
-            if (_team.Team != Team.Catcher) return;
+            if (_team.Team != Team.Catcher || _hideHold.IsHeld) return;
 
             int hitCount = Physics.OverlapSphereNonAlloc(hitOrigin, radius, _catchTargets, _team.CurrentStats.AttackRaycastLayer);
             for (int i = 0; i < hitCount; i++)
@@ -93,6 +103,7 @@ namespace Project.Assets._Project._Scripts.Player
         public override void OnNetworkDespawn()
         {
             _team.OnStatsChanged -= HandleStatsChanged;
+            _hideHold.OnHeldChanged -= HandleHeldChanged;
             ToggleAttackInput(false);
         }
     }

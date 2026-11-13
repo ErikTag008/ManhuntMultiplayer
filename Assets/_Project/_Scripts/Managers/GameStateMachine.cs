@@ -19,6 +19,7 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly IWinConditionEvaluator _winConditionEvaluator;
         [Inject] private readonly GameLobbySettings _settings;
         [Inject] private readonly GameScenes _gameScenes;
+        [Inject] private readonly HidePhase _hidePhase;
         [SerializeField, Self] private PlayerRegistry _playerRegistry;
         [SerializeField, Self] private NetworkCoordinator _networkCoordinator;
 
@@ -51,6 +52,8 @@ namespace Project.Assets._Project._Scripts.Managers
             _state.OnValueChanged += HandleStateChanged;
             _lastRoundResult.OnValueChanged += HandleLastRoundResultChanged;
             _countdownEndTime.OnValueChanged += StartCountdown;
+            // the spawn value doesn't raise OnValueChanged
+            RefreshHidePhase();
         }
 
         public void StartGameLoop()
@@ -151,7 +154,13 @@ namespace Project.Assets._Project._Scripts.Managers
             return result;
         }
 
-        private void HandleStateChanged(GameState previous, GameState current) => OnStateChanged?.Invoke(previous, current);
+        private void HandleStateChanged(GameState previous, GameState current)
+        {
+            RefreshHidePhase();
+            OnStateChanged?.Invoke(previous, current);
+        }
+
+        private void RefreshHidePhase() => _hidePhase.Toggle(_state.Value == GameState.WaitForRunnerHide);
 
         private void HandleLastRoundResultChanged(RoundResult previous, RoundResult current) => OnLastRoundResultChanged?.Invoke(current);
 
@@ -194,6 +203,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _state.OnValueChanged -= HandleStateChanged;
             _lastRoundResult.OnValueChanged -= HandleLastRoundResultChanged;
             _countdownEndTime.OnValueChanged -= StartCountdown;
+            _hidePhase.Toggle(false);
             DisposeCTS(ref _countdownCTS);
         }
 
