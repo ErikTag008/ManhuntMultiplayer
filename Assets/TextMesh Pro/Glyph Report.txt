@@ -1,0 +1,13 @@
+Font: Super Kindly  Style: Regular
+Point Size: 2101   Padding: 9   SP/PD Ratio: 0.4%
+
+Characters included: 1/2
+Missing characters: 1
+Excluded characters: 0
+
+Characters missing from font file:
+----------------------------------------
+ID: 9	Hex: 9	Char [	]
+
+Characters excluded from packing:
+----------------------------------------
