@@ -15,8 +15,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private OptionList _abilityList;
         [SerializeField] private Button _readyButton;
         [SerializeField] private TMP_Text _readyButtonLabel;
-        [SerializeField] private string _readyLabel = "Ready";
-        [SerializeField] private string _notReadyLabel = "Not ready";
+        [SerializeField] private Image _readyButtonImage;
+        // the label says what clicking does; the colour says where you stand
+        [SerializeField] private string _readyUpLabel = "Ready up";
+        [SerializeField] private string _cancelReadyLabel = "You're ready\n<size=60%>click to cancel</size>";
+        [SerializeField] private Color _notReadyColor = new(0.85f, 0.55f, 0.15f, 1f);
+        [SerializeField] private Color _readyColor = new(0.2f, 0.6f, 0.3f, 1f);
 
         private readonly List<(int id, string label)> _optionBuffer = new();
 
@@ -56,11 +60,11 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _abilityList.Build(_optionBuffer);
         }
 
-        // the label says what you are now
         private void HandleChoiceChanged()
         {
             _abilityList.Select(_state.SelectedAbilityId);
-            _readyButtonLabel.text = _state.IsReady ? _readyLabel : _notReadyLabel;
+            _readyButtonLabel.text = _state.IsReady ? _cancelReadyLabel : _readyUpLabel;
+            _readyButtonImage.color = _state.IsReady ? _readyColor : _notReadyColor;
         }
 
         private void OnDestroy()

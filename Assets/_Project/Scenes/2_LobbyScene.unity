@@ -1700,8 +1700,13 @@ MonoBehaviour:
   _abilityList: {fileID: 160802490}
   _readyButton: {fileID: 568009824}
   _readyButtonLabel: {fileID: 1918537829}
-  _readyLabel: Ready
-  _notReadyLabel: Not ready
+  _readyButtonImage: {fileID: 568009825}
+  _readyUpLabel: Ready up
+  _cancelReadyLabel: 'You''re ready
+
+    <size=60%>click to cancel</size>'
+  _notReadyColor: {r: 0.85, g: 0.55, b: 0.15, a: 1}
+  _readyColor: {r: 0.2, g: 0.6, b: 0.3, a: 1}
 --- !u!114 &1320111914
 MonoBehaviour:
   m_ObjectHideFlags: 0

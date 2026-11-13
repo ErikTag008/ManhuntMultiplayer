@@ -15,6 +15,8 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerLifeState _lifeState;
         [SerializeField, Self] private PlayerRescue _rescue;
         [SerializeField, Self] private PlayerAbility _ability;
+        // the owner's look rotation, synced and smoothed on remote instances by PlayerNetworkSync
+        [SerializeField] private Transform _cameraFollower;
         [SerializeField] private string _moveSpeedParameter = "MoveSpeed";
         [SerializeField] private string _verticalSpeedParameter = "VerticalSpeed";
         [SerializeField] private string _isGroundedParameter = "IsGrounded";
@@ -26,8 +28,12 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField] private float _groundProbeDistance = 0.25f;
         // a bigger jump between two frames is a teleport (respawn, spawn point), not movement
         [SerializeField] private float _maxSampleDistance = 3f;
+        // looking up or down tilts the head, and the spine takes the rest so the body follows the gaze
+        [SerializeField, Range(0f, 1f)] private float _headLookShare = 0.6f;
+        [SerializeField] private float _maxLookPitchInDegrees = 70f;
 
         private Animator _animator;
+        private CharacterRig _rig;
         private int _moveSpeedId;
         private int _verticalSpeedId;
         private int _isGroundedId;
@@ -77,6 +83,19 @@ namespace Project.Assets._Project._Scripts.Player
             _animator.SetInteger(_lifeStateId, (int)_lifeState.State);
             // progress runs on both the rescuer and the knocked runner; only the one standing kneels to help
             _animator.SetBool(_isRescuingId, _lifeState.IsUp && _rescue.RescueProgress > 0f);
+            ApplyLookPitch();
+        }
+
+        // Runs after the Animator wrote this frame's pose, so the tilt is added on top of the animation.
+        // Knocked and eliminated poses keep their own head.
+        private void ApplyLookPitch()
+        {
+            if (_rig == null || _cameraFollower == null || !_lifeState.IsUp) return;
+
+            float lookDown = Mathf.Asin(Mathf.Clamp(-_cameraFollower.forward.y, -1f, 1f)) * Mathf.Rad2Deg;
+            lookDown = Mathf.Clamp(lookDown, -_maxLookPitchInDegrees, _maxLookPitchInDegrees);
+            if (_rig.Spine != null) _rig.Spine.localRotation *= Quaternion.Euler(lookDown * (1f - _headLookShare), 0f, 0f);
+            if (_rig.Head != null) _rig.Head.localRotation *= Quaternion.Euler(lookDown * _headLookShare, 0f, 0f);
         }
 
         // Owner-side movement isn't available on remote instances, so grounding is probed here for everyone
@@ -86,7 +105,12 @@ namespace Project.Assets._Project._Scripts.Player
         private void HandleModelChanged(Transform model)
         {
             _animator = model != null ? model.GetComponentInChildren<Animator>() : null;
-            if (_animator != null) _animator.applyRootMotion = false;
+            _rig = model != null ? model.GetComponentInChildren<CharacterRig>() : null;
+            if (_animator == null) return;
+
+            _animator.applyRootMotion = false;
+            // the look tilt is added to the animated pose every frame, so the pose must be rewritten every frame too
+            _animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         }
 
         // each ability names its own trigger, so a double jump doesn't play the dash

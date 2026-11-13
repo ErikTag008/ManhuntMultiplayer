@@ -136,6 +136,7 @@ GameObject:
   - component: {fileID: 675287499876964928}
   - component: {fileID: 7561494313883542216}
   - component: {fileID: 8302258696675798834}
+  - component: {fileID: 6292930375798886324}
   m_Layer: 7
   m_Name: CatcherModel
   m_TagString: Untagged
@@ -193,7 +194,7 @@ Animator:
   m_Enabled: 1
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: f67da00caba30ba4a871fab203c15032, type: 2}
-  m_CullingMode: 1
+  m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
@@ -204,6 +205,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6292930375798886324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1371499686929884934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25bf7017ca2c8a3408ddf4a62794f28a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.CharacterRig
+  _head: {fileID: 8206882409734465767}
+  _spine: {fileID: 2871189784505644147}
 --- !u!1 &2738097845765133543
 GameObject:
   m_ObjectHideFlags: 0

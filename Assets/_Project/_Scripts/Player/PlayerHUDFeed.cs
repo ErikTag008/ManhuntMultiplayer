@@ -73,11 +73,12 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetRescue(progress > 0f, progress);
         }
 
-        // only runners have an ability, so catchers and the lobby show no slot
+        // only runners have an ability, so catchers, the lobby and eliminated players show no slot
         private void RefreshAbility()
         {
             var ability = _ability.Ability;
-            if (ability == null)
+            // knocked runners keep the slot (a rescue brings them back); eliminated ones are out of the round
+            if (ability == null || _lifeState.IsEliminated)
             {
                 _hudState.SetAbility(false, null, null, 0f, 0f);
                 return;
