@@ -35,7 +35,7 @@ namespace Project.Assets._Project._Scripts.CameraUtils
             LookInputSettings.Apply(_inputAxisController, _inputReader, _cameraStats, _settings.Values);
         }
 
-        // A new target starts the orbit behind them at the default pitch, facing the given heading
+        // A new target starts the orbit behind them at the default pitch, facing the given heading, with no ease-in
         public void Watch(Transform target, float headingInDegrees, InputReader inputReader)
         {
             if (target == null) return;
@@ -47,6 +47,8 @@ namespace Project.Assets._Project._Scripts.CameraUtils
             {
                 _orbitalFollow.HorizontalAxis.Value = headingInDegrees;
                 _orbitalFollow.VerticalAxis.Value = _orbitalFollow.VerticalAxis.Center;
+                // snap to the new target instead of damping in from the last pose, which can be across or outside the map
+                _camera.PreviousStateIsValid = false;
             }
 
             ToggleCamera(true);
