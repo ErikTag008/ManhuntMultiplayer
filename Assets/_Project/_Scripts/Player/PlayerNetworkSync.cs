@@ -1,23 +1,18 @@
 using KBCore.Refs;
-using Project.Assets._Project._Scripts.Weapons;
 using Unity.Netcode;
 using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player
 {
-    // Owner writes the look rotations and weapon pose; remote instances ease toward the synced values every frame
-    [RequireComponent(typeof(PlayerTeam), typeof(PlayerCombat))]
+    // Owner writes the look rotations; the held weapon follows the animated hand. Remote instances ease toward the synced values every frame
+    [RequireComponent(typeof(PlayerTeam))]
     public class PlayerNetworkSync : NetworkBehaviour
     {
         [SerializeField, Self] private PlayerTeam _team;
-        [SerializeField, Self] private PlayerCombat _combat;
         [SerializeField] private Transform _cameraFollower;
 
         private readonly NetworkVariable<float> _modelYaw = new(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
         private readonly NetworkVariable<Quaternion> _cameraFollowerRotation = new(Quaternion.identity, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-        private readonly NetworkVariable<Vector3> _weaponLocalPosition = new(Vector3.zero, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-        private readonly NetworkVariable<Quaternion> _weaponLocalRotation = new(Quaternion.identity, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-        private MeleeWeaponBase _weapon;
 
         private float SendThresholdInDegrees => _team.CurrentStats.NetworkVariableDetectionMinMagnitude;
 
@@ -25,16 +20,11 @@ namespace Project.Assets._Project._Scripts.Player
 
         public override void OnNetworkSpawn()
         {
-            _combat.OnWeaponChanged += HandleWeaponChanged;
             _team.OnModelChanged += HandleModelChanged;
         }
 
-        // runs after the other components' spawn, once the model and weapon exist
-        protected override void OnNetworkPostSpawn()
-        {
-            HandleWeaponChanged(_combat.CurrentWeapon);
-            SnapToSyncedValues();
-        }
+        // runs after the other components' spawn, once the model exists
+        protected override void OnNetworkPostSpawn() => SnapToSyncedValues();
 
         private void Update()
         {
@@ -46,13 +36,6 @@ namespace Project.Assets._Project._Scripts.Player
                 model.rotation = EUtils.Math.Slerp(model.rotation, Quaternion.Euler(0f, _modelYaw.Value, 0f), smoothingSpeed);
 
             _cameraFollower.rotation = EUtils.Math.Slerp(_cameraFollower.rotation, _cameraFollowerRotation.Value, smoothingSpeed);
-
-            if (_weapon != null)
-            {
-                _weapon.transform.SetLocalPositionAndRotation(
-                    EUtils.Math.Lerp(_weapon.transform.localPosition, _weaponLocalPosition.Value, smoothingSpeed),
-                    EUtils.Math.Slerp(_weapon.transform.localRotation, _weaponLocalRotation.Value, smoothingSpeed));
-            }
         }
 
         // Owner only; small changes are skipped to keep traffic down, remote smoothing hides the steps
@@ -72,33 +55,6 @@ namespace Project.Assets._Project._Scripts.Player
             _cameraFollowerRotation.Value = rotation;
         }
 
-        private void HandleWeaponChanged(MeleeWeaponBase weapon)
-        {
-            if (_weapon != null && IsOwner)
-            {
-                _weapon.OnWeaponPositionChanged -= SendWeaponPosition;
-                _weapon.OnWeaponRotationChanged -= SendWeaponRotation;
-            }
-
-            _weapon = weapon;
-            if (_weapon == null) return;
-
-            if (IsOwner)
-            {
-                _weapon.OnWeaponPositionChanged += SendWeaponPosition;
-                _weapon.OnWeaponRotationChanged += SendWeaponRotation;
-            }
-            else
-            {
-                _weapon.transform.SetLocalPositionAndRotation(_weaponLocalPosition.Value, _weaponLocalRotation.Value);
-            }
-        }
-
-        // the weapon already filters out tiny pose changes
-        private void SendWeaponPosition(Vector3 localPosition) => _weaponLocalPosition.Value = localPosition;
-
-        private void SendWeaponRotation(Quaternion localRotation) => _weaponLocalRotation.Value = localRotation;
-
         // a fresh model would otherwise swing in from its default rotation
         private void HandleModelChanged(Transform model)
         {
@@ -116,9 +72,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         public override void OnNetworkDespawn()
         {
-            _combat.OnWeaponChanged -= HandleWeaponChanged;
             _team.OnModelChanged -= HandleModelChanged;
-            HandleWeaponChanged(null);
         }
     }
 }

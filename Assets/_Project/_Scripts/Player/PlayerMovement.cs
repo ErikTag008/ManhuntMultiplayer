@@ -31,6 +31,8 @@ namespace Project.Assets._Project._Scripts.Player
         private float _mantleStartTime;
         private Vector3 _mantleRiseTarget;
         private Vector3 _mantleLanding;
+        private float _dashEndTime = -Mathf.Infinity;
+        private Vector3 _dashVelocity;
         public event Action<float> ModelRotationChanged;
         public event Action<Quaternion> CameraFollowerRotationChanged;
 
@@ -47,12 +49,14 @@ namespace Project.Assets._Project._Scripts.Player
 
         private ParkourSettings Parkour => _stats.Parkour;
         private bool IsSliding => _posture.Posture == Posture.Sliding;
+        private bool IsDashing => Time.time < _dashEndTime;
 
         public void ToggleMovement(bool isEnabled)
         {
             _movementEnabled = isEnabled;
             if (!_movementEnabled)
             {
+                StopDash();
                 CancelMantle();
                 _rb.linearVelocity = Vector3.zero;
                 _rb.angularVelocity = Vector3.zero;
@@ -177,6 +181,14 @@ namespace Project.Assets._Project._Scripts.Player
             UpdatePosture(grounded);
             if (!grounded && TryStartMantle(moveDirection)) return;
 
+            if (IsDashing)
+            {
+                HoldDashVelocity();
+                if (!grounded && _rb.linearVelocity.y < 0f) _rb.AddForce(Physics.gravity, ForceMode.Acceleration);
+                TryConsumeBufferedJump(grounded);
+                return;
+            }
+
             // a slide coasts on its own momentum, so input doesn't steer or brake it
             if (!IsSliding) HandleHorizontalMovement(moveDirection, grounded);
             if (grounded)
@@ -295,8 +307,9 @@ namespace Project.Assets._Project._Scripts.Player
             _airJumpFrame = Time.frameCount;
         }
 
-        // A burst along the view direction, flattened so looking up or down doesn't launch the player
-        public void Dash(float speed)
+        // A burst along the view direction, flattened so looking up or down doesn't launch the player.
+        // The speed is held for the whole duration; afterwards normal movement and damping slow it down.
+        public void Dash(float speed, float durationInSeconds)
         {
             if (!_movementEnabled || !_camera || _isMantling) return;
 
@@ -304,10 +317,20 @@ namespace Project.Assets._Project._Scripts.Player
             direction.y = 0f;
             if (direction.sqrMagnitude <= 0f) return;
 
-            direction.Normalize();
-            float verticalVelocity = _rb.linearVelocity.y;
-            _rb.linearVelocity = direction * speed + Vector3.up * verticalVelocity;
+            if (IsSliding) StopSlide();
+            _dashVelocity = direction.normalized * speed;
+            _dashEndTime = Time.time + durationInSeconds;
+            HoldDashVelocity();
         }
+
+        // input, damping and the slide don't act during a dash; gravity still pulls it down off ledges
+        private void HoldDashVelocity()
+        {
+            _rb.linearDamping = 0f;
+            _rb.linearVelocity = _dashVelocity + Vector3.up * _rb.linearVelocity.y;
+        }
+
+        private void StopDash() => _dashEndTime = -Mathf.Infinity;
 
         private void PerformJump()
         {
@@ -376,6 +399,7 @@ namespace Project.Assets._Project._Scripts.Player
         {
             if (!TryGetWallJumpNormal(out Vector3 wallNormal)) return false;
 
+            StopDash();
             // the kick replaces the push into the wall and keeps the run along it
             Vector3 velocity = _rb.linearVelocity;
             Vector3 planarVelocity = new(velocity.x, 0f, velocity.z);
@@ -414,6 +438,7 @@ namespace Project.Assets._Project._Scripts.Player
             _mantleRiseTarget = new Vector3(feetPosition.x, landing.y, feetPosition.z);
             _mantleLanding = landing;
             _mantleStartTime = Time.time;
+            StopDash();
             _isMantling = true;
             _lastJumpPressedTime = -Mathf.Infinity;
             _rb.useGravity = false;

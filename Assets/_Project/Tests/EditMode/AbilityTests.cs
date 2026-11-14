@@ -93,10 +93,12 @@ namespace Project.Assets._Project.Tests.EditMode
         public void Dash_UsesItsSpeed()
         {
             SetBackingField(_dash, "DashSpeed", 30f);
+            SetBackingField(_dash, "DashDurationInSeconds", 0.4f);
             var movement = new FakeMovement();
 
             Assert.IsTrue(_dash.TryActivate(movement));
             Assert.AreEqual(30f, movement.LastDashSpeed);
+            Assert.AreEqual(0.4f, movement.LastDashDuration);
         }
 
         // The ability hears the jump press before movement does; the same press must not also be buffered as a landing jump
@@ -137,6 +139,7 @@ namespace Project.Assets._Project.Tests.EditMode
             public bool CanKickOffWall;
             public int AirJumpCount;
             public float LastDashSpeed;
+            public float LastDashDuration;
 
             public event Action<float> ModelRotationChanged { add { } remove { } }
             public event Action<Quaternion> CameraFollowerRotationChanged { add { } remove { } }
@@ -146,7 +149,11 @@ namespace Project.Assets._Project.Tests.EditMode
             public void ToggleParkour(bool isEnabled) { }
             public void ToggleCrouchHeld(bool isHeld) { }
             public void AirJump(float jumpForceMultiplier) => AirJumpCount++;
-            public void Dash(float speed) => LastDashSpeed = speed;
+            public void Dash(float speed, float durationInSeconds)
+            {
+                LastDashSpeed = speed;
+                LastDashDuration = durationInSeconds;
+            }
             public void ToggleMovement(bool isEnabled) { }
             public void HandleJump(bool isButtonDown = true) { }
             public void HandleFixedMovement(Vector2 moveDirection) { }

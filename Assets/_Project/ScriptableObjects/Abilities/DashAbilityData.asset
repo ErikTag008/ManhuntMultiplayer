@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.Abilities.DashAbilityData
   <Id>k__BackingField: 1
   <DisplayName>k__BackingField: Dash
-  <CooldownInSeconds>k__BackingField: 15
+  <CooldownInSeconds>k__BackingField: 10
   <ReadyHint>k__BackingField: '{0}'
   <AnimationTrigger>k__BackingField: Dash
-  <DashSpeed>k__BackingField: 45
+  <DashSpeed>k__BackingField: 32
+  <DashDurationInSeconds>k__BackingField: 0.4

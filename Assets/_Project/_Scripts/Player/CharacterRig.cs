@@ -8,8 +8,20 @@ namespace Project.Assets._Project._Scripts.Player
     {
         [SerializeField] private Transform _head;
         [SerializeField] private Transform _spine;
+        // a child of the hand bone, rotated so a held weapon's grip points the right way; on a humanoid
+        // model without one, the right hand bone itself is used
+        [SerializeField] private Transform _weaponSocket;
 
         public Transform Head => _head;
         public Transform Spine => _spine;
+        public Transform WeaponSocket => _weaponSocket;
+
+        private void Awake()
+        {
+            if (_weaponSocket != null) return;
+
+            var animator = GetComponentInChildren<Animator>();
+            if (animator != null && animator.isHuman) _weaponSocket = animator.GetBoneTransform(HumanBodyBones.RightHand);
+        }
     }
 }

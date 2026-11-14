@@ -9,6 +9,7 @@ namespace Project.Assets._Project._Scripts.Player
     // (the placeholder now, the human-made one later).
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerLifeState), typeof(PlayerRescue))]
     [RequireComponent(typeof(PlayerAbility), typeof(PlayerMotion), typeof(PlayerPosture))]
+    [RequireComponent(typeof(PlayerCombat))]
     public class PlayerAnimator : ValidatedMonoBehaviour
     {
         [SerializeField, Self] private PlayerTeam _team;
@@ -17,6 +18,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerAbility _ability;
         [SerializeField, Self] private PlayerMotion _motion;
         [SerializeField, Self] private PlayerPosture _posture;
+        [SerializeField, Self] private PlayerCombat _combat;
         // the owner's look rotation, synced and smoothed on remote instances by PlayerNetworkSync
         [SerializeField] private Transform _cameraFollower;
         [SerializeField] private string _moveSpeedParameter = "MoveSpeed";
@@ -27,6 +29,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField] private string _isCrouchingParameter = "IsCrouching";
         [SerializeField] private string _isSlidingParameter = "IsSliding";
         [SerializeField] private string _isMantlingParameter = "IsMantling";
+        [SerializeField] private string _attackParameter = "Attack";
         // looking up or down tilts the head, and the spine takes the rest so the body follows the gaze
         [SerializeField, Range(0f, 1f)] private float _headLookShare = 0.6f;
         [SerializeField] private float _maxLookPitchInDegrees = 70f;
@@ -41,6 +44,7 @@ namespace Project.Assets._Project._Scripts.Player
         private int _isCrouchingId;
         private int _isSlidingId;
         private int _isMantlingId;
+        private int _attackId;
         // the last ability trigger set, so it can be cleared if the player goes down before it plays
         private int _pendingAbilityTriggerId;
 
@@ -54,11 +58,13 @@ namespace Project.Assets._Project._Scripts.Player
             _isCrouchingId = Animator.StringToHash(_isCrouchingParameter);
             _isSlidingId = Animator.StringToHash(_isSlidingParameter);
             _isMantlingId = Animator.StringToHash(_isMantlingParameter);
+            _attackId = Animator.StringToHash(_attackParameter);
 
             // subscribed before any OnNetworkSpawn, so the first team model is caught too
             _team.OnModelChanged += HandleModelChanged;
             _ability.OnAbilityUsed += HandleAbilityUsed;
             _lifeState.OnLifeStateChanged += HandleLifeStateChanged;
+            _combat.OnAttackStarted += HandleAttackStarted;
         }
 
         private void Start() => HandleModelChanged(_team.Model);
@@ -117,11 +123,18 @@ namespace Project.Assets._Project._Scripts.Player
             _animator.ResetTrigger(_pendingAbilityTriggerId);
         }
 
+        // the held weapon rides on the hand, so this swing is the weapon's whole attack animation
+        private void HandleAttackStarted()
+        {
+            if (_animator != null) _animator.SetTrigger(_attackId);
+        }
+
         private void OnDestroy()
         {
             _team.OnModelChanged -= HandleModelChanged;
             _ability.OnAbilityUsed -= HandleAbilityUsed;
             _lifeState.OnLifeStateChanged -= HandleLifeStateChanged;
+            _combat.OnAttackStarted -= HandleAttackStarted;
         }
     }
 }

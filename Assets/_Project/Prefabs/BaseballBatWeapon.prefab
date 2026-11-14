@@ -45,23 +45,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8397bbf9cc09404381c0084cdd131a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.Weapons.MeleeWeaponBase
-  _meleeAttackType: 0
-  _attackCheckRadius: 0.75
-  _windupAnimationDuration: 0
-  _attackAnimationDuration: 0.05
-  _pullBackAniationDuration: 0.3
-  _windupEase: 17
-  _attackEase: 6
-  _pullBackEase: 6
-  _swingWindUpAngle: {x: -45, y: 0, z: 0}
-  _swingAttackAngle: {x: 90, y: -15, z: 0}
-  _thrustWindUpPos: {x: 0, y: 0, z: -0.5}
-  _thrustAttackPos: {x: 0, y: 0, z: 1}
-  _slashWindUpAngle: {x: 0, y: -45, z: 0}
-  _slashAttackAngle: {x: 0, y: 135, z: 0}
-  _attackDamage: 5
-  _attackCooldown: 0.5
   _hitDetectionCenter: {fileID: 7876733166054061094}
+  _attackCheckRadius: 0.75
+  _hitDelayInSeconds: 0.25
+  _attackCooldownInSeconds: 0.85
+  _maxHitOriginDistance: 5
 --- !u!1 &7086058819647352901
 GameObject:
   m_ObjectHideFlags: 0

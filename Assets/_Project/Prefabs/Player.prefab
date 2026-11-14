@@ -874,6 +874,7 @@ MonoBehaviour:
   _hideHold: {fileID: 7900401039691343269}
   _weaponPivot: {fileID: 2525241098816555749}
   _maxCatchTargets: 3
+  _cooldownToleranceInSeconds: 0.1
 --- !u!114 &4982083531400345192
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -888,7 +889,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerNetworkSync
   ShowTopMostFoldoutHeaderGroup: 1
   _team: {fileID: 2895491558510482950}
-  _combat: {fileID: 91084392635682791}
   _cameraFollower: {fileID: 3526512074580094625}
 --- !u!114 &36421261748081134
 MonoBehaviour:
@@ -1020,6 +1020,7 @@ MonoBehaviour:
   _ability: {fileID: 5068892008710688985}
   _motion: {fileID: 5939890056578459048}
   _posture: {fileID: 6150287395128894317}
+  _combat: {fileID: 91084392635682791}
   _cameraFollower: {fileID: 3526512074580094625}
   _moveSpeedParameter: MoveSpeed
   _verticalSpeedParameter: VerticalSpeed
@@ -1029,6 +1030,7 @@ MonoBehaviour:
   _isCrouchingParameter: IsCrouching
   _isSlidingParameter: IsSliding
   _isMantlingParameter: IsMantling
+  _attackParameter: Attack
   _headLookShare: 0.6
   _maxLookPitchInDegrees: 70
 --- !u!114 &5939890056578459048
@@ -1068,6 +1070,7 @@ MonoBehaviour:
   _silentSpeedShare: 0.4
   _stepsPerSecondAtFullSpeed: 4.5
   _firstStepHead: 0.6
+  _minAirTimeForLandingInSeconds: 0.25
 --- !u!114 &6150287395128894317
 MonoBehaviour:
   m_ObjectHideFlags: 0

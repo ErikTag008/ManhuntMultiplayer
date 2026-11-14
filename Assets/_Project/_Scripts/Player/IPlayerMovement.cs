@@ -15,7 +15,7 @@ namespace Project.Assets._Project._Scripts.Player
         bool CanJumpFromGround();
         bool CanWallJump();
         void AirJump(float jumpForceMultiplier);
-        void Dash(float speed);
+        void Dash(float speed, float durationInSeconds);
         void DrawGizmos();
         void ChangeCamera(Camera camera);
         void ChangeStats(IMovementStats stats);
