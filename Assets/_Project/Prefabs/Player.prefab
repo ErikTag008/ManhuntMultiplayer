@@ -398,6 +398,7 @@ GameObject:
   - component: {fileID: 5802237443212687060}
   - component: {fileID: 5939890056578459048}
   - component: {fileID: 39154995949995008}
+  - component: {fileID: 6150287395128894317}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -476,6 +477,7 @@ MonoBehaviour:
   _spectator: {fileID: 3464033196263984798}
   _hideHold: {fileID: 7900401039691343269}
   _lobbyChoices: {fileID: 1196470119741336347}
+  _posture: {fileID: 6150287395128894317}
   _groundCheck: {fileID: 7460693758395271466}
   _cameraTarget: {fileID: 4853491123650079907}
   _cameraFollower: {fileID: 3526512074580094625}
@@ -726,6 +728,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: d474dda2-c3a7-453d-8f55-ecea48970491
     m_ActionName: Player/Walk
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4851020409925496502}
+        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Input.InputReader, Project.Input
+        m_MethodName: Crouch
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: d03456a4-05cf-41d0-9542-a5bce1135108
+    m_ActionName: Player/Crouch
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 4851020409925496502}
@@ -991,12 +1009,16 @@ MonoBehaviour:
   _rescue: {fileID: 1916059384330318201}
   _ability: {fileID: 5068892008710688985}
   _motion: {fileID: 5939890056578459048}
+  _posture: {fileID: 6150287395128894317}
   _cameraFollower: {fileID: 3526512074580094625}
   _moveSpeedParameter: MoveSpeed
   _verticalSpeedParameter: VerticalSpeed
   _isGroundedParameter: IsGrounded
   _lifeStateParameter: LifeState
   _isRescuingParameter: IsRescuing
+  _isCrouchingParameter: IsCrouching
+  _isSlidingParameter: IsSliding
+  _isMantlingParameter: IsMantling
   _headLookShare: 0.6
   _maxLookPitchInDegrees: 70
 --- !u!114 &5939890056578459048
@@ -1030,8 +1052,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerFootsteps
   _motion: {fileID: 5939890056578459048}
   _lifeState: {fileID: 1513991399820021913}
+  _posture: {fileID: 6150287395128894317}
   _audioSource: {fileID: 7764177460173050544}
   _soundSet: {fileID: 11400000, guid: 31e2c5d105f09674cb35b544aff956ee, type: 2}
   _silentSpeedShare: 0.4
   _stepsPerSecondAtFullSpeed: 4.5
   _firstStepHead: 0.6
+--- !u!114 &6150287395128894317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e22ad8ce748484da1b3ac7f37f91a69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerPosture
+  ShowTopMostFoldoutHeaderGroup: 1
+  _team: {fileID: 2895491558510482950}
+  _cameraTarget: {fileID: 4853491123650079907}

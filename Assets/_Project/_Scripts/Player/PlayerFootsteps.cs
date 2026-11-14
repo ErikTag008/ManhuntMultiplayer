@@ -4,12 +4,14 @@ using UnityEngine;
 namespace Project.Assets._Project._Scripts.Player
 {
     // Plays this player's footsteps from its movement on every instance, so others hear where it is (3D, fades with distance).
-    // Moving slower than the silent share of the full run speed (walking, a small stick push, crawling) makes no sound.
-    [RequireComponent(typeof(PlayerMotion), typeof(PlayerLifeState))]
+    // Moving slower than the silent share of the full run speed (walking, crouching, a small stick push, crawling) makes no sound,
+    // and neither do slides and ledge climbs, where the feet aren't stepping.
+    [RequireComponent(typeof(PlayerMotion), typeof(PlayerLifeState), typeof(PlayerPosture))]
     public class PlayerFootsteps : ValidatedMonoBehaviour
     {
         [SerializeField, Self] private PlayerMotion _motion;
         [SerializeField, Self] private PlayerLifeState _lifeState;
+        [SerializeField, Self] private PlayerPosture _posture;
         [SerializeField] private AudioSource _audioSource;
         [SerializeField] private FootstepSoundSet _soundSet;
         [SerializeField, Range(0f, 1f)] private float _silentSpeedShare = 0.4f;
@@ -24,7 +26,8 @@ namespace Project.Assets._Project._Scripts.Player
         private void LateUpdate()
         {
             float normalizedSpeed = _motion.NormalizedPlanarSpeed;
-            bool isAudible = _lifeState.IsUp && _motion.IsGrounded && normalizedSpeed >= _silentSpeedShare;
+            bool isStepping = _posture.Posture is Posture.Standing or Posture.Crouching;
+            bool isAudible = _lifeState.IsUp && isStepping && _motion.IsGrounded && normalizedSpeed >= _silentSpeedShare;
             if (!isAudible)
             {
                 _wasAudible = false;

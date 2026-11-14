@@ -25,6 +25,7 @@ namespace Project.Assets._Project._Scripts.Player
         [field: SerializeField] public float GroundAcceleration { get; private set; } = 20f;
         [field: SerializeField] public float AirAcceleration { get; private set; } = 10f;
         [field: SerializeField] public LayerMask GroundCheckLayers { get; private set; }
+        [field: SerializeField] public ParkourSettings Parkour { get; private set; } = new();
 
         [field: Header("Camera Stats")]
         [field: SerializeField, Range(1f, 89f)] public float MaxPitch { get; private set; } = 85f;
@@ -73,6 +74,7 @@ namespace Project.Assets._Project._Scripts.Player
         public LayerMask GroundCheckLayers { get; }
         public float NetworkVariableDetectionMinMagnitude { get; }
         public float NetworkVariableSmoothingSpeed { get; } 
+        public ParkourSettings Parkour { get; }
     }    
 
     public interface IInteractionStats

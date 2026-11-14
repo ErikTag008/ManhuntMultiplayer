@@ -10,10 +10,10 @@ namespace Project.Assets._Project._Scripts.Player.Abilities
 
         public override AbilityTrigger Trigger => AbilityTrigger.AirJump;
 
-        // a press that would be an ordinary jump stays one
+        // a press that would be an ordinary jump or a wall-jump stays one
         public override bool TryActivate(IPlayerMovement movement)
         {
-            if (movement.CanJumpFromGround()) return false;
+            if (movement.CanJumpFromGround() || movement.CanWallJump()) return false;
 
             movement.AirJump(JumpForceMultiplier);
             return true;

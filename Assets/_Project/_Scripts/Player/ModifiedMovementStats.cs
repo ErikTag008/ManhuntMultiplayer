@@ -31,6 +31,7 @@ namespace Project.Assets._Project._Scripts.Player
         public LayerMask GroundCheckLayers => _baseStats.GroundCheckLayers;
         public float NetworkVariableDetectionMinMagnitude => _baseStats.NetworkVariableDetectionMinMagnitude;
         public float NetworkVariableSmoothingSpeed => _baseStats.NetworkVariableSmoothingSpeed;
+        public ParkourSettings Parkour => _baseStats.Parkour;
 
         // Team changes swap the base asset; the modifiers stay in their own stack
         public void ChangeBaseStats(IMovementStats baseStats)

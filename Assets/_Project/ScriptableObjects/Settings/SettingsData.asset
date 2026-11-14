@@ -66,6 +66,11 @@ MonoBehaviour:
     <CompositePart>k__BackingField: 
     <HasGamepadBinding>k__BackingField: 1
     <ShareGroup>k__BackingField: 
+  - <DisplayName>k__BackingField: Crouch / Slide
+    <Action>k__BackingField: {fileID: -5781221018525320190, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: 
+    <HasGamepadBinding>k__BackingField: 1
+    <ShareGroup>k__BackingField: 
   - <DisplayName>k__BackingField: Interact / Rescue
     <Action>k__BackingField: {fileID: -5548793354506133487, guid: c396ece31d49f4148abf609015547b3f, type: 3}
     <CompositePart>k__BackingField: 

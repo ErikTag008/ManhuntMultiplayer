@@ -23,10 +23,12 @@ namespace Project.Assets._Project._Scripts.Input
         public event Action OnToggleMenu;
         public event Action OnPause;
         public event Action<bool> OnWalkHeldChanged;
+        public event Action<bool> OnCrouchHeldChanged;
 
         public event Action OnStartButtonKeyPressed;
         public bool IsUsingMouse => _playerInput.currentControlScheme == _keyboardMouseControlScheme;
         public bool IsWalkHeld { get; private set; }
+        public bool IsCrouchHeld { get; private set; }
         public InputActionAsset Actions => _playerInput.actions;
 
         public void Move(InputAction.CallbackContext context)
@@ -99,6 +101,20 @@ namespace Project.Assets._Project._Scripts.Input
 
             IsWalkHeld = isHeld;
             OnWalkHeldChanged?.Invoke(isHeld);
+        }
+
+        public void Crouch(InputAction.CallbackContext context)
+        {
+            if (context.performed) ToggleCrouchHeld(true);
+            else if (context.canceled) ToggleCrouchHeld(false);
+        }
+
+        private void ToggleCrouchHeld(bool isHeld)
+        {
+            if (IsCrouchHeld == isHeld) return;
+
+            IsCrouchHeld = isHeld;
+            OnCrouchHeldChanged?.Invoke(isHeld);
         }
 
         public void ToggleMenu(InputAction.CallbackContext context)

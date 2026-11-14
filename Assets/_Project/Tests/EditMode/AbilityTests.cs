@@ -72,6 +72,15 @@ namespace Project.Assets._Project.Tests.EditMode
         }
 
         [Test]
+        public void DoubleJump_NextToAWall_LeavesTheWallJumpAlone()
+        {
+            var movement = new FakeMovement { CanGroundJump = false, CanKickOffWall = true };
+
+            Assert.IsFalse(_doubleJump.TryActivate(movement));
+            Assert.AreEqual(0, movement.AirJumpCount);
+        }
+
+        [Test]
         public void DoubleJump_InTheAir_JumpsAgain()
         {
             var movement = new FakeMovement { CanGroundJump = false };
@@ -98,7 +107,7 @@ namespace Project.Assets._Project.Tests.EditMode
             var stats = ScriptableObject.CreateInstance<PlayerStats>();
             try
             {
-                var movement = new PlayerMovement(body.AddComponent<Rigidbody>(), stats, null, null, null, null);
+                var movement = new PlayerMovement(body.AddComponent<Rigidbody>(), stats, null, null, null, null, null);
                 var lastJumpPressedTime = typeof(PlayerMovement).GetField("_lastJumpPressedTime", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
 
                 movement.AirJump(1f);
@@ -125,6 +134,7 @@ namespace Project.Assets._Project.Tests.EditMode
         private class FakeMovement : IPlayerMovement
         {
             public bool CanGroundJump;
+            public bool CanKickOffWall;
             public int AirJumpCount;
             public float LastDashSpeed;
 
@@ -132,6 +142,9 @@ namespace Project.Assets._Project.Tests.EditMode
             public event Action<Quaternion> CameraFollowerRotationChanged { add { } remove { } }
 
             public bool CanJumpFromGround() => CanGroundJump;
+            public bool CanWallJump() => CanKickOffWall;
+            public void ToggleParkour(bool isEnabled) { }
+            public void ToggleCrouchHeld(bool isHeld) { }
             public void AirJump(float jumpForceMultiplier) => AirJumpCount++;
             public void Dash(float speed) => LastDashSpeed = speed;
             public void ToggleMovement(bool isEnabled) { }

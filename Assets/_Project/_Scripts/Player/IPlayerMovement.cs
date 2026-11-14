@@ -6,11 +6,14 @@ namespace Project.Assets._Project._Scripts.Player
     public interface IPlayerMovement 
     {
         void ToggleMovement(bool isEnabled);
+        void ToggleParkour(bool isEnabled);
+        void ToggleCrouchHeld(bool isHeld);
         void HandleJump(bool isButtonDown = true);
         void HandleFixedMovement(Vector2 moveDirection);
         void HandleRotation();
         bool IsGrounded();
         bool CanJumpFromGround();
+        bool CanWallJump();
         void AirJump(float jumpForceMultiplier);
         void Dash(float speed);
         void DrawGizmos();

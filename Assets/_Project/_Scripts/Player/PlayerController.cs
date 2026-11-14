@@ -21,6 +21,7 @@ namespace Project.Assets._Project._Scripts.Player
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerLifeState), typeof(PlayerCombat))]
     [RequireComponent(typeof(PlayerNetworkSync), typeof(PlayerCameraBinder), typeof(PlayerRescue))]
     [RequireComponent(typeof(PlayerSpectator), typeof(PlayerHideHold), typeof(PlayerLobbyChoices))]
+    [RequireComponent(typeof(PlayerPosture))]
     public class PlayerController : NetworkBehaviour, ISceneInitialized, IFirstPersonCameraTarget
     {
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
@@ -44,6 +45,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerSpectator _spectator;
         [SerializeField, Self] private PlayerHideHold _hideHold;
         [SerializeField, Self] private PlayerLobbyChoices _lobbyChoices;
+        [SerializeField, Self] private PlayerPosture _posture;
         [SerializeField] private Transform _groundCheck;
         [SerializeField] private Transform _cameraTarget;
         [SerializeField] private Transform _cameraFollower;
@@ -97,6 +99,7 @@ namespace Project.Assets._Project._Scripts.Player
             _settings.OnChanged += HandleSettingsChanged;
             _inputReader.OnPause += HandlePausePressed;
             _inputReader.OnWalkHeldChanged += HandleWalkHeldChanged;
+            _inputReader.OnCrouchHeldChanged += HandleCrouchHeldChanged;
             // PlayerInput invokes Unity events, so its C# onControlsChanged never fires
             _playerInput.controlsChangedEvent.AddListener(HandleControlsChanged);
             HandleControlsChanged(_playerInput);
@@ -176,10 +179,12 @@ namespace Project.Assets._Project._Scripts.Player
             }
 
             _movementStats = new ModifiedMovementStats(_team.CurrentStats, _statModifiers);
-            _movement = new PlayerMovement(_rb, _movementStats, _groundCheck, camera, _team.Model, _cameraFollower);
+            _movement = new PlayerMovement(_rb, _movementStats, _groundCheck, camera, _team.Model, _cameraFollower, _posture);
             _movement.ModelRotationChanged += _networkSync.SendModelYaw;
             _movement.CameraFollowerRotationChanged += _networkSync.SendCameraFollowerRotation;
             _movement.ToggleMovement(CanMove);
+            _movement.ToggleParkour(_lifeState.IsUp);
+            _movement.ToggleCrouchHeld(_inputReader.IsCrouchHeld);
             RefreshKnockedCrawl();
             _cameraBinder.OnCameraRotationChanged += _movement.HandleRotation;
             _inputReader.OnJump += _movement.HandleJump;
@@ -234,6 +239,8 @@ namespace Project.Assets._Project._Scripts.Player
             _statModifiers.Add(_appliedWalkModifier);
         }
 
+        private void HandleCrouchHeldChanged(bool isHeld) => _movement?.ToggleCrouchHeld(isHeld);
+
         private void HandleModelChanged(Transform model) => _movement?.ChangeModel(model);
 
         private void HandleLifeStateChanged(LifeState _)
@@ -241,6 +248,7 @@ namespace Project.Assets._Project._Scripts.Player
             if (!IsOwner) return;
 
             _movement?.ToggleMovement(CanMove);
+            _movement?.ToggleParkour(_lifeState.IsUp);
             RefreshKnockedCrawl();
         }
 
@@ -323,6 +331,7 @@ namespace Project.Assets._Project._Scripts.Player
             _settings.OnChanged -= HandleSettingsChanged;
             _inputReader.OnPause -= HandlePausePressed;
             _inputReader.OnWalkHeldChanged -= HandleWalkHeldChanged;
+            _inputReader.OnCrouchHeldChanged -= HandleCrouchHeldChanged;
             _playerInput.controlsChangedEvent.RemoveListener(HandleControlsChanged);
             // the menu belongs to this session
             _pauseMenuState.ToggleOpen(false);

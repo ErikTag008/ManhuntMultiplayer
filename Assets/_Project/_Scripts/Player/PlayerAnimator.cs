@@ -8,7 +8,7 @@ namespace Project.Assets._Project._Scripts.Player
     // players animate too. The parameter names are the contract any model's Animator Controller must match
     // (the placeholder now, the human-made one later).
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerLifeState), typeof(PlayerRescue))]
-    [RequireComponent(typeof(PlayerAbility), typeof(PlayerMotion))]
+    [RequireComponent(typeof(PlayerAbility), typeof(PlayerMotion), typeof(PlayerPosture))]
     public class PlayerAnimator : ValidatedMonoBehaviour
     {
         [SerializeField, Self] private PlayerTeam _team;
@@ -16,6 +16,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerRescue _rescue;
         [SerializeField, Self] private PlayerAbility _ability;
         [SerializeField, Self] private PlayerMotion _motion;
+        [SerializeField, Self] private PlayerPosture _posture;
         // the owner's look rotation, synced and smoothed on remote instances by PlayerNetworkSync
         [SerializeField] private Transform _cameraFollower;
         [SerializeField] private string _moveSpeedParameter = "MoveSpeed";
@@ -23,6 +24,9 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField] private string _isGroundedParameter = "IsGrounded";
         [SerializeField] private string _lifeStateParameter = "LifeState";
         [SerializeField] private string _isRescuingParameter = "IsRescuing";
+        [SerializeField] private string _isCrouchingParameter = "IsCrouching";
+        [SerializeField] private string _isSlidingParameter = "IsSliding";
+        [SerializeField] private string _isMantlingParameter = "IsMantling";
         // looking up or down tilts the head, and the spine takes the rest so the body follows the gaze
         [SerializeField, Range(0f, 1f)] private float _headLookShare = 0.6f;
         [SerializeField] private float _maxLookPitchInDegrees = 70f;
@@ -34,6 +38,9 @@ namespace Project.Assets._Project._Scripts.Player
         private int _isGroundedId;
         private int _lifeStateId;
         private int _isRescuingId;
+        private int _isCrouchingId;
+        private int _isSlidingId;
+        private int _isMantlingId;
         // the last ability trigger set, so it can be cleared if the player goes down before it plays
         private int _pendingAbilityTriggerId;
 
@@ -44,6 +51,9 @@ namespace Project.Assets._Project._Scripts.Player
             _isGroundedId = Animator.StringToHash(_isGroundedParameter);
             _lifeStateId = Animator.StringToHash(_lifeStateParameter);
             _isRescuingId = Animator.StringToHash(_isRescuingParameter);
+            _isCrouchingId = Animator.StringToHash(_isCrouchingParameter);
+            _isSlidingId = Animator.StringToHash(_isSlidingParameter);
+            _isMantlingId = Animator.StringToHash(_isMantlingParameter);
 
             // subscribed before any OnNetworkSpawn, so the first team model is caught too
             _team.OnModelChanged += HandleModelChanged;
@@ -63,6 +73,9 @@ namespace Project.Assets._Project._Scripts.Player
             _animator.SetInteger(_lifeStateId, (int)_lifeState.State);
             // progress runs on both the rescuer and the knocked runner; only the one standing kneels to help
             _animator.SetBool(_isRescuingId, _lifeState.IsUp && _rescue.RescueProgress > 0f);
+            _animator.SetBool(_isCrouchingId, _posture.Posture == Posture.Crouching);
+            _animator.SetBool(_isSlidingId, _posture.Posture == Posture.Sliding);
+            _animator.SetBool(_isMantlingId, _posture.Posture == Posture.Mantling);
             ApplyLookPitch();
         }
 
