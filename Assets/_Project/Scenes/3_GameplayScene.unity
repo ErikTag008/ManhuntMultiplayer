@@ -3272,7 +3272,7 @@ MonoBehaviour:
   _runnerCountsFormat: "Up {0}  \xB7  Knocked {1}  \xB7  Out {2}"
   _bleedOutPanel: {fileID: 1276950829}
   _bleedOutMeter: {fileID: 1276950828}
-  _bleedOutLabelFormat: '{0:0}s'
+  _bleedOutLabelFormat: '{0:0}'
   _rescuePanel: {fileID: 1019023485}
   _rescueMeter: {fileID: 1019023484}
   _abilityPanel: {fileID: 985122211}
@@ -3283,7 +3283,7 @@ MonoBehaviour:
   _dropPanel: {fileID: 342729832}
   _dropNameText: {fileID: 1476845354}
   _dropMeter: {fileID: 342729831}
-  _dropLabelFormat: '{0:0}s'
+  _dropLabelFormat: '{0:0}'
   _goodDropColor: {r: 0.45, g: 0.9, b: 0.45, a: 1}
   _badDropColor: {r: 1, g: 0.4, b: 0.35, a: 1}
   _revealMarkers: {fileID: 976529514}

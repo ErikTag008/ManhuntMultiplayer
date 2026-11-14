@@ -19,7 +19,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private string _runnerCountsFormat = "Up {0}  ·  Knocked {1}  ·  Out {2}";
         [SerializeField] private FadePanel _bleedOutPanel;
         [SerializeField] private FillMeter _bleedOutMeter;
-        [SerializeField] private string _bleedOutLabelFormat = "{0:0}s";
+        [SerializeField] private string _bleedOutLabelFormat = "{0:0}";
         [SerializeField] private FadePanel _rescuePanel;
         [SerializeField] private FillMeter _rescueMeter;
         [SerializeField] private FadePanel _abilityPanel;
@@ -32,7 +32,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private FadePanel _dropPanel;
         [SerializeField] private TMP_Text _dropNameText;
         [SerializeField] private FillMeter _dropMeter;
-        [SerializeField] private string _dropLabelFormat = "{0:0}s";
+        [SerializeField] private string _dropLabelFormat = "{0:0}";
         [SerializeField] private Color _goodDropColor = Color.green;
         [SerializeField] private Color _badDropColor = Color.red;
         [SerializeField] private RevealMarkerLayer _revealMarkers;

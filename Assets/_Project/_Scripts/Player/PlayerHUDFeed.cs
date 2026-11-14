@@ -14,6 +14,8 @@ namespace Project.Assets._Project._Scripts.Player
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerDropEffects), typeof(PlayerCameraBinder))]
     public class PlayerHUDFeed : NetworkBehaviour
     {
+        private const float ViewportCenter = 0.5f;
+
         [Inject] private readonly GameHUDState _hudState;
         [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
         [Inject] private readonly RunnerStats _runnerStats;
@@ -26,6 +28,8 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerCameraBinder _cameraBinder;
         // the marker sits this far above the revealed runner's feet
         [SerializeField] private float _revealMarkerHeightInMeters = 2.2f;
+        // off-screen runners get a marker pinned this far (viewport units) inside the screen edge, pointing their way
+        [SerializeField, Range(0f, 0.5f)] private float _revealMarkerEdgeMargin = 0.05f;
 
         // reused every frame so the markers don't allocate
         private readonly List<Vector2> _revealViewportPositions = new();
@@ -119,7 +123,7 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetDropEffect(true, effect.DisplayName, effect.IsGood, remaining, progress);
         }
 
-        // only catchers see revealed runners, through walls; points behind the camera are left out
+        // only catchers see revealed runners, through walls; runners off screen or behind the camera are pinned to the screen edge
         private void RefreshRevealMarkers()
         {
             _revealViewportPositions.Clear();
@@ -131,11 +135,26 @@ namespace Project.Assets._Project._Scripts.Player
                     if (player == null || player.OwnerClientId == OwnerClientId || !player.DropEffects.Has(DropStatus.Revealed)) continue;
 
                     Vector3 viewportPoint = camera.WorldToViewportPoint(player.transform.position + Vector3.up * _revealMarkerHeightInMeters);
-                    if (viewportPoint.z > 0f) _revealViewportPositions.Add(viewportPoint);
+                    _revealViewportPositions.Add(ClampToScreenEdge(viewportPoint));
                 }
             }
 
             _hudState.SetRevealMarkers(_revealViewportPositions);
+        }
+
+        private Vector2 ClampToScreenEdge(Vector3 viewportPoint)
+        {
+            var center = new Vector2(ViewportCenter, ViewportCenter);
+            Vector2 offset = (Vector2)viewportPoint - center;
+            // behind the camera the projection is mirrored, so flip it to point the right way
+            if (viewportPoint.z < 0f) offset = -offset;
+
+            float limit = ViewportCenter - _revealMarkerEdgeMargin;
+            float largest = Mathf.Max(Mathf.Abs(offset.x), Mathf.Abs(offset.y));
+            if (viewportPoint.z >= 0f && largest <= limit) return center + offset;
+            if (largest <= 0f) return center + Vector2.down * limit;
+
+            return center + offset * (limit / largest);
         }
 
         public override void OnNetworkDespawn()
