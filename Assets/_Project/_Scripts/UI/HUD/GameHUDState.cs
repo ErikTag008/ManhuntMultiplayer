@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
@@ -19,11 +21,19 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private string _abilityReadyHint;
         private float _abilityCooldownRemainingInSeconds;
         private float _abilityCooldownProgress;
+        private bool _isDropEffectShown;
+        private string _dropEffectName;
+        private bool _isDropEffectGood;
+        private float _dropEffectRemainingInSeconds;
+        private float _dropEffectProgress;
+        private readonly List<Vector2> _revealMarkerPositions = new();
 
         public event Action OnRunnerCountsChanged;
         public event Action OnBleedOutChanged;
         public event Action OnRescueChanged;
         public event Action OnAbilityChanged;
+        public event Action OnDropEffectChanged;
+        public event Action OnRevealMarkersChanged;
 
         public int RunnersUp => _runnersUp;
         public int RunnersKnocked => _runnersKnocked;
@@ -40,6 +50,14 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public float AbilityCooldownRemainingInSeconds => _abilityCooldownRemainingInSeconds;
         // 1 right after use, 0 when ready
         public float AbilityCooldownProgress => _abilityCooldownProgress;
+        public bool IsDropEffectShown => _isDropEffectShown;
+        public string DropEffectName => _dropEffectName;
+        public bool IsDropEffectGood => _isDropEffectGood;
+        public float DropEffectRemainingInSeconds => _dropEffectRemainingInSeconds;
+        // 1 when the effect starts, 0 when it runs out
+        public float DropEffectProgress => _dropEffectProgress;
+        // viewport positions (0..1) of revealed runners on this catcher's screen
+        public IReadOnlyList<Vector2> RevealMarkerPositions => _revealMarkerPositions;
 
         public void SetRunnerCounts(int up, int knocked, int eliminated)
         {
@@ -81,6 +99,41 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _abilityCooldownRemainingInSeconds = cooldownRemainingInSeconds;
             _abilityCooldownProgress = cooldownProgress;
             OnAbilityChanged?.Invoke();
+        }
+
+        public void SetDropEffect(bool isShown, string effectName, bool isGood, float remainingInSeconds, float progress)
+        {
+            if (_isDropEffectShown == isShown && _dropEffectName == effectName && _isDropEffectGood == isGood
+                && _dropEffectRemainingInSeconds == remainingInSeconds && _dropEffectProgress == progress) return;
+
+            _isDropEffectShown = isShown;
+            _dropEffectName = effectName;
+            _isDropEffectGood = isGood;
+            _dropEffectRemainingInSeconds = remainingInSeconds;
+            _dropEffectProgress = progress;
+            OnDropEffectChanged?.Invoke();
+        }
+
+        // copies the positions, so the caller can reuse its list
+        public void SetRevealMarkers(IReadOnlyList<Vector2> viewportPositions)
+        {
+            if (AreRevealMarkersEqual(viewportPositions)) return;
+
+            _revealMarkerPositions.Clear();
+            for (int i = 0; i < viewportPositions.Count; i++) _revealMarkerPositions.Add(viewportPositions[i]);
+            OnRevealMarkersChanged?.Invoke();
+        }
+
+        private bool AreRevealMarkersEqual(IReadOnlyList<Vector2> viewportPositions)
+        {
+            if (_revealMarkerPositions.Count != viewportPositions.Count) return false;
+
+            for (int i = 0; i < viewportPositions.Count; i++)
+            {
+                if (_revealMarkerPositions[i] != viewportPositions[i]) return false;
+            }
+
+            return true;
         }
     }
 }

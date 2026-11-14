@@ -1,7 +1,9 @@
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.Input;
+using Project.Assets._Project._Scripts.Player.Drops;
 using Project.Assets._Project._Scripts.Weapons;
 using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -21,6 +23,8 @@ namespace Project.Assets._Project._Scripts.Player
 
         private MeleeWeaponBase _currentWeapon;
         private Collider[] _catchTargets;
+        // a runner with several colliders is hit once per catch, so a shield can't be used up and then knocked through
+        private readonly List<PlayerTeam> _caughtTeams = new();
         private bool _isAttackInputBound;
 
         public MeleeWeaponBase CurrentWeapon => _currentWeapon;
@@ -91,13 +95,27 @@ namespace Project.Assets._Project._Scripts.Player
             if (_team.Team != Team.Catcher || _hideHold.IsHeld) return;
 
             int hitCount = Physics.OverlapSphereNonAlloc(hitOrigin, radius, _catchTargets, _team.CurrentStats.AttackRaycastLayer);
+            _caughtTeams.Clear();
             for (int i = 0; i < hitCount; i++)
             {
                 var targetTeam = _catchTargets[i].GetComponentInParent<PlayerTeam>();
                 if (targetTeam == null || targetTeam == _team || targetTeam.Team != Team.Runner) continue;
+                if (_caughtTeams.Contains(targetTeam)) continue;
 
-                if (targetTeam.TryGetComponent(out PlayerLifeState targetLifeState)) targetLifeState.Knock();
+                _caughtTeams.Add(targetTeam);
+
+                if (!targetTeam.TryGetComponent(out PlayerLifeState targetLifeState)) continue;
+                if (IsBlockedByShield(targetTeam, targetLifeState)) continue;
+
+                targetLifeState.Knock();
             }
+        }
+
+        // Server only: a shield drop takes the hit instead of the runner; only a catch that would knock uses it up
+        private static bool IsBlockedByShield(PlayerTeam targetTeam, PlayerLifeState targetLifeState)
+        {
+            if (!targetLifeState.IsUp || targetLifeState.IsInvulnerable) return false;
+            return targetTeam.TryGetComponent(out PlayerDropEffects targetDropEffects) && targetDropEffects.TryConsumeShield();
         }
 
         public override void OnNetworkDespawn()

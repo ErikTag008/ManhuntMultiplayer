@@ -7,7 +7,8 @@ using UnityEngine.InputSystem;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
-    // Gameplay HUD: runner counts for everyone, plus the local player's bleed-out bar and rescue ring
+    // Gameplay HUD: runner counts for everyone, plus the local player's bleed-out bar, rescue ring, ability, drop effect
+    // and, for catchers, markers over revealed runners
     public class GameHUD : MonoBehaviour
     {
         [Inject] private readonly GameHUDState _state;
@@ -28,9 +29,17 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private string _abilityCooldownLabelFormat = "{0}";
         // fills the ready hint's {0}, so the slot names the key as currently bound on the device in use
         [SerializeField] private InputActionReference _abilityAction;
+        [SerializeField] private FadePanel _dropPanel;
+        [SerializeField] private TMP_Text _dropNameText;
+        [SerializeField] private FillMeter _dropMeter;
+        [SerializeField] private string _dropLabelFormat = "{0:0}s";
+        [SerializeField] private Color _goodDropColor = Color.green;
+        [SerializeField] private Color _badDropColor = Color.red;
+        [SerializeField] private RevealMarkerLayer _revealMarkers;
 
         private int _shownBleedOutSeconds = -1;
         private int _shownAbilitySeconds = -1;
+        private int _shownDropSeconds = -1;
 
         private void Start()
         {
@@ -38,6 +47,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnBleedOutChanged += HandleBleedOutChanged;
             _state.OnRescueChanged += HandleRescueChanged;
             _state.OnAbilityChanged += HandleAbilityChanged;
+            _state.OnDropEffectChanged += HandleDropEffectChanged;
+            _state.OnRevealMarkersChanged += HandleRevealMarkersChanged;
             _settings.OnChanged += HandleSettingsChanged;
             _controlScheme.OnChanged += HandleControlSchemeChanged;
             // values set before this scene's UI started
@@ -45,6 +56,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             HandleBleedOutChanged();
             HandleRescueChanged();
             HandleAbilityChanged();
+            HandleDropEffectChanged();
+            HandleRevealMarkersChanged();
         }
 
         private void HandleRunnerCountsChanged() =>
@@ -87,6 +100,29 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _abilityCooldownMeter.SetLabel(seconds > 0 ? string.Format(_abilityCooldownLabelFormat, seconds) : GetAbilityReadyHint());
         }
 
+        private void HandleDropEffectChanged()
+        {
+            TogglePanel(_dropPanel, _state.IsDropEffectShown);
+            if (!_state.IsDropEffectShown) return;
+
+            _dropMeter.SetValue(_state.DropEffectProgress);
+            // the remaining time changes every frame; the labels only need new strings when they actually change
+            bool isNewEffect = _dropNameText.text != _state.DropEffectName;
+            if (isNewEffect)
+            {
+                _dropNameText.text = _state.DropEffectName;
+                _dropNameText.color = _state.IsDropEffectGood ? _goodDropColor : _badDropColor;
+            }
+
+            int seconds = Mathf.CeilToInt(_state.DropEffectRemainingInSeconds);
+            if (seconds == _shownDropSeconds && !isNewEffect) return;
+
+            _shownDropSeconds = seconds;
+            _dropMeter.SetLabel(string.Format(_dropLabelFormat, seconds));
+        }
+
+        private void HandleRevealMarkersChanged() => _revealMarkers.ShowMarkers(_state.RevealMarkerPositions);
+
         private string GetAbilityReadyHint() =>
             string.Format(_state.AbilityReadyHint ?? string.Empty, _keybinds.GetDisplayText(_abilityAction, _controlScheme.IsGamepad));
 
@@ -118,6 +154,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnBleedOutChanged -= HandleBleedOutChanged;
             _state.OnRescueChanged -= HandleRescueChanged;
             _state.OnAbilityChanged -= HandleAbilityChanged;
+            _state.OnDropEffectChanged -= HandleDropEffectChanged;
+            _state.OnRevealMarkersChanged -= HandleRevealMarkersChanged;
             _settings.OnChanged -= HandleSettingsChanged;
             _controlScheme.OnChanged -= HandleControlSchemeChanged;
         }

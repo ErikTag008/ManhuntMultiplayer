@@ -65,4 +65,5 @@ MonoBehaviour:
   _connectionSettings: {fileID: 11400000, guid: 0c0a59f523d9a49469c9640254cda321, type: 2}
   _lobbyConfigData: {fileID: 11400000, guid: 78ca269ed44937b4dbfdfa9b06ff9de0, type: 2}
   _abilityCatalog: {fileID: 11400000, guid: 381e193e557427d48af9818cfd2f322f, type: 2}
+  _dropCatalog: {fileID: 11400000, guid: 4d90f3bc0be6691498ddddc303da426f, type: 2}
   _settingsData: {fileID: 11400000, guid: bf4d3b17d5273c64d9004f7323c12a32, type: 2}

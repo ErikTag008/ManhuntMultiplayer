@@ -399,6 +399,8 @@ GameObject:
   - component: {fileID: 5939890056578459048}
   - component: {fileID: 39154995949995008}
   - component: {fileID: 6150287395128894317}
+  - component: {fileID: 439525795068621114}
+  - component: {fileID: 1396459282279485854}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -478,6 +480,7 @@ MonoBehaviour:
   _hideHold: {fileID: 7900401039691343269}
   _lobbyChoices: {fileID: 1196470119741336347}
   _posture: {fileID: 6150287395128894317}
+  _dropEffects: {fileID: 439525795068621114}
   _groundCheck: {fileID: 7460693758395271466}
   _cameraTarget: {fileID: 4853491123650079907}
   _cameraFollower: {fileID: 3526512074580094625}
@@ -958,6 +961,10 @@ MonoBehaviour:
   _lifeState: {fileID: 1513991399820021913}
   _rescue: {fileID: 1916059384330318201}
   _ability: {fileID: 5068892008710688985}
+  _team: {fileID: 2895491558510482950}
+  _dropEffects: {fileID: 439525795068621114}
+  _cameraBinder: {fileID: 36421261748081134}
+  _revealMarkerHeightInMeters: 2.2
 --- !u!114 &5068892008710688985
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1073,3 +1080,35 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _team: {fileID: 2895491558510482950}
   _cameraTarget: {fileID: 4853491123650079907}
+--- !u!114 &439525795068621114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d72217b8456dd2846976932caf2bae51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.Drops.PlayerDropEffects
+  ShowTopMostFoldoutHeaderGroup: 1
+  _controller: {fileID: 7194238487740375515}
+  _team: {fileID: 2895491558510482950}
+  _lifeState: {fileID: 1513991399820021913}
+--- !u!114 &1396459282279485854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b612063a7b9fa974b9b2b89a8f0292e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.Drops.PlayerDropVisuals
+  ShowTopMostFoldoutHeaderGroup: 1
+  _team: {fileID: 2895491558510482950}
+  _dropEffects: {fileID: 439525795068621114}
+  _ghostMaterial: {fileID: 2100000, guid: 8d68c97ec405dd544be781ac26bd5534, type: 2}

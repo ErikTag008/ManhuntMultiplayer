@@ -4,6 +4,7 @@ using Project.Assets._Project._Scripts.Managers;
 using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player;
 using Project.Assets._Project._Scripts.Player.Abilities;
+using Project.Assets._Project._Scripts.Player.Drops;
 using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.Settings;
 using Project.Assets._Project._Scripts.UI;
@@ -24,6 +25,7 @@ namespace Project.Assets._Project._Scripts.DI
         [SerializeField, AssetsOnly] private ConnectionSettings _connectionSettings;
         [SerializeField, AssetsOnly] private LobbyConfigData _lobbyConfigData;
         [SerializeField, AssetsOnly] private AbilityCatalog _abilityCatalog;
+        [SerializeField, AssetsOnly] private DropCatalog _dropCatalog;
         [SerializeField, AssetsOnly] private SettingsData _settingsData;
         public void InstallBindings(ContainerBuilder builder)
         {
@@ -67,6 +69,7 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterValue(_connectionSettings);
             builder.RegisterValue(_lobbyConfigData);
             builder.RegisterValue(_abilityCatalog);
+            builder.RegisterValue(_dropCatalog);
             builder.RegisterValue(_settingsData);
         }
     }

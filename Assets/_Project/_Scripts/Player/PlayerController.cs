@@ -1,6 +1,7 @@
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.CameraUtils;
 using Project.Assets._Project._Scripts.Input;
+using Project.Assets._Project._Scripts.Player.Drops;
 using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.Settings;
 using Project.Assets._Project._Scripts.UI;
@@ -21,7 +22,7 @@ namespace Project.Assets._Project._Scripts.Player
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerLifeState), typeof(PlayerCombat))]
     [RequireComponent(typeof(PlayerNetworkSync), typeof(PlayerCameraBinder), typeof(PlayerRescue))]
     [RequireComponent(typeof(PlayerSpectator), typeof(PlayerHideHold), typeof(PlayerLobbyChoices))]
-    [RequireComponent(typeof(PlayerPosture))]
+    [RequireComponent(typeof(PlayerPosture), typeof(PlayerDropEffects))]
     public class PlayerController : NetworkBehaviour, ISceneInitialized, IFirstPersonCameraTarget
     {
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
@@ -46,6 +47,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerHideHold _hideHold;
         [SerializeField, Self] private PlayerLobbyChoices _lobbyChoices;
         [SerializeField, Self] private PlayerPosture _posture;
+        [SerializeField, Self] private PlayerDropEffects _dropEffects;
         [SerializeField] private Transform _groundCheck;
         [SerializeField] private Transform _cameraTarget;
         [SerializeField] private Transform _cameraFollower;
@@ -62,6 +64,7 @@ namespace Project.Assets._Project._Scripts.Player
         public PlayerLifeState LifeState => _lifeState;
         public Transform CameraTarget => _cameraTarget;
         public InputReader InputReader => _inputReader;
+        public PlayerDropEffects DropEffects => _dropEffects;
         // Where the player faces; the model's yaw is synced to every instance
         public float HeadingInDegrees => _team.Model != null ? _team.Model.eulerAngles.y : transform.eulerAngles.y;
         // Owner side: movement runs on the owner, so features that change movement stats add their modifiers here
@@ -113,7 +116,10 @@ namespace Project.Assets._Project._Scripts.Player
         private void FixedUpdate()
         {
             if (!IsOwner || _movement == null) return;
-            _movement.HandleFixedMovement(_inputReader.MoveDirection);
+            // the inverted controls drop flips both axes
+            Vector2 moveDirection = _inputReader.MoveDirection;
+            if (_dropEffects.Has(DropStatus.InvertedControls)) moveDirection = -moveDirection;
+            _movement.HandleFixedMovement(moveDirection);
         }
 
         [Rpc(SendTo.Owner)]

@@ -1,21 +1,34 @@
 using KBCore.Refs;
+using Project.Assets._Project._Scripts.Player.Drops;
 using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Attributes;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player
 {
-    // Owner only: pushes the round's runner counts and this player's bleed-out, rescue progress and ability cooldown into the gameplay HUD
+    // Owner only: pushes the round's runner counts and this player's bleed-out, rescue progress, ability cooldown and drop effect
+    // into the gameplay HUD, plus, for catchers, where revealed runners are on screen
     [RequireComponent(typeof(PlayerLifeState), typeof(PlayerRescue), typeof(PlayerAbility))]
+    [RequireComponent(typeof(PlayerTeam), typeof(PlayerDropEffects), typeof(PlayerCameraBinder))]
     public class PlayerHUDFeed : NetworkBehaviour
     {
         [Inject] private readonly GameHUDState _hudState;
         [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
         [Inject] private readonly RunnerStats _runnerStats;
+        [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
         [SerializeField, Self] private PlayerLifeState _lifeState;
         [SerializeField, Self] private PlayerRescue _rescue;
         [SerializeField, Self] private PlayerAbility _ability;
+        [SerializeField, Self] private PlayerTeam _team;
+        [SerializeField, Self] private PlayerDropEffects _dropEffects;
+        [SerializeField, Self] private PlayerCameraBinder _cameraBinder;
+        // the marker sits this far above the revealed runner's feet
+        [SerializeField] private float _revealMarkerHeightInMeters = 2.2f;
+
+        // reused every frame so the markers don't allocate
+        private readonly List<Vector2> _revealViewportPositions = new();
 
         private bool _hasBleedOutStarted;
 
@@ -38,6 +51,8 @@ namespace Project.Assets._Project._Scripts.Player
             RefreshBleedOut();
             RefreshRescue();
             RefreshAbility();
+            RefreshDropEffect();
+            RefreshRevealMarkers();
         }
 
         private void HandleSessionChanged(PlayerSession _) => RefreshRunnerCounts();
@@ -89,6 +104,40 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetAbility(true, ability.DisplayName, ability.ReadyHint, remaining, progress);
         }
 
+        // ActiveEffect is already null once the runner isn't Up, so knocked and eliminated runners show no effect
+        private void RefreshDropEffect()
+        {
+            var effect = _dropEffects.ActiveEffect;
+            if (effect == null)
+            {
+                _hudState.SetDropEffect(false, null, false, 0f, 0f);
+                return;
+            }
+
+            float remaining = _dropEffects.RemainingInSeconds;
+            float progress = effect.DurationInSeconds > 0f ? remaining / effect.DurationInSeconds : 0f;
+            _hudState.SetDropEffect(true, effect.DisplayName, effect.IsGood, remaining, progress);
+        }
+
+        // only catchers see revealed runners, through walls; points behind the camera are left out
+        private void RefreshRevealMarkers()
+        {
+            _revealViewportPositions.Clear();
+            var camera = _cameraBinder.Camera;
+            if (_team.Team == Team.Catcher && camera != null)
+            {
+                foreach (var player in _spawnedPlayers.Players)
+                {
+                    if (player == null || player.OwnerClientId == OwnerClientId || !player.DropEffects.Has(DropStatus.Revealed)) continue;
+
+                    Vector3 viewportPoint = camera.WorldToViewportPoint(player.transform.position + Vector3.up * _revealMarkerHeightInMeters);
+                    if (viewportPoint.z > 0f) _revealViewportPositions.Add(viewportPoint);
+                }
+            }
+
+            _hudState.SetRevealMarkers(_revealViewportPositions);
+        }
+
         public override void OnNetworkDespawn()
         {
             if (!IsOwner) return;
@@ -99,6 +148,9 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetBleedOut(false, 0f, 0f);
             _hudState.SetRescue(false, 0f);
             _hudState.SetAbility(false, null, null, 0f, 0f);
+            _hudState.SetDropEffect(false, null, false, 0f, 0f);
+            _revealViewportPositions.Clear();
+            _hudState.SetRevealMarkers(_revealViewportPositions);
         }
     }
 }

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eacb5ddf89e78024681a742ee6daa458, type: 3}
+  m_Name: DropCatalog
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.Drops.DropCatalog
+  <Effects>k__BackingField:
+  - {fileID: 11400000, guid: 14779b055ff2afe4fb28cc591e58be03, type: 2}
+  - {fileID: 11400000, guid: a5b68c3ea1530bf4d9e56903b47df796, type: 2}
+  - {fileID: 11400000, guid: c1ae326666c77d34fac6feacc9d77107, type: 2}
+  - {fileID: 11400000, guid: d57b3e3dc71a3534eb1f4c90cac9ebef, type: 2}
+  - {fileID: 11400000, guid: 3916850d616db9146b87eb403449c79e, type: 2}
+  - {fileID: 11400000, guid: 349e6c263561da24a8ab80db9ada9bc1, type: 2}
+  - {fileID: 11400000, guid: 15878bd493b4c2747be3678dcac3eaf4, type: 2}

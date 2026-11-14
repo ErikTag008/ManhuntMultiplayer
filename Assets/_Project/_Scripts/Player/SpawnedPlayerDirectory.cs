@@ -12,6 +12,8 @@ namespace Project.Assets._Project._Scripts.Player
         public event Action<ulong> OnPlayerRemoved;
 
         public IReadOnlyCollection<ulong> ClientIds => _players.Keys;
+        // the concrete collection, so per-frame loops don't box an enumerator
+        public Dictionary<ulong, PlayerController>.ValueCollection Players => _players.Values;
 
         public bool TryGetPlayer(ulong clientId, out PlayerController player) => _players.TryGetValue(clientId, out player);
 
