@@ -9,6 +9,19 @@ namespace Project.Assets._Project._Scripts.Player
         [field: SerializeField] public AudioClip[] Clips { get; private set; }
         [field: SerializeField, Range(0f, 1f)] public float Volume { get; private set; } = 0.6f;
         [field: SerializeField] public Vector2 PitchRange { get; private set; } = new(0.92f, 1.08f);
+        // empty uses the step clips, played louder and lower as a heavier thud
+        [field: SerializeField] public AudioClip[] LandingClips { get; private set; }
+        [field: SerializeField, Range(0f, 1f)] public float LandingVolume { get; private set; } = 0.9f;
+        [field: SerializeField] public Vector2 LandingPitchRange { get; private set; } = new(0.78f, 0.88f);
+
+        // null when no clip is available
+        public AudioClip PickLandingClip()
+        {
+            var clips = LandingClips != null && LandingClips.Length > 0 ? LandingClips : Clips;
+            if (clips == null || clips.Length == 0) return null;
+
+            return clips[Random.Range(0, clips.Length)];
+        }
 
         // -1 when no clip is available
         public int PickNextIndex(int lastIndex)

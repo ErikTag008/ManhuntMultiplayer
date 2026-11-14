@@ -18,13 +18,18 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField] private float _stepsPerSecondAtFullSpeed = 4.5f;
         // the first step after starting to run comes quickly instead of after a full step interval
         [SerializeField, Range(0f, 1f)] private float _firstStepHead = 0.6f;
+        // shorter air time (stairs, small bumps, ground probe flicker) lands silently
+        [SerializeField] private float _minAirTimeForLandingInSeconds = 0.25f;
 
         private float _stepProgress;
         private bool _wasAudible;
         private int _lastClipIndex = -1;
+        private float _airTime;
 
         private void LateUpdate()
         {
+            if (TryLand()) return;
+
             float normalizedSpeed = _motion.NormalizedPlanarSpeed;
             bool isStepping = _posture.Posture is Posture.Standing or Posture.Crouching;
             bool isAudible = _lifeState.IsUp && isStepping && _motion.IsGrounded && normalizedSpeed >= _silentSpeedShare;
@@ -42,6 +47,35 @@ namespace Project.Assets._Project._Scripts.Player
 
             _stepProgress -= 1f;
             PlayStep();
+        }
+
+        // Landing makes noise even at walk speed or crouched, so jumping can't be used to move silently.
+        // The landing frame skips the step, and the next step comes a full interval later.
+        private bool TryLand()
+        {
+            if (!_motion.IsGrounded)
+            {
+                _airTime += Time.deltaTime;
+                return false;
+            }
+
+            bool isLanding = _airTime >= _minAirTimeForLandingInSeconds;
+            _airTime = 0f;
+            if (!isLanding || !_lifeState.IsUp || _posture.Posture == Posture.Mantling) return false;
+
+            PlayLanding();
+            _stepProgress = 0f;
+            _wasAudible = true;
+            return true;
+        }
+
+        private void PlayLanding()
+        {
+            var clip = _soundSet.PickLandingClip();
+            if (clip == null) return;
+
+            _audioSource.pitch = Random.Range(_soundSet.LandingPitchRange.x, _soundSet.LandingPitchRange.y);
+            _audioSource.PlayOneShot(clip, _soundSet.LandingVolume);
         }
 
         private void PlayStep()

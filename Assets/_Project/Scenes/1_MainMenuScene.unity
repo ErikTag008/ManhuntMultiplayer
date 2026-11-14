@@ -3134,6 +3134,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1094094482}
   - component: {fileID: 1094094483}
+  - component: {fileID: 1094094484}
   m_Layer: 0
   m_Name: AudioListenerFollower
   m_TagString: Untagged
@@ -3164,6 +3165,18 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1094094481}
   m_Enabled: 1
+--- !u!114 &1094094484
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1094094481}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7e64181843013b43b609c45b4a906a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.CameraUtils::Project.Assets._Project._Scripts.CameraUtils.AudioListenerFollower
 --- !u!1 &1136514526
 GameObject:
   m_ObjectHideFlags: 0
