@@ -1025,6 +1025,7 @@ MonoBehaviour:
   _team: {fileID: 2895491558510482950}
   _inputReader: {fileID: 4851020409925496502}
   _hideHold: {fileID: 7900401039691343269}
+  _controller: {fileID: 7194238487740375515}
   _weaponPivot: {fileID: 2525241098816555749}
   _maxCatchTargets: 3
   _cooldownToleranceInSeconds: 0.1
@@ -1119,8 +1120,10 @@ MonoBehaviour:
   _team: {fileID: 2895491558510482950}
   _dropEffects: {fileID: 439525795068621114}
   _cameraBinder: {fileID: 36421261748081134}
+  _combat: {fileID: 91084392635682791}
   _revealMarkerHeightInMeters: 2.2
   _revealMarkerEdgeMargin: 0.05
+  _stationMarkerHeightInMeters: 2.5
 --- !u!114 &5068892008710688985
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1140,6 +1143,7 @@ MonoBehaviour:
   _hideHold: {fileID: 7900401039691343269}
   _inputReader: {fileID: 4851020409925496502}
   _serverToleranceInSeconds: 0.25
+  _maxReportedPositionErrorInMeters: 3
 --- !u!114 &1196470119741336347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1184,6 +1188,8 @@ MonoBehaviour:
   _isSlidingParameter: IsSliding
   _isMantlingParameter: IsMantling
   _attackParameter: Attack
+  _isChargingAttackParameter: IsChargingAttack
+  _lungeParameter: Lunge
   _headLookShare: 0.6
   _maxLookPitchInDegrees: 70
 --- !u!114 &5939890056578459048

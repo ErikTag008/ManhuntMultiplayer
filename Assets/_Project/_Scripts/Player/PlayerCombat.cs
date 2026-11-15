@@ -12,13 +12,16 @@ using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player
 {
-    // Holds the team's weapon in the model's hand; the owner swings, every instance plays the swing, the server resolves the catch
+    // Holds the team's weapon in the model's hand; the owner swings, every instance plays the swing, the server resolves the catch.
+    // A tap swings on release; holding Attack until the charge is full lunges forward on release (CatcherStats.Lunge).
     [RequireComponent(typeof(PlayerTeam), typeof(InputReader), typeof(PlayerHideHold))]
+    [RequireComponent(typeof(PlayerController))]
     public class PlayerCombat : NetworkBehaviour
     {
         [SerializeField, Self] private PlayerTeam _team;
         [SerializeField, Self] private InputReader _inputReader;
         [SerializeField, Self] private PlayerHideHold _hideHold;
+        [SerializeField, Self] private PlayerController _controller;
         // used only when the model has no weapon socket
         [SerializeField] private Transform _weaponPivot;
         [SerializeField] private int _maxCatchTargets = 3;
@@ -27,6 +30,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         public event Action<MeleeWeaponBase> OnWeaponChanged;
         public event Action OnAttackStarted;
+        public event Action OnLungeStarted;
 
         private MeleeWeaponBase _currentWeapon;
         private Collider[] _catchTargets;
@@ -34,10 +38,24 @@ namespace Project.Assets._Project._Scripts.Player
         private readonly List<PlayerTeam> _caughtTeams = new();
         private bool _isAttackInputBound;
         private float _nextAttackTime;
-        private double _lastServerCatchTime = double.NegativeInfinity;
+        private bool _isAttackPressed;
+        private float _attackPressTime;
+        private bool _isCharging;
+        private double _serverNextAttackTime = double.NegativeInfinity;
+        // when the server last saw this catcher start charging; a lunge is only accepted after a real charge
+        private double _serverChargeStartTime = double.NegativeInfinity;
         private CancellationTokenSource _swingCTS = new();
+        private CancellationTokenSource _chargeCTS = new();
 
         public MeleeWeaponBase CurrentWeapon => _currentWeapon;
+        public bool IsAttackReady => _isAttackInputBound && Time.time >= _nextAttackTime;
+        public bool IsCharging => _isCharging;
+        // owner only: 0..1 from the press to a full charge
+        public float ChargeProgress => _isCharging && Lunge != null && Lunge.FullChargeDurationInSeconds > 0f
+            ? Mathf.Clamp01((Time.time - _attackPressTime) / Lunge.FullChargeDurationInSeconds)
+            : 0f;
+
+        private LungeSettings Lunge => _team.CurrentStats is CatcherStats catcherStats ? catcherStats.Lunge : null;
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -67,13 +85,18 @@ namespace Project.Assets._Project._Scripts.Player
         private void RefreshAttackInput()
         {
             bool canAttack = IsOwner && _team.Team == Team.Catcher && _currentWeapon != null && !_hideHold.IsHeld;
-            if (!canAttack) CancelSwing();
+            if (!canAttack)
+            {
+                CancelSwing();
+                CancelAttackPress();
+            }
             ToggleAttackInput(canAttack);
         }
 
         private void ReplaceWeapon(MeleeWeaponBase weaponPrefab)
         {
             CancelSwing();
+            CancelAttackPress();
             if (_currentWeapon != null)
             {
                 Destroy(_currentWeapon.gameObject);
@@ -101,8 +124,87 @@ namespace Project.Assets._Project._Scripts.Player
             if (_isAttackInputBound == isEnabled) return;
 
             _isAttackInputBound = isEnabled;
-            if (isEnabled) _inputReader.OnAttack += PerformAttack;
-            else _inputReader.OnAttack -= PerformAttack;
+            if (isEnabled)
+            {
+                _inputReader.OnAttackHeldChanged += HandleAttackHeldChanged;
+                _inputReader.OnAttackCanceled += CancelAttackPress;
+            }
+            else
+            {
+                _inputReader.OnAttackHeldChanged -= HandleAttackHeldChanged;
+                _inputReader.OnAttackCanceled -= CancelAttackPress;
+            }
+        }
+
+        // Owner only: a release before the charge is full is a tap swing; after it, a lunge
+        private void HandleAttackHeldChanged(bool isHeld)
+        {
+            if (isHeld)
+            {
+                StartAttackPress();
+                return;
+            }
+
+            // a release without a press, e.g. a button already held when the input was bound
+            if (!_isAttackPressed) return;
+
+            var lunge = Lunge;
+            bool isFullyCharged = lunge != null && Time.time - _attackPressTime >= lunge.FullChargeDurationInSeconds;
+            CancelAttackPress();
+
+            if (isFullyCharged) PerformLunge(lunge);
+            else PerformAttack();
+        }
+
+        private void StartAttackPress()
+        {
+            if (_currentWeapon == null || Time.time < _nextAttackTime) return;
+
+            _isAttackPressed = true;
+            _attackPressTime = Time.time;
+
+            var lunge = Lunge;
+            if (lunge == null) return;
+
+            RestartCTS(ref _chargeCTS);
+            StartChargeAsync(lunge, _chargeCTS.Token).Forget();
+        }
+
+        // the charge pose and slow only start once the press is clearly longer than a tap
+        private async UniTaskVoid StartChargeAsync(LungeSettings lunge, CancellationToken token)
+        {
+            await UniTask.WaitForSeconds(lunge.ChargeStartDelayInSeconds, cancellationToken: token);
+            ToggleCharging(true, lunge);
+        }
+
+        // ends the press and the charge without attacking
+        private void CancelAttackPress()
+        {
+            _isAttackPressed = false;
+            _chargeCTS?.Cancel();
+            ToggleCharging(false, Lunge);
+        }
+
+        private void ToggleCharging(bool isCharging, LungeSettings lunge)
+        {
+            if (_isCharging == isCharging) return;
+
+            _isCharging = isCharging;
+            // remote instances only mirror the pose; the slow and the broadcast belong to the owner
+            if (!IsOwner) return;
+
+            if (isCharging && IsServer) RecordServerChargeStart();
+            // a team change also clears the whole stack, so a remove that finds nothing is fine
+            if (lunge != null)
+            {
+                foreach (var modifier in lunge.ChargeModifiers)
+                {
+                    if (isCharging) _controller.StatModifiers.Add(modifier);
+                    else _controller.StatModifiers.Remove(modifier);
+                }
+            }
+
+            if (IsSpawned) PlayChargeRpc(isCharging);
         }
 
         // Owner only: the hand animation swings the weapon, and the hit is taken where the weapon is when the swing lands
@@ -115,15 +217,36 @@ namespace Project.Assets._Project._Scripts.Player
             PlayAttackRpc();
 
             RestartCTS(ref _swingCTS);
-            SwingAsync(_currentWeapon, _swingCTS.Token).Forget();
+            SwingAsync(_currentWeapon, _currentWeapon.HitDelayInSeconds, false, _swingCTS.Token).Forget();
         }
 
-        private async UniTaskVoid SwingAsync(MeleeWeaponBase weapon, CancellationToken token)
+        // Owner only: the lunge rides the dash burst; its cooldown assumes a hit and a reported miss lengthens it.
+        // When the dash can't run (e.g. mid-climb) the release is a normal swing instead.
+        private void PerformLunge(LungeSettings lunge)
         {
-            await UniTask.WaitForSeconds(weapon.HitDelayInSeconds, cancellationToken: token);
+            if (_currentWeapon == null || Time.time < _nextAttackTime) return;
+
+            var movement = _controller.Movement;
+            if (movement == null || !movement.Dash(lunge.LungeSpeed, lunge.LungeDurationInSeconds))
+            {
+                PerformAttack();
+                return;
+            }
+
+            _nextAttackTime = Time.time + lunge.HitCooldownInSeconds;
+            OnLungeStarted?.Invoke();
+            PlayLungeRpc();
+
+            RestartCTS(ref _swingCTS);
+            SwingAsync(_currentWeapon, lunge.HitDelayInSeconds, true, _swingCTS.Token).Forget();
+        }
+
+        private async UniTaskVoid SwingAsync(MeleeWeaponBase weapon, float hitDelayInSeconds, bool isLunge, CancellationToken token)
+        {
+            await UniTask.WaitForSeconds(hitDelayInSeconds, cancellationToken: token);
             if (weapon == null || weapon != _currentWeapon) return;
 
-            RequestCatchServerRpc(weapon.HitOrigin);
+            RequestCatchServerRpc(weapon.HitOrigin, isLunge);
         }
 
         private void CancelSwing() => _swingCTS?.Cancel();
@@ -132,21 +255,56 @@ namespace Project.Assets._Project._Scripts.Player
         [Rpc(SendTo.NotOwner)]
         private void PlayAttackRpc() => OnAttackStarted?.Invoke();
 
-        // A catcher's hit knocks every runner inside the weapon's hit sphere and pops any decoy there; other catchers are ignored.
-        // The client only says where the swing landed: the radius and cooldown are the server's own,
-        // and a landing point out of the attacker's reach is dropped.
+        [Rpc(SendTo.NotOwner)]
+        private void PlayChargeRpc(bool isCharging)
+        {
+            _isCharging = isCharging;
+            if (isCharging && IsServer) RecordServerChargeStart();
+        }
+
+        private void RecordServerChargeStart() => _serverChargeStartTime = NetworkManager.ServerTime.Time;
+
+        [Rpc(SendTo.NotOwner)]
+        private void PlayLungeRpc() => OnLungeStarted?.Invoke();
+
+        // A catcher's hit knocks every runner inside the hit sphere and pops any decoy there; other catchers are ignored.
+        // The client only says where the swing landed and whether it was a lunge: the radius, reach and cooldowns are the server's own,
+        // and a landing point out of the attacker's reach is dropped. A lunge reports back whether it caught anything.
         [Rpc(SendTo.Server)]
-        private void RequestCatchServerRpc(Vector3 hitOrigin)
+        private void RequestCatchServerRpc(Vector3 hitOrigin, bool isLunge)
         {
             if (_team.Team != Team.Catcher || _hideHold.IsHeld || _currentWeapon == null) return;
 
-            double now = NetworkManager.ServerTime.Time;
-            if (now - _lastServerCatchTime + _cooldownToleranceInSeconds < _currentWeapon.AttackCooldownInSeconds) return;
-            // written as "not within" so a NaN or infinite origin is rejected too
-            if (!(Vector3.Distance(hitOrigin, transform.position) <= _currentWeapon.MaxHitOriginDistance)) return;
+            var lunge = Lunge;
+            if (isLunge && lunge == null) return;
 
-            _lastServerCatchTime = now;
-            int hitCount = Physics.OverlapSphereNonAlloc(hitOrigin, _currentWeapon.HitRadius, _catchTargets, _team.CurrentStats.AttackRaycastLayer);
+            double now = NetworkManager.ServerTime.Time;
+            if (now + _cooldownToleranceInSeconds < _serverNextAttackTime) return;
+            // the charge started one start delay after the press, so a full charge leaves at least the rest before the lunge
+            if (isLunge && now - _serverChargeStartTime + _cooldownToleranceInSeconds < lunge.FullChargeDurationInSeconds - lunge.ChargeStartDelayInSeconds) return;
+
+            float hitRadius = isLunge ? lunge.HitRadius : _currentWeapon.HitRadius;
+            float maxHitOriginDistance = isLunge ? lunge.MaxHitOriginDistance : _currentWeapon.MaxHitOriginDistance;
+            // written as "not within" so a NaN or infinite origin is rejected too
+            if (!(Vector3.Distance(hitOrigin, transform.position) <= maxHitOriginDistance)) return;
+
+            // each charge allows one lunge
+            if (isLunge) _serverChargeStartTime = double.NegativeInfinity;
+            bool hasCaught = TryCatchAt(hitOrigin, hitRadius);
+            float cooldown = !isLunge ? _currentWeapon.AttackCooldownInSeconds
+                : hasCaught ? lunge.HitCooldownInSeconds
+                : lunge.MissCooldownInSeconds;
+            // swings and lunges share the same hit delay by default, so request-to-request matches the owner's start-to-start
+            _serverNextAttackTime = now + cooldown;
+
+            if (isLunge) ReportLungeResultRpc(hasCaught);
+        }
+
+        // Server only: true when a runner was knocked, a shield took the hit or a decoy popped
+        private bool TryCatchAt(Vector3 hitOrigin, float hitRadius)
+        {
+            bool hasCaught = false;
+            int hitCount = Physics.OverlapSphereNonAlloc(hitOrigin, hitRadius, _catchTargets, _team.CurrentStats.AttackRaycastLayer);
             _caughtTeams.Clear();
             for (int i = 0; i < hitCount; i++)
             {
@@ -154,6 +312,7 @@ namespace Project.Assets._Project._Scripts.Player
                 if (decoy != null)
                 {
                     decoy.Pop();
+                    hasCaught = true;
                     continue;
                 }
 
@@ -164,10 +323,19 @@ namespace Project.Assets._Project._Scripts.Player
                 _caughtTeams.Add(targetTeam);
 
                 if (!targetTeam.TryGetComponent(out PlayerLifeState targetLifeState)) continue;
-                if (IsBlockedByShield(targetTeam, targetLifeState)) continue;
+                if (IsBlockedByShield(targetTeam, targetLifeState))
+                {
+                    hasCaught = true;
+                    continue;
+                }
+                // a runner already down or just revived doesn't count as a catch
+                if (!targetLifeState.IsUp || targetLifeState.IsInvulnerable) continue;
 
                 targetLifeState.Knock();
+                hasCaught = true;
             }
+
+            return hasCaught;
         }
 
         // Server only: a shield drop takes the hit instead of the runner; only a catch that would knock uses it up
@@ -175,6 +343,21 @@ namespace Project.Assets._Project._Scripts.Player
         {
             if (!targetLifeState.IsUp || targetLifeState.IsInvulnerable) return false;
             return targetTeam.TryGetComponent(out PlayerDropEffects targetDropEffects) && targetDropEffects.TryConsumeShield();
+        }
+
+        // Owner only: a missed lunge leaves the catcher slow and waiting longer for the next attack
+        [Rpc(SendTo.Owner)]
+        private void ReportLungeResultRpc(bool hasCaught)
+        {
+            var lunge = Lunge;
+            if (hasCaught || lunge == null) return;
+
+            _nextAttackTime = Mathf.Max(_nextAttackTime, Time.time + lunge.MissCooldownInSeconds - lunge.HitDelayInSeconds);
+            foreach (var modifier in lunge.MissRecoveryModifiers)
+            {
+                _controller.StatModifiers.Remove(modifier);
+                _controller.StatModifiers.Add(modifier, lunge.MissRecoveryDurationInSeconds);
+            }
         }
 
         private static void RestartCTS(ref CancellationTokenSource cts)
@@ -190,12 +373,15 @@ namespace Project.Assets._Project._Scripts.Player
             _hideHold.OnHeldChanged -= HandleHeldChanged;
             ToggleAttackInput(false);
             CancelSwing();
+            CancelAttackPress();
         }
 
         public override void OnDestroy()
         {
             _swingCTS?.Cancel();
             _swingCTS?.Dispose();
+            _chargeCTS?.Cancel();
+            _chargeCTS?.Dispose();
             base.OnDestroy();
         }
     }

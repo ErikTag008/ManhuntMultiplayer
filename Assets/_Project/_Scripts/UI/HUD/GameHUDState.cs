@@ -32,6 +32,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private int _stationsTotal;
         private bool _isStationHintShown;
         private readonly List<Vector2> _stationMarkerPositions = new();
+        private bool _isLungeHintShown;
+        private bool _isLungeChargeShown;
+        private float _lungeChargeProgress;
 
         public event Action OnRunnerCountsChanged;
         public event Action OnBleedOutChanged;
@@ -42,6 +45,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public event Action OnStationCountsChanged;
         public event Action OnStationHintChanged;
         public event Action OnStationMarkersChanged;
+        public event Action OnLungeChanged;
         // the seconds a station just took off the round; a one-off, so a HUD that starts later doesn't replay it
         public event Action<float> OnStationCompleted;
 
@@ -74,6 +78,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public bool IsStationHintShown => _isStationHintShown;
         // viewport positions (0..1) of unfinished stations on this player's screen
         public IReadOnlyList<Vector2> StationMarkerPositions => _stationMarkerPositions;
+        public bool IsLungeHintShown => _isLungeHintShown;
+        public bool IsLungeChargeShown => _isLungeChargeShown;
+        public float LungeChargeProgress => _lungeChargeProgress;
 
         public void SetRunnerCounts(int up, int knocked, int eliminated)
         {
@@ -161,6 +168,16 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         }
 
         public void NotifyStationCompleted(float appliedCutInSeconds) => OnStationCompleted?.Invoke(appliedCutInSeconds);
+
+        public void SetLunge(bool isHintShown, bool isChargeShown, float chargeProgress)
+        {
+            if (_isLungeHintShown == isHintShown && _isLungeChargeShown == isChargeShown && _lungeChargeProgress == chargeProgress) return;
+
+            _isLungeHintShown = isHintShown;
+            _isLungeChargeShown = isChargeShown;
+            _lungeChargeProgress = chargeProgress;
+            OnLungeChanged?.Invoke();
+        }
 
         // false when nothing changed, so no event is raised
         private static bool CopyPositionsIfChanged(List<Vector2> current, IReadOnlyList<Vector2> next)

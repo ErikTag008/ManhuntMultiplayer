@@ -316,18 +316,19 @@ namespace Project.Assets._Project._Scripts.Player
 
         // A burst along the view direction, flattened so looking up or down doesn't launch the player.
         // The speed is held for the whole duration; afterwards normal movement and damping slow it down.
-        public void Dash(float speed, float durationInSeconds)
+        public bool Dash(float speed, float durationInSeconds)
         {
-            if (!_movementEnabled || !_camera || _isMantling) return;
+            if (!_movementEnabled || !_camera || _isMantling) return false;
 
             Vector3 direction = _camera.transform.forward;
             direction.y = 0f;
-            if (direction.sqrMagnitude <= 0f) return;
+            if (direction.sqrMagnitude <= 0f) return false;
 
             if (IsSliding) StopSlide();
             _dashVelocity = direction.normalized * speed;
             _dashEndTime = Time.time + durationInSeconds;
             HoldDashVelocity();
+            return true;
         }
 
         // input, damping and the slide don't act during a dash; gravity still pulls it down off ledges

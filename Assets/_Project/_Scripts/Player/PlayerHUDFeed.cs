@@ -11,9 +11,10 @@ using UnityEngine;
 namespace Project.Assets._Project._Scripts.Player
 {
     // Owner only: pushes the round's runner counts and this player's bleed-out, rescue progress, ability cooldown and drop effect
-    // into the gameplay HUD, plus, for catchers, where revealed runners are on screen, and for everyone the objective stations
+    // into the gameplay HUD, plus, for catchers, where revealed runners are on screen and the lunge charge, and for everyone the objective stations
     [RequireComponent(typeof(PlayerLifeState), typeof(PlayerRescue), typeof(PlayerAbility))]
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerDropEffects), typeof(PlayerCameraBinder))]
+    [RequireComponent(typeof(PlayerCombat))]
     public class PlayerHUDFeed : NetworkBehaviour
     {
         private const float ViewportCenter = 0.5f;
@@ -31,6 +32,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerTeam _team;
         [SerializeField, Self] private PlayerDropEffects _dropEffects;
         [SerializeField, Self] private PlayerCameraBinder _cameraBinder;
+        [SerializeField, Self] private PlayerCombat _combat;
         // the marker sits this far above the revealed runner's feet
         [SerializeField] private float _revealMarkerHeightInMeters = 2.2f;
         // off-screen runners get a marker pinned this far (viewport units) inside the screen edge, pointing their way
@@ -68,6 +70,7 @@ namespace Project.Assets._Project._Scripts.Player
             RefreshRevealMarkers();
             RefreshStationCounts();
             RefreshStationMarkers();
+            RefreshLunge();
         }
 
         private void HandleSessionChanged(PlayerSession _) => RefreshRunnerCounts();
@@ -114,6 +117,14 @@ namespace Project.Assets._Project._Scripts.Player
             bool isWorkingStation = isNearStation && _rescue.IsLocalInteractHeld;
             _hudState.SetRescue(isWorkingStation, isWorkingStation ? station.Progress : 0f);
             _hudState.SetStationHint(isNearStation && !isWorkingStation);
+        }
+
+        // the hold hint shows during the hunt whenever the catcher's attack is ready; the ring fills while charging
+        private void RefreshLunge()
+        {
+            bool isCharging = _combat.IsCharging;
+            bool isHintShown = _huntPhase.IsActive && _combat.IsAttackReady && !isCharging;
+            _hudState.SetLunge(isHintShown, isCharging, _combat.ChargeProgress);
         }
 
         private bool TryGetWorkableStation(out Station station)
@@ -244,6 +255,7 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetRevealMarkers(_revealViewportPositions);
             _hudState.SetStationCounts(false, 0, 0);
             _hudState.SetStationHint(false);
+            _hudState.SetLunge(false, false, 0f);
             _stationViewportPositions.Clear();
             _hudState.SetStationMarkers(_stationViewportPositions);
         }

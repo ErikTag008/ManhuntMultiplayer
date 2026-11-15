@@ -14,6 +14,9 @@ namespace Project.Assets._Project._Scripts.Input
         public Vector2 MoveDirection { get; private set; }
         public Vector2 LookDirection { get; private set; }
         public event Action OnAttack;
+        public event Action<bool> OnAttackHeldChanged;
+        // the press ended because the gameplay actions were turned off (a menu opened), not because it was released
+        public event Action OnAttackCanceled;
         public event Action<bool> OnJump;
         public event Action OnInteract;
         public event Action<bool> OnInteractHeldChanged;
@@ -26,6 +29,9 @@ namespace Project.Assets._Project._Scripts.Input
         public event Action<bool> OnCrouchHeldChanged;
 
         public event Action OnStartButtonKeyPressed;
+
+        private bool _isDisablingGameplayActions;
+
         public bool IsUsingMouse => _playerInput.currentControlScheme == _keyboardMouseControlScheme;
         public bool IsWalkHeld { get; private set; }
         public bool IsCrouchHeld { get; private set; }
@@ -60,8 +66,13 @@ namespace Project.Assets._Project._Scripts.Input
             if (context.performed)
             {
                 OnAttack?.Invoke();
+                OnAttackHeldChanged?.Invoke(true);
             }
-            
+            else if (context.canceled)
+            {
+                if (_isDisablingGameplayActions) OnAttackCanceled?.Invoke();
+                else OnAttackHeldChanged?.Invoke(false);
+            }
         }
 
         public void Jump(InputAction.CallbackContext context)
@@ -132,6 +143,7 @@ namespace Project.Assets._Project._Scripts.Input
         {
             if (_playerInput.currentActionMap == null) return;
 
+            _isDisablingGameplayActions = !isEnabled;
             foreach (var action in _playerInput.currentActionMap.actions)
             {
                 if (action.name == _pauseActionName) continue;
@@ -139,6 +151,7 @@ namespace Project.Assets._Project._Scripts.Input
                 if (isEnabled) action.Enable();
                 else action.Disable();
             }
+            _isDisablingGameplayActions = false;
         }
 
         public void Ability(InputAction.CallbackContext context)

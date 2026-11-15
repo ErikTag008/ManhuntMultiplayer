@@ -30,6 +30,8 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField] private string _isSlidingParameter = "IsSliding";
         [SerializeField] private string _isMantlingParameter = "IsMantling";
         [SerializeField] private string _attackParameter = "Attack";
+        [SerializeField] private string _isChargingAttackParameter = "IsChargingAttack";
+        [SerializeField] private string _lungeParameter = "Lunge";
         // looking up or down tilts the head, and the spine takes the rest so the body follows the gaze
         [SerializeField, Range(0f, 1f)] private float _headLookShare = 0.6f;
         [SerializeField] private float _maxLookPitchInDegrees = 70f;
@@ -45,6 +47,8 @@ namespace Project.Assets._Project._Scripts.Player
         private int _isSlidingId;
         private int _isMantlingId;
         private int _attackId;
+        private int _isChargingAttackId;
+        private int _lungeId;
         // the last ability trigger set, so it can be cleared if the player goes down before it plays
         private int _pendingAbilityTriggerId;
 
@@ -59,12 +63,15 @@ namespace Project.Assets._Project._Scripts.Player
             _isSlidingId = Animator.StringToHash(_isSlidingParameter);
             _isMantlingId = Animator.StringToHash(_isMantlingParameter);
             _attackId = Animator.StringToHash(_attackParameter);
+            _isChargingAttackId = Animator.StringToHash(_isChargingAttackParameter);
+            _lungeId = Animator.StringToHash(_lungeParameter);
 
             // subscribed before any OnNetworkSpawn, so the first team model is caught too
             _team.OnModelChanged += HandleModelChanged;
             _ability.OnAbilityUsed += HandleAbilityUsed;
             _lifeState.OnLifeStateChanged += HandleLifeStateChanged;
             _combat.OnAttackStarted += HandleAttackStarted;
+            _combat.OnLungeStarted += HandleLungeStarted;
         }
 
         private void Start() => HandleModelChanged(_team.Model);
@@ -82,6 +89,7 @@ namespace Project.Assets._Project._Scripts.Player
             _animator.SetBool(_isCrouchingId, _posture.Posture == Posture.Crouching);
             _animator.SetBool(_isSlidingId, _posture.Posture == Posture.Sliding);
             _animator.SetBool(_isMantlingId, _posture.Posture == Posture.Mantling);
+            _animator.SetBool(_isChargingAttackId, _combat.IsCharging);
             ApplyLookPitch();
         }
 
@@ -129,12 +137,18 @@ namespace Project.Assets._Project._Scripts.Player
             if (_animator != null) _animator.SetTrigger(_attackId);
         }
 
+        private void HandleLungeStarted()
+        {
+            if (_animator != null) _animator.SetTrigger(_lungeId);
+        }
+
         private void OnDestroy()
         {
             _team.OnModelChanged -= HandleModelChanged;
             _ability.OnAbilityUsed -= HandleAbilityUsed;
             _lifeState.OnLifeStateChanged -= HandleLifeStateChanged;
             _combat.OnAttackStarted -= HandleAttackStarted;
+            _combat.OnLungeStarted -= HandleLungeStarted;
         }
     }
 }

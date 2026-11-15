@@ -149,10 +149,11 @@ namespace Project.Assets._Project.Tests.EditMode
             public void ToggleParkour(bool isEnabled) { }
             public void ToggleCrouchHeld(bool isHeld) { }
             public void AirJump(float jumpForceMultiplier) => AirJumpCount++;
-            public void Dash(float speed, float durationInSeconds)
+            public bool Dash(float speed, float durationInSeconds)
             {
                 LastDashSpeed = speed;
                 LastDashDuration = durationInSeconds;
+                return true;
             }
             public void ToggleMovement(bool isEnabled) { }
             public void HandleJump(bool isButtonDown = true) { }

@@ -15,7 +15,8 @@ namespace Project.Assets._Project._Scripts.Player
         bool CanJumpFromGround();
         bool CanWallJump();
         void AirJump(float jumpForceMultiplier);
-        void Dash(float speed, float durationInSeconds);
+        // false when the player can't dash right now (movement off, mantling, no camera)
+        bool Dash(float speed, float durationInSeconds);
         void DrawGizmos();
         void ChangeCamera(Camera camera);
         void ChangeStats(IMovementStats stats);
