@@ -8,12 +8,13 @@ using UnityEngine;
 namespace Project.Assets._Project._Scripts.Player
 {
     // Up / Knocked / Eliminated read from this player's session; PlayerRegistry owns the value.
-    // The server runs the bleed-out timer while the player is knocked; a rescue pauses it.
+    // The server runs the bleed-out timer while the player is knocked; a rescue or a nearby catcher (anti-camp) pauses it.
     public class PlayerLifeState : NetworkBehaviour
     {
         [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
         [Inject] private readonly IPlayerRegistry _playerRegistry;
         [Inject] private readonly RunnerStats _runnerStats;
+        [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
 
         public event Action<LifeState> OnLifeStateChanged;
 
@@ -21,9 +22,12 @@ namespace Project.Assets._Project._Scripts.Player
         private readonly NetworkVariable<bool> _isBleedOutPaused = new();
         private readonly NetworkVariable<float> _pausedBleedOutRemainingInSeconds = new();
         private CancellationTokenSource _bleedOutCTS;
+        private CancellationTokenSource _catcherWatchCTS;
         private LifeState _state;
         // Server only
         private double _invulnerableUntil;
+        private bool _isRescueInProgress;
+        private bool _isCatcherNearby;
 
         public LifeState State => _state;
         public bool IsUp => _state == LifeState.Up;
@@ -80,18 +84,19 @@ namespace Project.Assets._Project._Scripts.Player
         // Server only: a rescue in progress holds the timer and keeps what was left for a cancelled rescue
         public void PauseBleedOut()
         {
-            if (!IsServer || !IsKnocked || _isBleedOutPaused.Value) return;
+            if (!IsServer || !IsKnocked) return;
 
-            _pausedBleedOutRemainingInSeconds.Value = BleedOutRemainingInSeconds;
-            _isBleedOutPaused.Value = true;
-            DisposeCTS(ref _bleedOutCTS);
+            _isRescueInProgress = true;
+            RefreshBleedOutPause();
         }
 
-        // Server only
+        // Server only: the timer runs again unless a catcher is still nearby
         public void ResumeBleedOut()
         {
-            if (!IsServer || !IsKnocked || !_isBleedOutPaused.Value) return;
-            StartBleedOut(_pausedBleedOutRemainingInSeconds.Value);
+            if (!IsServer || !IsKnocked) return;
+
+            _isRescueInProgress = false;
+            RefreshBleedOutPause();
         }
 
         private void HandleSessionChanged(PlayerSession session)
@@ -102,7 +107,13 @@ namespace Project.Assets._Project._Scripts.Player
             // every path into or out of Knocked (catch, rescue, round reset) passes through here on the server
             if (IsServer)
             {
-                if (IsKnocked) StartBleedOut(_runnerStats.BleedOutDurationInSeconds);
+                _isRescueInProgress = false;
+                _isCatcherNearby = false;
+                if (IsKnocked)
+                {
+                    StartBleedOut(_runnerStats.BleedOutDurationInSeconds);
+                    StartCatcherWatch();
+                }
                 else EndBleedOut();
             }
 
@@ -117,6 +128,55 @@ namespace Project.Assets._Project._Scripts.Player
             BleedOutAsync(_bleedOutCTS.Token).Forget();
         }
 
+        // the timer holds while any reason to pause remains and resumes from what was left once none do
+        private void RefreshBleedOutPause()
+        {
+            bool isPauseWanted = _isRescueInProgress || _isCatcherNearby;
+            if (isPauseWanted == _isBleedOutPaused.Value) return;
+
+            if (isPauseWanted)
+            {
+                _pausedBleedOutRemainingInSeconds.Value = BleedOutRemainingInSeconds;
+                _isBleedOutPaused.Value = true;
+                DisposeCTS(ref _bleedOutCTS);
+            }
+            else StartBleedOut(_pausedBleedOutRemainingInSeconds.Value);
+        }
+
+        private void StartCatcherWatch()
+        {
+            RestartCTS(ref _catcherWatchCTS);
+            WatchForCatchersAsync(_catcherWatchCTS.Token).Forget();
+        }
+
+        // anti-camp: lives only while knocked, so standing over a downed runner doesn't run their clock out
+        private async UniTaskVoid WatchForCatchersAsync(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                bool isCatcherNearby = IsAnyCatcherNearby();
+                if (isCatcherNearby != _isCatcherNearby)
+                {
+                    _isCatcherNearby = isCatcherNearby;
+                    RefreshBleedOutPause();
+                }
+
+                await UniTask.Yield(token);
+            }
+        }
+
+        private bool IsAnyCatcherNearby()
+        {
+            float sqrRange = _runnerStats.BleedOutPauseCatcherRange * _runnerStats.BleedOutPauseCatcherRange;
+            foreach (var player in _spawnedPlayers.Players)
+            {
+                if (player == null || player.Team != Team.Catcher) continue;
+                if ((player.transform.position - transform.position).sqrMagnitude <= sqrRange) return true;
+            }
+
+            return false;
+        }
+
         // a cleared end time reads as zero remaining, so a later knock never shows this one's leftover time
         private void EndBleedOut()
         {
@@ -125,7 +185,11 @@ namespace Project.Assets._Project._Scripts.Player
             _bleedOutEndTime.Value = 0;
         }
 
-        private void StopBleedOut() => DisposeCTS(ref _bleedOutCTS);
+        private void StopBleedOut()
+        {
+            DisposeCTS(ref _bleedOutCTS);
+            DisposeCTS(ref _catcherWatchCTS);
+        }
 
         // waits on the same server clock clients read, so the synced countdown and elimination agree
         private async UniTaskVoid BleedOutAsync(CancellationToken token)

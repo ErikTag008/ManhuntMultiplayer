@@ -98,7 +98,7 @@ namespace Project.Assets._Project._Scripts.Player
 
             bool isShown = _lifeState.IsKnocked && _hasBleedOutStarted;
             float progress = isShown ? remaining / _runnerStats.BleedOutDurationInSeconds : 0f;
-            _hudState.SetBleedOut(isShown, isShown ? remaining : 0f, progress);
+            _hudState.SetBleedOut(isShown, isShown ? remaining : 0f, progress, isShown && _lifeState.IsBleedOutPaused);
         }
 
         // Rescue progress is synced on both the rescuer and the knocked runner, and drops to zero when the rescue stops.
@@ -247,7 +247,7 @@ namespace Project.Assets._Project._Scripts.Player
             _sessionDirectory.OnSessionRemoved -= HandleSessionRemoved;
             _lifeState.OnLifeStateChanged -= HandleLifeStateChanged;
             _stations.OnStationCompleted -= HandleStationCompleted;
-            _hudState.SetBleedOut(false, 0f, 0f);
+            _hudState.SetBleedOut(false, 0f, 0f, false);
             _hudState.SetRescue(false, 0f);
             _hudState.SetAbility(false, null, null, 0f, 0f);
             _hudState.SetDropEffect(false, null, false, 0f, 0f);

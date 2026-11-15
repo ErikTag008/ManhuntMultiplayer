@@ -64,7 +64,6 @@ namespace Project.Assets._Project._Scripts.Player
         public override void OnNetworkSpawn()
         {
             _team.OnStatsChanged += HandleStatsChanged;
-            _hideHold.OnHeldChanged += HandleHeldChanged;
         }
 
         // every OnNetworkSpawn has run by now, so PlayerTeam's stats are applied whatever the component order
@@ -79,12 +78,10 @@ namespace Project.Assets._Project._Scripts.Player
             RefreshAttackInput();
         }
 
-        private void HandleHeldChanged(bool _) => RefreshAttackInput();
-
-        // a catcher held during the hide phase can't swing
+        // a held catcher still swings and lunges inside the spawn room; the server just catches nothing
         private void RefreshAttackInput()
         {
-            bool canAttack = IsOwner && _team.Team == Team.Catcher && _currentWeapon != null && !_hideHold.IsHeld;
+            bool canAttack = IsOwner && _team.Team == Team.Catcher && _currentWeapon != null;
             if (!canAttack)
             {
                 CancelSwing();
@@ -273,7 +270,7 @@ namespace Project.Assets._Project._Scripts.Player
         [Rpc(SendTo.Server)]
         private void RequestCatchServerRpc(Vector3 hitOrigin, bool isLunge)
         {
-            if (_team.Team != Team.Catcher || _hideHold.IsHeld || _currentWeapon == null) return;
+            if (_team.Team != Team.Catcher || _currentWeapon == null) return;
 
             var lunge = Lunge;
             if (isLunge && lunge == null) return;
@@ -290,7 +287,8 @@ namespace Project.Assets._Project._Scripts.Player
 
             // each charge allows one lunge
             if (isLunge) _serverChargeStartTime = double.NegativeInfinity;
-            bool hasCaught = TryCatchAt(hitOrigin, hitRadius);
+            // a held catcher's warm-up swings run their cooldowns but never catch
+            bool hasCaught = !_hideHold.IsHeld && TryCatchAt(hitOrigin, hitRadius);
             float cooldown = !isLunge ? _currentWeapon.AttackCooldownInSeconds
                 : hasCaught ? lunge.HitCooldownInSeconds
                 : lunge.MissCooldownInSeconds;
@@ -370,7 +368,6 @@ namespace Project.Assets._Project._Scripts.Player
         public override void OnNetworkDespawn()
         {
             _team.OnStatsChanged -= HandleStatsChanged;
-            _hideHold.OnHeldChanged -= HandleHeldChanged;
             ToggleAttackInput(false);
             CancelSwing();
             CancelAttackPress();

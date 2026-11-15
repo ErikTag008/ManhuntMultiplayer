@@ -14,6 +14,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private bool _isBleedOutShown;
         private float _bleedOutRemainingInSeconds;
         private float _bleedOutProgress;
+        private bool _isBleedOutPaused;
         private bool _isRescueShown;
         private float _rescueProgress;
         private bool _isAbilityShown;
@@ -56,6 +57,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public float BleedOutRemainingInSeconds => _bleedOutRemainingInSeconds;
         // 1 when the bleed-out starts, 0 when it runs out
         public float BleedOutProgress => _bleedOutProgress;
+        // held by a rescue in progress or a catcher standing nearby
+        public bool IsBleedOutPaused => _isBleedOutPaused;
         public bool IsRescueShown => _isRescueShown;
         public float RescueProgress => _rescueProgress;
         public bool IsAbilityShown => _isAbilityShown;
@@ -92,11 +95,13 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             OnRunnerCountsChanged?.Invoke();
         }
 
-        public void SetBleedOut(bool isShown, float remainingInSeconds, float progress)
+        public void SetBleedOut(bool isShown, float remainingInSeconds, float progress, bool isPaused)
         {
-            if (_isBleedOutShown == isShown && _bleedOutRemainingInSeconds == remainingInSeconds && _bleedOutProgress == progress) return;
+            if (_isBleedOutShown == isShown && _bleedOutRemainingInSeconds == remainingInSeconds && _bleedOutProgress == progress
+                && _isBleedOutPaused == isPaused) return;
 
             _isBleedOutShown = isShown;
+            _isBleedOutPaused = isPaused;
             _bleedOutRemainingInSeconds = remainingInSeconds;
             _bleedOutProgress = progress;
             OnBleedOutChanged?.Invoke();

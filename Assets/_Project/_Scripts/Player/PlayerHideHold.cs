@@ -1,5 +1,4 @@
 using KBCore.Refs;
-using Project.Assets._Project._Scripts.UI;
 using Reflex.Attributes;
 using System;
 using Unity.Netcode;
@@ -7,13 +6,13 @@ using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player
 {
-    // Catchers are held while the runners hide: no moving or catching, and a blindfold on their own screen.
-    // Every instance works it out from the replicated hide phase and team, so the server can refuse a held catcher's catch.
+    // Catchers are held while the runners hide: they warm up inside the locked spawn room (HidePhaseBarrier), where their swings
+    // catch nothing and abilities stay locked. Every instance works it out from the replicated hide phase and team,
+    // so the server can refuse a held catcher's catch.
     [RequireComponent(typeof(PlayerTeam))]
     public class PlayerHideHold : NetworkBehaviour
     {
         [Inject] private readonly HidePhase _hidePhase;
-        [Inject] private readonly IUIManager _uiManager;
         [SerializeField, Self] private PlayerTeam _team;
 
         public event Action<bool> OnHeldChanged;
@@ -44,7 +43,6 @@ namespace Project.Assets._Project._Scripts.Player
             if (_isHeld == isHeld) return;
 
             _isHeld = isHeld;
-            if (IsOwner) _uiManager.ToggleBlindfold(isHeld);
             OnHeldChanged?.Invoke(isHeld);
         }
 

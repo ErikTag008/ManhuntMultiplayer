@@ -7,6 +7,8 @@ namespace Project.Assets._Project._Scripts.Player
     {
         [field: Header("Knocked Stats")]
         [field: SerializeField] public float BleedOutDurationInSeconds { get; private set; } = 30f;
+        // anti-camp: the bleed-out holds while any catcher is within this many meters of the knocked runner
+        [field: SerializeField] public float BleedOutPauseCatcherRange { get; private set; } = 8f;
         [field: SerializeField] public float RescueDurationInSeconds { get; private set; } = 5f;
         [field: SerializeField] public float RescueRange { get; private set; } = 2.5f;
         // catches are ignored for this long after a rescue, so a camping catcher can't knock the runner straight back

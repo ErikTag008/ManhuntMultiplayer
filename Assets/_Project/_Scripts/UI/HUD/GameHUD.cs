@@ -20,6 +20,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private FadePanel _bleedOutPanel;
         [SerializeField] private FillMeter _bleedOutMeter;
         [SerializeField] private string _bleedOutLabelFormat = "{0:0}";
+        [SerializeField] private string _bleedOutPausedLabelFormat = "{0:0} paused";
         [SerializeField] private FadePanel _rescuePanel;
         [SerializeField] private FillMeter _rescueMeter;
         [SerializeField] private FadePanel _abilityPanel;
@@ -38,6 +39,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private RevealMarkerLayer _revealMarkers;
 
         private int _shownBleedOutSeconds = -1;
+        private bool _isShownBleedOutPaused;
         private int _shownAbilitySeconds = -1;
         private int _shownDropSeconds = -1;
 
@@ -71,10 +73,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _bleedOutMeter.SetValue(_state.BleedOutProgress);
             // the remaining time changes every frame; the label only needs a new string each whole second
             int seconds = Mathf.CeilToInt(_state.BleedOutRemainingInSeconds);
-            if (seconds == _shownBleedOutSeconds) return;
+            bool isPaused = _state.IsBleedOutPaused;
+            if (seconds == _shownBleedOutSeconds && isPaused == _isShownBleedOutPaused) return;
 
             _shownBleedOutSeconds = seconds;
-            _bleedOutMeter.SetLabel(string.Format(_bleedOutLabelFormat, seconds));
+            _isShownBleedOutPaused = isPaused;
+            _bleedOutMeter.SetLabel(string.Format(isPaused ? _bleedOutPausedLabelFormat : _bleedOutLabelFormat, seconds));
         }
 
         private void HandleRescueChanged()

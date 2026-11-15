@@ -21,7 +21,7 @@ namespace Project.Assets._Project._Scripts.Player
     [RequireComponent(typeof(PlayerInput), typeof(InputReader), typeof(Rigidbody))]
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerLifeState), typeof(PlayerCombat))]
     [RequireComponent(typeof(PlayerNetworkSync), typeof(PlayerCameraBinder), typeof(PlayerRescue))]
-    [RequireComponent(typeof(PlayerSpectator), typeof(PlayerHideHold), typeof(PlayerLobbyChoices))]
+    [RequireComponent(typeof(PlayerSpectator), typeof(PlayerLobbyChoices))]
     [RequireComponent(typeof(PlayerPosture), typeof(PlayerDropEffects))]
     public class PlayerController : NetworkBehaviour, ISceneInitialized, IFirstPersonCameraTarget
     {
@@ -44,7 +44,6 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerNetworkSync _networkSync;
         [SerializeField, Self] private PlayerCameraBinder _cameraBinder;
         [SerializeField, Self] private PlayerSpectator _spectator;
-        [SerializeField, Self] private PlayerHideHold _hideHold;
         [SerializeField, Self] private PlayerLobbyChoices _lobbyChoices;
         [SerializeField, Self] private PlayerPosture _posture;
         [SerializeField, Self] private PlayerDropEffects _dropEffects;
@@ -71,8 +70,8 @@ namespace Project.Assets._Project._Scripts.Player
         public StatModifierStack StatModifiers => _statModifiers;
         // Owner only, and null until the first scene gives the player a camera
         public IPlayerMovement Movement => _movement;
-        // Eliminated players, catchers held during the hide phase and anyone with a menu open stand still
-        private bool CanMove => _lifeState.CanMove && !_hideHold.IsHeld && !(IsOwner && IsAnyMenuOpen);
+        // Eliminated players and anyone with a menu open stand still
+        private bool CanMove => _lifeState.CanMove && !(IsOwner && IsAnyMenuOpen);
         private bool IsAnyMenuOpen => _lobbyMenuState.IsOpen || _pauseMenuState.IsOpen;
 
         private void OnValidate() => this.ValidateRefs();
@@ -91,7 +90,6 @@ namespace Project.Assets._Project._Scripts.Player
             _team.OnStatsChanged += HandleStatsChanged;
             _team.OnModelChanged += HandleModelChanged;
             _lifeState.OnLifeStateChanged += HandleLifeStateChanged;
-            _hideHold.OnHeldChanged += HandleHeldChanged;
             if (!IsOwner) return;
 
             _playerInput.enabled = true;
@@ -255,11 +253,6 @@ namespace Project.Assets._Project._Scripts.Player
             RefreshKnockedCrawl();
         }
 
-        private void HandleHeldChanged(bool _)
-        {
-            if (IsOwner) _movement?.ToggleMovement(CanMove);
-        }
-
         // Owner only: an open menu frees the cursor and stops walking and looking; the pause menu also stops every other action
         private void HandleMenuOpenChanged(bool _)
         {
@@ -326,7 +319,6 @@ namespace Project.Assets._Project._Scripts.Player
             _team.OnStatsChanged -= HandleStatsChanged;
             _team.OnModelChanged -= HandleModelChanged;
             _lifeState.OnLifeStateChanged -= HandleLifeStateChanged;
-            _hideHold.OnHeldChanged -= HandleHeldChanged;
             if (!IsOwner) return;
 
             _lobbyMenuState.OnOpenChanged -= HandleMenuOpenChanged;
