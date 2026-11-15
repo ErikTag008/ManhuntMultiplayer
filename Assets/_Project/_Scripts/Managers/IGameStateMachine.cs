@@ -1,10 +1,12 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Project.Assets._Project._Scripts.Player;
 
 namespace Project.Assets._Project._Scripts.Managers
 {
-    public interface IGameStateMachine
+    // TryCutRoundTime comes from IRoundTimer, so player-side systems can shorten the round without the Managers assembly
+    public interface IGameStateMachine : IRoundTimer
     {
         GameState CurrentState { get; }
         // None until a round has finished

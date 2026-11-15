@@ -27,6 +27,11 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private float _dropEffectRemainingInSeconds;
         private float _dropEffectProgress;
         private readonly List<Vector2> _revealMarkerPositions = new();
+        private bool _isStationCountShown;
+        private int _stationsCompleted;
+        private int _stationsTotal;
+        private bool _isStationHintShown;
+        private readonly List<Vector2> _stationMarkerPositions = new();
 
         public event Action OnRunnerCountsChanged;
         public event Action OnBleedOutChanged;
@@ -34,6 +39,11 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public event Action OnAbilityChanged;
         public event Action OnDropEffectChanged;
         public event Action OnRevealMarkersChanged;
+        public event Action OnStationCountsChanged;
+        public event Action OnStationHintChanged;
+        public event Action OnStationMarkersChanged;
+        // the seconds a station just took off the round; a one-off, so a HUD that starts later doesn't replay it
+        public event Action<float> OnStationCompleted;
 
         public int RunnersUp => _runnersUp;
         public int RunnersKnocked => _runnersKnocked;
@@ -58,6 +68,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public float DropEffectProgress => _dropEffectProgress;
         // viewport positions (0..1) of revealed runners on this catcher's screen
         public IReadOnlyList<Vector2> RevealMarkerPositions => _revealMarkerPositions;
+        public bool IsStationCountShown => _isStationCountShown;
+        public int StationsCompleted => _stationsCompleted;
+        public int StationsTotal => _stationsTotal;
+        public bool IsStationHintShown => _isStationHintShown;
+        // viewport positions (0..1) of unfinished stations on this player's screen
+        public IReadOnlyList<Vector2> StationMarkerPositions => _stationMarkerPositions;
 
         public void SetRunnerCounts(int up, int knocked, int eliminated)
         {
@@ -117,20 +133,52 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         // copies the positions, so the caller can reuse its list
         public void SetRevealMarkers(IReadOnlyList<Vector2> viewportPositions)
         {
-            if (AreRevealMarkersEqual(viewportPositions)) return;
-
-            _revealMarkerPositions.Clear();
-            for (int i = 0; i < viewportPositions.Count; i++) _revealMarkerPositions.Add(viewportPositions[i]);
-            OnRevealMarkersChanged?.Invoke();
+            if (CopyPositionsIfChanged(_revealMarkerPositions, viewportPositions)) OnRevealMarkersChanged?.Invoke();
         }
 
-        private bool AreRevealMarkersEqual(IReadOnlyList<Vector2> viewportPositions)
+        public void SetStationCounts(bool isShown, int completed, int total)
         {
-            if (_revealMarkerPositions.Count != viewportPositions.Count) return false;
+            if (_isStationCountShown == isShown && _stationsCompleted == completed && _stationsTotal == total) return;
 
-            for (int i = 0; i < viewportPositions.Count; i++)
+            _isStationCountShown = isShown;
+            _stationsCompleted = completed;
+            _stationsTotal = total;
+            OnStationCountsChanged?.Invoke();
+        }
+
+        public void SetStationHint(bool isShown)
+        {
+            if (_isStationHintShown == isShown) return;
+
+            _isStationHintShown = isShown;
+            OnStationHintChanged?.Invoke();
+        }
+
+        // copies the positions, so the caller can reuse its list
+        public void SetStationMarkers(IReadOnlyList<Vector2> viewportPositions)
+        {
+            if (CopyPositionsIfChanged(_stationMarkerPositions, viewportPositions)) OnStationMarkersChanged?.Invoke();
+        }
+
+        public void NotifyStationCompleted(float appliedCutInSeconds) => OnStationCompleted?.Invoke(appliedCutInSeconds);
+
+        // false when nothing changed, so no event is raised
+        private static bool CopyPositionsIfChanged(List<Vector2> current, IReadOnlyList<Vector2> next)
+        {
+            if (ArePositionsEqual(current, next)) return false;
+
+            current.Clear();
+            for (int i = 0; i < next.Count; i++) current.Add(next[i]);
+            return true;
+        }
+
+        private static bool ArePositionsEqual(List<Vector2> current, IReadOnlyList<Vector2> next)
+        {
+            if (current.Count != next.Count) return false;
+
+            for (int i = 0; i < next.Count; i++)
             {
-                if (_revealMarkerPositions[i] != viewportPositions[i]) return false;
+                if (current[i] != next[i]) return false;
             }
 
             return true;

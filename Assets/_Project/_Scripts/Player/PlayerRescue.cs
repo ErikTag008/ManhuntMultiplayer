@@ -21,12 +21,19 @@ namespace Project.Assets._Project._Scripts.Player
         // 0..1, written on both the rescuer and the knocked runner so each HUD can show it
         private readonly NetworkVariable<float> _rescueProgress = new();
         private CancellationTokenSource _holdCTS;
+        // Owner only
+        private bool _isLocalInteractHeld;
         // Server only
         private bool _isInteractHeld;
         private PlayerRescue _target;
         private PlayerRescue _rescuer;
 
         public float RescueProgress => _rescueProgress.Value;
+        // Server only: other interactions (stations) read the same hold, and give way to a rescue
+        public bool IsInteractHeld => _isInteractHeld;
+        public bool IsRescuing => _target != null;
+        // Owner only
+        public bool IsLocalInteractHeld => _isLocalInteractHeld;
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -37,6 +44,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void HandleInteractHeldChanged(bool isHeld)
         {
+            _isLocalInteractHeld = isHeld;
             if (isHeld) StartHoldServerRpc();
             else StopHoldServerRpc();
         }
@@ -179,7 +187,11 @@ namespace Project.Assets._Project._Scripts.Player
 
         public override void OnNetworkDespawn()
         {
-            if (IsOwner) _inputReader.OnInteractHeldChanged -= HandleInteractHeldChanged;
+            if (IsOwner)
+            {
+                _inputReader.OnInteractHeldChanged -= HandleInteractHeldChanged;
+                _isLocalInteractHeld = false;
+            }
             if (!IsServer) return;
 
             ToggleInteractHeld(false);

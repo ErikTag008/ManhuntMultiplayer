@@ -116,10 +116,7 @@ namespace Project.Assets._Project._Scripts.Player
         private void FixedUpdate()
         {
             if (!IsOwner || _movement == null) return;
-            // the inverted controls drop flips both axes
-            Vector2 moveDirection = _inputReader.MoveDirection;
-            if (_dropEffects.Has(DropStatus.InvertedControls)) moveDirection = -moveDirection;
-            _movement.HandleFixedMovement(moveDirection);
+            _movement.HandleFixedMovement(_inputReader.MoveDirection);
         }
 
         [Rpc(SendTo.Owner)]

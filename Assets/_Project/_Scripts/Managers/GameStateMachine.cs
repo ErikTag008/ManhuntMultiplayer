@@ -20,6 +20,7 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly GameLobbySettings _settings;
         [Inject] private readonly GameScenes _gameScenes;
         [Inject] private readonly HidePhase _hidePhase;
+        [Inject] private readonly HuntPhase _huntPhase;
         [SerializeField, Self] private PlayerRegistry _playerRegistry;
         [SerializeField, Self] private NetworkCoordinator _networkCoordinator;
         [SerializeField, Self] private LobbyConfigSync _lobbyConfigSync;
@@ -54,7 +55,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _lastRoundResult.OnValueChanged += HandleLastRoundResultChanged;
             _countdownEndTime.OnValueChanged += StartCountdown;
             // the spawn value doesn't raise OnValueChanged
-            RefreshHidePhase();
+            RefreshPhases();
         }
 
         public void StartGameLoop()
@@ -64,6 +65,22 @@ namespace Project.Assets._Project._Scripts.Managers
         }
 
         public void StopGameLoop() => DisposeCTS(ref _gameLoopCTS);
+
+        // Moving the end time restarts the countdown on every instance and PlayRound ends on the new time
+        public bool TryCutRoundTime(float cutInSeconds, float minRemainingInSeconds, out float appliedCutInSeconds)
+        {
+            appliedCutInSeconds = 0f;
+            if (!IsServer || _state.Value != GameState.Playing) return false;
+
+            double now = NetworkManager.ServerTime.Time;
+            double remaining = _countdownEndTime.Value - now;
+            double cutRemaining = RoundTimeCut.GetRemainingAfterCut(remaining, cutInSeconds, minRemainingInSeconds);
+            if (cutRemaining >= remaining) return false;
+
+            appliedCutInSeconds = (float)(remaining - cutRemaining);
+            _countdownEndTime.Value = now + cutRemaining;
+            return true;
+        }
 
         // Only once enough players are in and every one of them is ready
         public void RequestGameStart()
@@ -179,11 +196,15 @@ namespace Project.Assets._Project._Scripts.Managers
 
         private void HandleStateChanged(GameState previous, GameState current)
         {
-            RefreshHidePhase();
+            RefreshPhases();
             OnStateChanged?.Invoke(previous, current);
         }
 
-        private void RefreshHidePhase() => _hidePhase.Toggle(_state.Value == GameState.WaitForRunnerHide);
+        private void RefreshPhases()
+        {
+            _hidePhase.Toggle(_state.Value == GameState.WaitForRunnerHide);
+            _huntPhase.Toggle(_state.Value == GameState.Playing);
+        }
 
         private void HandleLastRoundResultChanged(RoundResult previous, RoundResult current) => OnLastRoundResultChanged?.Invoke(current);
 
@@ -227,6 +248,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _lastRoundResult.OnValueChanged -= HandleLastRoundResultChanged;
             _countdownEndTime.OnValueChanged -= StartCountdown;
             _hidePhase.Toggle(false);
+            _huntPhase.Toggle(false);
             DisposeCTS(ref _countdownCTS);
         }
 

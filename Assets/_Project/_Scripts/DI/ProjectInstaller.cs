@@ -5,6 +5,7 @@ using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player;
 using Project.Assets._Project._Scripts.Player.Abilities;
 using Project.Assets._Project._Scripts.Player.Drops;
+using Project.Assets._Project._Scripts.Player.Stations;
 using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.Settings;
 using Project.Assets._Project._Scripts.UI;
@@ -26,6 +27,7 @@ namespace Project.Assets._Project._Scripts.DI
         [SerializeField, AssetsOnly] private LobbyConfigData _lobbyConfigData;
         [SerializeField, AssetsOnly] private AbilityCatalog _abilityCatalog;
         [SerializeField, AssetsOnly] private DropCatalog _dropCatalog;
+        [SerializeField, AssetsOnly] private StationSettings _stationSettings;
         [SerializeField, AssetsOnly] private SettingsData _settingsData;
         public void InstallBindings(ContainerBuilder builder)
         {
@@ -38,6 +40,8 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(typeof(PlayerSessionDirectory), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(SpawnedPlayerDirectory), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(HidePhase), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(HuntPhase), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(StationDirectory), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(GameHUDState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(LobbyMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PauseMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
@@ -60,7 +64,7 @@ namespace Project.Assets._Project._Scripts.DI
             // Network-spawned systems register themselves in GameSystemsRegistry; transient so each resolve sees the live instance
             builder.RegisterFactory(p => p.Resolve<GameSystemsRegistry>().PlayerRegistry, new Type[] { typeof(IPlayerRegistry) }, Reflex.Enums.Lifetime.Transient, Reflex.Enums.Resolution.Lazy);
             builder.RegisterFactory(p => p.Resolve<GameSystemsRegistry>().NetworkCoordinator, new Type[] { typeof(INetworkCoordinator) }, Reflex.Enums.Lifetime.Transient, Reflex.Enums.Resolution.Lazy);
-            builder.RegisterFactory(p => p.Resolve<GameSystemsRegistry>().GameStateMachine, new Type[] { typeof(IGameStateMachine) }, Reflex.Enums.Lifetime.Transient, Reflex.Enums.Resolution.Lazy);
+            builder.RegisterFactory(p => p.Resolve<GameSystemsRegistry>().GameStateMachine, new Type[] { typeof(IGameStateMachine), typeof(IRoundTimer) }, Reflex.Enums.Lifetime.Transient, Reflex.Enums.Resolution.Lazy);
             builder.RegisterFactory(p => _playerStats, new Type[] { typeof(PlayerStats), typeof(IMovementStats), typeof(ICameraStats) },Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterFactory(p => _catcherStats, new Type[] { typeof(CatcherStats)},Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterFactory(p => _runnerStats, new Type[] { typeof(RunnerStats)},Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
@@ -70,6 +74,7 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterValue(_lobbyConfigData);
             builder.RegisterValue(_abilityCatalog);
             builder.RegisterValue(_dropCatalog);
+            builder.RegisterValue(_stationSettings);
             builder.RegisterValue(_settingsData);
         }
     }

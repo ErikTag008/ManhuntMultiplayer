@@ -28,6 +28,8 @@ namespace Project.Assets._Project._Scripts.Player.Drops
         Invisible = 1,
         Revealed = 2,
         Shielded = 4,
-        InvertedControls = 8
+        // 8 was the retired Inverted Controls; never reuse it
+        LoudFootsteps = 16,
+        Trail = 32
     }
 }

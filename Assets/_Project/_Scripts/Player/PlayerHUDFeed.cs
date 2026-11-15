@@ -1,5 +1,6 @@
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.Player.Drops;
+using Project.Assets._Project._Scripts.Player.Stations;
 using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Attributes;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using UnityEngine;
 namespace Project.Assets._Project._Scripts.Player
 {
     // Owner only: pushes the round's runner counts and this player's bleed-out, rescue progress, ability cooldown and drop effect
-    // into the gameplay HUD, plus, for catchers, where revealed runners are on screen
+    // into the gameplay HUD, plus, for catchers, where revealed runners are on screen, and for everyone the objective stations
     [RequireComponent(typeof(PlayerLifeState), typeof(PlayerRescue), typeof(PlayerAbility))]
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerDropEffects), typeof(PlayerCameraBinder))]
     public class PlayerHUDFeed : NetworkBehaviour
@@ -20,6 +21,8 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
         [Inject] private readonly RunnerStats _runnerStats;
         [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
+        [Inject] private readonly StationDirectory _stations;
+        [Inject] private readonly HuntPhase _huntPhase;
         [SerializeField, Self] private PlayerLifeState _lifeState;
         [SerializeField, Self] private PlayerRescue _rescue;
         [SerializeField, Self] private PlayerAbility _ability;
@@ -30,9 +33,12 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField] private float _revealMarkerHeightInMeters = 2.2f;
         // off-screen runners get a marker pinned this far (viewport units) inside the screen edge, pointing their way
         [SerializeField, Range(0f, 0.5f)] private float _revealMarkerEdgeMargin = 0.05f;
+        // station markers sit this far above the station's pivot and share the reveal markers' edge margin
+        [SerializeField] private float _stationMarkerHeightInMeters = 2.5f;
 
         // reused every frame so the markers don't allocate
         private readonly List<Vector2> _revealViewportPositions = new();
+        private readonly List<Vector2> _stationViewportPositions = new();
 
         private bool _hasBleedOutStarted;
 
@@ -45,6 +51,7 @@ namespace Project.Assets._Project._Scripts.Player
             _sessionDirectory.OnSessionChanged += HandleSessionChanged;
             _sessionDirectory.OnSessionRemoved += HandleSessionRemoved;
             _lifeState.OnLifeStateChanged += HandleLifeStateChanged;
+            _stations.OnStationCompleted += HandleStationCompleted;
             RefreshRunnerCounts();
         }
 
@@ -57,6 +64,8 @@ namespace Project.Assets._Project._Scripts.Player
             RefreshAbility();
             RefreshDropEffect();
             RefreshRevealMarkers();
+            RefreshStationCounts();
+            RefreshStationMarkers();
         }
 
         private void HandleSessionChanged(PlayerSession _) => RefreshRunnerCounts();
@@ -65,6 +74,8 @@ namespace Project.Assets._Project._Scripts.Player
         private void HandleSessionRemoved(ulong _) => RefreshRunnerCounts();
 
         private void HandleLifeStateChanged(LifeState _) => _hasBleedOutStarted = false;
+
+        private void HandleStationCompleted(Station _, float appliedCutInSeconds) => _hudState.NotifyStationCompleted(appliedCutInSeconds);
 
         private void RefreshRunnerCounts()
         {
@@ -85,11 +96,55 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetBleedOut(isShown, isShown ? remaining : 0f, progress);
         }
 
-        // progress is synced on both the rescuer and the knocked runner, and drops to zero when the rescue stops
+        // Rescue progress is synced on both the rescuer and the knocked runner, and drops to zero when the rescue stops.
+        // A rescue comes first; otherwise the ring shows the station this runner is holding Interact at, or a hint when they could.
         private void RefreshRescue()
         {
             float progress = _rescue.RescueProgress;
-            _hudState.SetRescue(progress > 0f, progress);
+            if (progress > 0f)
+            {
+                _hudState.SetRescue(true, progress);
+                _hudState.SetStationHint(false);
+                return;
+            }
+
+            bool isNearStation = TryGetWorkableStation(out var station);
+            bool isWorkingStation = isNearStation && _rescue.IsLocalInteractHeld;
+            _hudState.SetRescue(isWorkingStation, isWorkingStation ? station.Progress : 0f);
+            _hudState.SetStationHint(isNearStation && !isWorkingStation);
+        }
+
+        private bool TryGetWorkableStation(out Station station)
+        {
+            station = null;
+            return _team.Team == Team.Runner && _lifeState.IsUp && _stations.TryGetWorkableInRange(transform.position, out station);
+        }
+
+        // everyone sees how many stations are done during the hunt
+        private void RefreshStationCounts()
+        {
+            bool isShown = _huntPhase.IsActive && _stations.TotalCount > 0;
+            _hudState.SetStationCounts(isShown, _stations.CompletedCount, _stations.TotalCount);
+        }
+
+        // both teams see where unfinished stations are during the hunt, pinned to the screen edge when off screen
+        private void RefreshStationMarkers()
+        {
+            _stationViewportPositions.Clear();
+            var camera = _cameraBinder.Camera;
+            if (_huntPhase.IsActive && camera != null)
+            {
+                var stations = _stations.Stations;
+                for (int i = 0; i < stations.Count; i++)
+                {
+                    if (stations[i].IsCompleted) continue;
+
+                    Vector3 viewportPoint = camera.WorldToViewportPoint(stations[i].transform.position + Vector3.up * _stationMarkerHeightInMeters);
+                    _stationViewportPositions.Add(ClampToScreenEdge(viewportPoint));
+                }
+            }
+
+            _hudState.SetStationMarkers(_stationViewportPositions);
         }
 
         // only runners have an ability, so catchers, the lobby and eliminated players show no slot
@@ -164,12 +219,17 @@ namespace Project.Assets._Project._Scripts.Player
             _sessionDirectory.OnSessionChanged -= HandleSessionChanged;
             _sessionDirectory.OnSessionRemoved -= HandleSessionRemoved;
             _lifeState.OnLifeStateChanged -= HandleLifeStateChanged;
+            _stations.OnStationCompleted -= HandleStationCompleted;
             _hudState.SetBleedOut(false, 0f, 0f);
             _hudState.SetRescue(false, 0f);
             _hudState.SetAbility(false, null, null, 0f, 0f);
             _hudState.SetDropEffect(false, null, false, 0f, 0f);
             _revealViewportPositions.Clear();
             _hudState.SetRevealMarkers(_revealViewportPositions);
+            _hudState.SetStationCounts(false, 0, 0);
+            _hudState.SetStationHint(false);
+            _stationViewportPositions.Clear();
+            _hudState.SetStationMarkers(_stationViewportPositions);
         }
     }
 }

@@ -31,6 +31,7 @@ namespace Project.Assets._Project._Scripts.Player
         private float _mantleStartTime;
         private Vector3 _mantleRiseTarget;
         private Vector3 _mantleLanding;
+        private float _mantleBlockedEndTime = -Mathf.Infinity;
         private float _dashEndTime = -Mathf.Infinity;
         private Vector3 _dashVelocity;
         public event Action<float> ModelRotationChanged;
@@ -109,8 +110,14 @@ namespace Project.Assets._Project._Scripts.Player
 
             if (isButtonDown)
             {
+                if (_isMantling)
+                {
+                    KickOffMantleWall();
+                    return;
+                }
+
                 // this press was already spent on an air jump; buffering it too would give a third jump on landing
-                if (Time.frameCount == _airJumpFrame || _isMantling) return;
+                if (Time.frameCount == _airJumpFrame) return;
 
                 _lastJumpPressedTime = Time.time;
                 if ((IsGrounded() || Time.time - _lastGroundedTime <= _stats.CoyoteTime) && GetVelocityAlongGroundNormal() < _stats.GroundCheckMaxYVelocity)
@@ -293,7 +300,7 @@ namespace Project.Assets._Project._Scripts.Player
             _stats != null && (IsGrounded() || Time.time - _lastGroundedTime <= _stats.CoyoteTime);
 
         // True when a jump press now kicks off a wall, or this frame's press already did; air-jump abilities stand back for it
-        public bool CanWallJump() => Time.frameCount == _wallJumpFrame || TryGetWallJumpNormal(out _);
+        public bool CanWallJump() => Time.frameCount == _wallJumpFrame || _isMantling || TryGetWallJumpNormal(out _);
 
         // Replaces the fall with a fresh upward push. HandleJump may see the same press after this, so it's marked as spent.
         public void AirJump(float jumpForceMultiplier)
@@ -399,6 +406,30 @@ namespace Project.Assets._Project._Scripts.Player
         {
             if (!TryGetWallJumpNormal(out Vector3 wallNormal)) return false;
 
+            KickOffWall(wallNormal);
+            return true;
+        }
+
+        // Jump during a climb lets go of the ledge and kicks off the wall being climbed.
+        // The wall is known from the climb itself, so the wall probe, cooldown and same-wall rule don't apply.
+        private void KickOffMantleWall()
+        {
+            Vector3 wallNormal = _mantleRiseTarget - _mantleLanding;
+            wallNormal.y = 0f;
+            CancelMantle();
+            _lastJumpPressedTime = -Mathf.Infinity;
+            // forward is still held, so without this the next step would grab the same ledge again
+            _mantleBlockedEndTime = Time.time + Parkour.WallJumpControlLockInSeconds;
+            // the press counts as a wall jump either way, so an air-jump ability doesn't spend it
+            _wallJumpFrame = Time.frameCount;
+            if (wallNormal.sqrMagnitude <= 0f) return;
+
+            _rb.linearVelocity = Vector3.zero;
+            KickOffWall(wallNormal.normalized);
+        }
+
+        private void KickOffWall(Vector3 wallNormal)
+        {
             StopDash();
             // the kick replaces the push into the wall and keeps the run along it
             Vector3 velocity = _rb.linearVelocity;
@@ -411,7 +442,6 @@ namespace Project.Assets._Project._Scripts.Player
             _lastWallJumpNormal = wallNormal;
             _hasWallJumpedSinceGrounded = true;
             _wallJumpFrame = Time.frameCount;
-            return true;
         }
 
         // Airborne next to a wall that isn't the one just used; landing frees every wall again
@@ -429,6 +459,7 @@ namespace Project.Assets._Project._Scripts.Player
         private bool TryStartMantle(Vector2 moveDirection)
         {
             if (!_isParkourEnabled || !_camera || moveDirection.y < Parkour.MantleMinForwardInput) return false;
+            if (Time.time < _mantleBlockedEndTime) return false;
 
             Vector3 forward = _camera.transform.forward;
             if (!ParkourProbe.TryFindLedge(_rb.position, forward, _posture.BodyRadius, _posture.StandingHeight, _stats.MaxGroundAngle,

@@ -15,6 +15,11 @@ namespace Project.Assets._Project.Tests.EditMode
             public void StartGameLoop() { }
             public void StopGameLoop() { }
             public void RequestGameStart() { }
+            public bool TryCutRoundTime(float cutInSeconds, float minRemainingInSeconds, out float appliedCutInSeconds)
+            {
+                appliedCutInSeconds = 0f;
+                return false;
+            }
         }
 
         [Test]
