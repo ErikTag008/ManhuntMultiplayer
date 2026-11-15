@@ -1,4 +1,5 @@
 using KBCore.Refs;
+using Project.Assets._Project._Scripts.Player.Abilities;
 using Project.Assets._Project._Scripts.Player.Drops;
 using Project.Assets._Project._Scripts.Player.Stations;
 using Project.Assets._Project._Scripts.UI.HUD;
@@ -23,6 +24,7 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
         [Inject] private readonly StationDirectory _stations;
         [Inject] private readonly HuntPhase _huntPhase;
+        [Inject] private readonly SmokeCloudDirectory _smokeClouds;
         [SerializeField, Self] private PlayerLifeState _lifeState;
         [SerializeField, Self] private PlayerRescue _rescue;
         [SerializeField, Self] private PlayerAbility _ability;
@@ -178,16 +180,21 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetDropEffect(true, effect.DisplayName, effect.IsGood, remaining, progress);
         }
 
-        // only catchers see revealed runners, through walls; runners off screen or behind the camera are pinned to the screen edge
+        // Catchers see revealed runners through walls, except inside smoke; a runner with Sixth Sense active sees every catcher.
+        // Players off screen or behind the camera are pinned to the screen edge.
         private void RefreshRevealMarkers()
         {
             _revealViewportPositions.Clear();
             var camera = _cameraBinder.Camera;
-            if (_team.Team == Team.Catcher && camera != null)
+            bool isCatcher = _team.Team == Team.Catcher;
+            if ((isCatcher || IsSensingCatchers()) && camera != null)
             {
                 foreach (var player in _spawnedPlayers.Players)
                 {
-                    if (player == null || player.OwnerClientId == OwnerClientId || !player.DropEffects.Has(DropStatus.Revealed)) continue;
+                    if (player == null || player.OwnerClientId == OwnerClientId) continue;
+
+                    bool isMarked = isCatcher ? IsRevealedToCatchers(player) : player.Team == Team.Catcher;
+                    if (!isMarked) continue;
 
                     Vector3 viewportPoint = camera.WorldToViewportPoint(player.transform.position + Vector3.up * _revealMarkerHeightInMeters);
                     _revealViewportPositions.Add(ClampToScreenEdge(viewportPoint));
@@ -195,6 +202,15 @@ namespace Project.Assets._Project._Scripts.Player
             }
 
             _hudState.SetRevealMarkers(_revealViewportPositions);
+        }
+
+        private bool IsRevealedToCatchers(PlayerController player) =>
+            player.DropEffects.Has(DropStatus.Revealed) && !_smokeClouds.IsInsideAny(player.transform.position);
+
+        private bool IsSensingCatchers()
+        {
+            var ability = _ability.Ability;
+            return ability != null && ability.RevealsCatchersWhileActive && _lifeState.IsUp && _ability.ActiveRemainingInSeconds > 0f;
         }
 
         private Vector2 ClampToScreenEdge(Vector3 viewportPoint)

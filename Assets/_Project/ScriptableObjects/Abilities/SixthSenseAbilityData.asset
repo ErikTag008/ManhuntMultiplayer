@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2018dc60e7aab8949b287dd75e7cf8d3, type: 3}
+  m_Name: SixthSenseAbilityData
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.Abilities.SixthSenseAbilityData
+  <Id>k__BackingField: 4
+  <DisplayName>k__BackingField: Sixth Sense
+  <CooldownInSeconds>k__BackingField: 40
+  <ReadyHint>k__BackingField: '{0}'
+  <AnimationTrigger>k__BackingField: 
+  <ActiveDurationInSeconds>k__BackingField: 4

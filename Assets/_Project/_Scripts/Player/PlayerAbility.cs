@@ -22,6 +22,8 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerHideHold _hideHold;
         [SerializeField, Self] private InputReader _inputReader;
         [SerializeField, Min(0f)] private float _serverToleranceInSeconds = 0.25f;
+        // the owner says where it used the ability; farther than this from the server's copy, the server's copy is used instead
+        [SerializeField, Min(0f)] private float _maxReportedPositionErrorInMeters = 3f;
 
         // Every instance: an accepted use moves the end time forward, which animation and effects can react to
         public event Action<AbilityData> OnAbilityUsed;
@@ -32,14 +34,22 @@ namespace Project.Assets._Project._Scripts.Player
 
         // Only runners have an ability: the session's pick, or the catalog default until picks exist
         public AbilityData Ability => _team.Team == Team.Runner ? _catalog.Resolve(SessionAbilityId) : null;
-        public float CooldownRemainingInSeconds
+        public float CooldownRemainingInSeconds => AbilityCooldown.RemainingInSeconds(NetworkManager.ServerTime.Time, CooldownEndTime);
+
+        // the effect of the last use lasts ActiveDurationInSeconds from the use, which is the cooldown end minus the cooldown
+        public float ActiveRemainingInSeconds
         {
             get
             {
-                double endTime = IsOwner ? System.Math.Max(_cooldownEndTime.Value, _predictedCooldownEndTime) : _cooldownEndTime.Value;
-                return AbilityCooldown.RemainingInSeconds(NetworkManager.ServerTime.Time, endTime);
+                var ability = Ability;
+                if (ability == null || ability.ActiveDurationInSeconds <= 0f) return 0f;
+
+                double activeEndTime = CooldownEndTime - ability.CooldownInSeconds + ability.ActiveDurationInSeconds;
+                return AbilityCooldown.RemainingInSeconds(NetworkManager.ServerTime.Time, activeEndTime);
             }
         }
+
+        private double CooldownEndTime => IsOwner ? System.Math.Max(_cooldownEndTime.Value, _predictedCooldownEndTime) : _cooldownEndTime.Value;
 
         private int SessionAbilityId => _sessionDirectory.TryGetSession(OwnerClientId, out var session) ? session.AbilityId : PlayerSession.NoAbility;
 
@@ -89,11 +99,11 @@ namespace Project.Assets._Project._Scripts.Player
             if (movement == null || !ability.TryActivate(movement)) return;
 
             _predictedCooldownEndTime = NetworkManager.ServerTime.Time + ability.CooldownInSeconds;
-            UseAbilityServerRpc();
+            UseAbilityServerRpc(transform.position, _controller.HeadingInDegrees);
         }
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
-        private void UseAbilityServerRpc()
+        private void UseAbilityServerRpc(Vector3 position, float headingInDegrees)
         {
             var ability = Ability;
             if (ability == null || !CanUseAbility()) return;
@@ -102,6 +112,11 @@ namespace Project.Assets._Project._Scripts.Player
             if (!AbilityCooldown.IsAcceptedByServer(now, _cooldownEndTime.Value, _serverToleranceInSeconds)) return;
 
             _cooldownEndTime.Value = now + ability.CooldownInSeconds;
+
+            // written as "not within" so a NaN or infinite position falls back to the server's copy too
+            if (!(Vector3.Distance(position, transform.position) <= _maxReportedPositionErrorInMeters)) position = transform.position;
+            if (!float.IsFinite(headingInDegrees)) headingInDegrees = transform.eulerAngles.y;
+            ability.ActivateOnServer(NetworkManager, position, Quaternion.Euler(0f, headingInDegrees, 0f));
         }
 
         // knocked, eliminated and hide-phase-held players can't use abilities

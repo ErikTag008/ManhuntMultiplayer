@@ -13,6 +13,7 @@ namespace Project.Assets._Project._Scripts.UI
         public event Action<string> OnCountdownTextChanged;
         public event Action<string> OnPlayerTeamTextChanged; 
         public event Action<bool> OnStartGameButtonAvailabilityChanged;
+        public event Action<bool> OnStartGameButtonVisibilityChanged;
         public event Action OnRequestLobbyUIInitialization;
         public event Action OnRequestGameUIInitialization;
         public event Action OnRequestGameStart;
@@ -32,6 +33,7 @@ namespace Project.Assets._Project._Scripts.UI
         public void ChangeCountdownText(string text) => OnCountdownTextChanged?.Invoke(text);
         public void ChangePlayerTeamText(string text) => OnPlayerTeamTextChanged?.Invoke(text);
         public void ChangeStartGameButtonAvailability(bool isActive) => OnStartGameButtonAvailabilityChanged?.Invoke(isActive);
+        public void ChangeStartGameButtonVisibility(bool isVisible) => OnStartGameButtonVisibilityChanged?.Invoke(isVisible);
         public void RequestLobbyUIInitialization() => OnRequestLobbyUIInitialization?.Invoke(); 
         public void RequestGameUIInitialization() => OnRequestGameUIInitialization?.Invoke();
         public void ShowResults(string title, string subtitle) => OnResultsShown?.Invoke(title, subtitle);

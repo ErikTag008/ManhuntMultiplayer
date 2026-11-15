@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player.Abilities
@@ -12,11 +13,19 @@ namespace Project.Assets._Project._Scripts.Player.Abilities
         [field: SerializeField] public string ReadyHint { get; private set; } = "{0}";
         // Animator trigger played when the ability is used; empty when the regular animation already shows it
         [field: SerializeField] public string AnimationTrigger { get; private set; } = "";
+        // how long the effect lasts after a use, counted from the use; 0 for instant abilities
+        [field: SerializeField, Min(0f)] public float ActiveDurationInSeconds { get; private set; }
+
+        // while active, the user sees where every catcher is, through walls
+        public virtual bool RevealsCatchersWhileActive => false;
 
         public abstract AbilityTrigger Trigger { get; }
 
         // Owner only: applies the effect, or returns false when it can't happen right now (no cooldown is spent)
         public abstract bool TryActivate(IPlayerMovement movement);
+
+        // Server only, once the use is accepted: what the ability leaves in the world, placed where the owner stood and facing their heading
+        public virtual void ActivateOnServer(NetworkManager networkManager, Vector3 position, Quaternion rotation) { }
     }
 
     public enum AbilityTrigger

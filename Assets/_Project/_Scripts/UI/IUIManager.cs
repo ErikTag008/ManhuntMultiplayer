@@ -11,6 +11,7 @@ namespace Project.Assets._Project._Scripts.UI
         event Action<string> OnCountdownTextChanged;
         event Action<string> OnPlayerTeamTextChanged;
         event Action<bool> OnStartGameButtonAvailabilityChanged;
+        event Action<bool> OnStartGameButtonVisibilityChanged;
         event Action OnRequestLobbyUIInitialization;
         event Action OnRequestGameUIInitialization;
         event Action OnRequestGameStart;
@@ -27,6 +28,7 @@ namespace Project.Assets._Project._Scripts.UI
         void ChangeCountdownText(string text);
         void ChangePlayerTeamText(string text);
         void ChangeStartGameButtonAvailability(bool isActive);
+        void ChangeStartGameButtonVisibility(bool isVisible);
         void RequestLobbyUIInitialization();
         void RequestGameUIInitialization();
         void ShowResults(string title, string subtitle);

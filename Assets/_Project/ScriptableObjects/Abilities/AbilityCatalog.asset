@@ -15,4 +15,7 @@ MonoBehaviour:
   <Abilities>k__BackingField:
   - {fileID: 11400000, guid: af71601584161b04cbf073c26845ad0e, type: 2}
   - {fileID: 11400000, guid: 815dc368011f225438f2bc207f392074, type: 2}
+  - {fileID: 11400000, guid: 0c41c4d9dcc54a84e9b626dd4df56e31, type: 2}
+  - {fileID: 11400000, guid: 4d431667d9055e24a99aedf072a8d28e, type: 2}
+  - {fileID: 11400000, guid: 6c46ae06293ff394c9a7b2195120fba7, type: 2}
   <DefaultAbility>k__BackingField: {fileID: 11400000, guid: af71601584161b04cbf073c26845ad0e, type: 2}

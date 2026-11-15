@@ -19,6 +19,9 @@ namespace Project.Assets._Project._Scripts.UI
             _uiManager.OnLobbyStatusTextChanged += HandleLobbyStatusChange;
             _uiManager.OnCountdownTextChanged += HandleCountdownChange;
             _uiManager.OnStartGameButtonAvailabilityChanged += HandleGameStartButtonAvailabilityChange;
+            _uiManager.OnStartGameButtonVisibilityChanged += HandleGameStartButtonVisibilityChange;
+            // hidden until the host says it's theirs, so joining players never see it flash
+            HandleGameStartButtonVisibilityChange(false);
             _uiManager.RequestLobbyUIInitialization();
             _gameStartButton.onClick.AddListener(_uiManager.StartGame);
         }
@@ -31,13 +34,18 @@ namespace Project.Assets._Project._Scripts.UI
 
         public void InvokeGameStartButtonPress()
         {
-            if(_gameStartButton.interactable)
+            if(_gameStartButton.gameObject.activeSelf && _gameStartButton.interactable)
                 _gameStartButton.onClick.Invoke();
         }
 
         private void HandleGameStartButtonAvailabilityChange(bool isActive)
         {
             _gameStartButton.interactable = isActive;
+        }
+
+        private void HandleGameStartButtonVisibilityChange(bool isVisible)
+        {
+            if (_gameStartButton.gameObject.activeSelf != isVisible) _gameStartButton.gameObject.SetActive(isVisible);
         }
 
         private void HandleJoinedPlayerAmountChange(string text) => HandleUITextChange(_joinedPlayerAmountText, text);
@@ -53,6 +61,7 @@ namespace Project.Assets._Project._Scripts.UI
             uiManager.OnLobbyStatusTextChanged -= HandleLobbyStatusChange;
             uiManager.OnCountdownTextChanged -= HandleCountdownChange;
             uiManager.OnStartGameButtonAvailabilityChanged -= HandleGameStartButtonAvailabilityChange;
+            uiManager.OnStartGameButtonVisibilityChanged -= HandleGameStartButtonVisibilityChange;
             _gameStartButton.onClick.RemoveListener(uiManager.StartGame);
 
         }

@@ -167,9 +167,10 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
-        // Host only: the start button works once enough players are in and everyone is ready
+        // Host only: the start button works once enough players are in and everyone is ready; other players never see it
         private void RefreshStartAvailability()
         {
+            _uiManager.ChangeStartGameButtonVisibility(IsHost);
             if (!IsHost)
             {
                 _uiManager.ChangeStartGameButtonAvailability(false);

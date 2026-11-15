@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.Input;
+using Project.Assets._Project._Scripts.Player.Abilities;
 using Project.Assets._Project._Scripts.Player.Drops;
 using Project.Assets._Project._Scripts.Weapons;
 using System;
@@ -131,7 +132,7 @@ namespace Project.Assets._Project._Scripts.Player
         [Rpc(SendTo.NotOwner)]
         private void PlayAttackRpc() => OnAttackStarted?.Invoke();
 
-        // A catcher's hit knocks every runner inside the weapon's hit sphere; other catchers are ignored.
+        // A catcher's hit knocks every runner inside the weapon's hit sphere and pops any decoy there; other catchers are ignored.
         // The client only says where the swing landed: the radius and cooldown are the server's own,
         // and a landing point out of the attacker's reach is dropped.
         [Rpc(SendTo.Server)]
@@ -149,6 +150,13 @@ namespace Project.Assets._Project._Scripts.Player
             _caughtTeams.Clear();
             for (int i = 0; i < hitCount; i++)
             {
+                var decoy = _catchTargets[i].GetComponentInParent<Decoy>();
+                if (decoy != null)
+                {
+                    decoy.Pop();
+                    continue;
+                }
+
                 var targetTeam = _catchTargets[i].GetComponentInParent<PlayerTeam>();
                 if (targetTeam == null || targetTeam == _team || targetTeam.Team != Team.Runner) continue;
                 if (_caughtTeams.Contains(targetTeam)) continue;

@@ -42,6 +42,7 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(typeof(HidePhase), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(HuntPhase), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(StationDirectory), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(SmokeCloudDirectory), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(GameHUDState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(LobbyMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PauseMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
