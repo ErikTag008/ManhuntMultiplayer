@@ -63,6 +63,18 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
+        public void SendToCatcherSpawn(PlayerController player)
+        {
+            if (_waitingRoomSpawns.Length == 0)
+            {
+                EUtils.Logger.LogError("No waiting room spawn points!");
+                return;
+            }
+
+            var spawn = _waitingRoomSpawns[Random.Range(0, _waitingRoomSpawns.Length)];
+            player.TeleportRpc(spawn.position, spawn.rotation);
+        }
+
         private void OnDestroy() => _gameSystemsRegistry?.Unregister(this);
     }
 }

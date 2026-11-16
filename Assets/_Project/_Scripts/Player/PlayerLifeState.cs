@@ -204,8 +204,9 @@ namespace Project.Assets._Project._Scripts.Player
             await UniTask.WaitUntil(() => NetworkManager.ServerTime.Time >= _bleedOutEndTime.Value, cancellationToken: token);
             if (!IsKnocked) return;
 
-            _playerRegistry.SetLifeState(OwnerClientId, LifeState.Eliminated);
+            // the cue goes out first, so it plays where the runner went down even if the game mode moves them
             NotifyBledOutRpc();
+            _playerRegistry.ReportBledOut(OwnerClientId);
         }
 
         [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Server)]

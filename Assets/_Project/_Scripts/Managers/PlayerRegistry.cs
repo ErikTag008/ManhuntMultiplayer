@@ -13,6 +13,8 @@ namespace Project.Assets._Project._Scripts.Managers
         [SerializeField] private string _defaultDisplayNameFormat = "Player {0}";
 
         public event Action OnSessionsChanged;
+        // Server only
+        public event Action<ulong> OnBledOut;
 
         private readonly List<PlayerController> _players = new();
         private readonly NetworkList<PlayerSession> _sessions = new();
@@ -83,6 +85,33 @@ namespace Project.Assets._Project._Scripts.Managers
         public void SetTeam(ulong clientId, Team team) => UpdateSession(clientId, (ref PlayerSession session) => session.Team = team);
 
         public void SetLifeState(ulong clientId, LifeState lifeState) => UpdateSession(clientId, (ref PlayerSession session) => session.LifeState = lifeState);
+
+        public void ReportBledOut(ulong clientId)
+        {
+            if (!IsServer) return;
+            OnBledOut?.Invoke(clientId);
+        }
+
+        // Infection: the runner joins the catchers standing, in one session change so no instance sees a catcher still knocked
+        public void Infect(ulong clientId) => UpdateSession(clientId, (ref PlayerSession session) =>
+        {
+            session.Team = Team.Catcher;
+            session.LifeState = LifeState.Up;
+        });
+
+        public bool TryGetPlayer(ulong clientId, out PlayerController player)
+        {
+            foreach (var registeredPlayer in _players)
+            {
+                if (registeredPlayer == null || registeredPlayer.OwnerClientId != clientId) continue;
+
+                player = registeredPlayer;
+                return true;
+            }
+
+            player = null;
+            return false;
+        }
 
         public void SetAbility(ulong clientId, int abilityId) => UpdateSession(clientId, (ref PlayerSession session) => session.AbilityId = abilityId);
 

@@ -9,6 +9,7 @@ namespace Project.Assets._Project._Scripts.Networking
     {
         public FixedString64Bytes Name;
         public LobbyVisibility Visibility;
+        public GameMode Mode;
         public int MaxPlayers;
         public int MapIndex;
         public float HideDurationInSeconds;
@@ -25,6 +26,7 @@ namespace Project.Assets._Project._Scripts.Networking
         public readonly bool Equals(LobbyConfig other) =>
             Name.Equals(other.Name) &&
             Visibility == other.Visibility &&
+            Mode == other.Mode &&
             MaxPlayers == other.MaxPlayers &&
             MapIndex == other.MapIndex &&
             HideDurationInSeconds.Equals(other.HideDurationInSeconds) &&
@@ -34,6 +36,7 @@ namespace Project.Assets._Project._Scripts.Networking
         {
             serializer.SerializeValue(ref Name);
             serializer.SerializeValue(ref Visibility);
+            serializer.SerializeValue(ref Mode);
             serializer.SerializeValue(ref MaxPlayers);
             serializer.SerializeValue(ref MapIndex);
             serializer.SerializeValue(ref HideDurationInSeconds);

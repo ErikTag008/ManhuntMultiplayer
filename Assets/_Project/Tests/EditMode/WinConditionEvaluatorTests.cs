@@ -25,6 +25,20 @@ namespace Project.Assets._Project.Tests.EditMode
             Assert.AreEqual(RoundResult.None, _evaluator.Evaluate(sessions, false));
         }
 
+        // Infection: everyone who bled out is now an Up catcher, so the last standing runner falling ends the round
+        [Test]
+        public void AllRunnersInfected_CatchersWin()
+        {
+            var sessions = new List<PlayerSession>
+            {
+                Session(0, Team.Catcher, LifeState.Up),
+                Session(1, Team.Catcher, LifeState.Up),
+                Session(2, Team.Runner, LifeState.Knocked)
+            };
+
+            Assert.AreEqual(RoundResult.CatchersWin, _evaluator.Evaluate(sessions, false));
+        }
+
         [Test]
         public void RunnerStanding_WhenTimeUp_RunnersWin()
         {

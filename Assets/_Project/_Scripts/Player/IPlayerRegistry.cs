@@ -18,6 +18,8 @@ namespace Project.Assets._Project._Scripts.Player
         void UnregisterPlayer(PlayerController player);
         void SetTeam(ulong clientId, Team team);
         void SetLifeState(ulong clientId, LifeState lifeState);
+        // A knocked runner's bleed-out ran out; the round's game mode decides what happens to them
+        void ReportBledOut(ulong clientId);
         void SetAbility(ulong clientId, int abilityId);
         void SetReady(ulong clientId, bool isReady);
         void ResetLifeStates();

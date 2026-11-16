@@ -20,11 +20,14 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private Button _createButton;
         [SerializeField] private Button _backButton;
         [SerializeField] private string _nameLabel = "Lobby name";
+        [SerializeField] private string _modeLabel = "Mode";
         [SerializeField] private string _visibilityLabel = "Visibility";
         [SerializeField] private string _maxPlayersLabel = "Max players";
         [SerializeField] private string _mapLabel = "Map";
         [SerializeField] private string _roundLengthLabel = "Round length";
         [SerializeField] private string _hideTimeLabel = "Hide time";
+        [SerializeField] private string _classicLabel = "Classic";
+        [SerializeField] private string _infectionLabel = "Infection";
         [SerializeField] private string _publicLabel = "Public";
         [SerializeField] private string _friendsOnlyLabel = "Friends only";
         [SerializeField] private string _privateLabel = "Private";
@@ -32,6 +35,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         // {0} is minutes:seconds
         [SerializeField] private string _durationFormat = "{0}";
 
+        private readonly List<GameMode> _modeOptions = new() { GameMode.Classic, GameMode.Infection };
         private readonly List<LobbyVisibility> _visibilityOptions = new() { LobbyVisibility.Public, LobbyVisibility.FriendsOnly, LobbyVisibility.Private };
         private readonly List<int> _maxPlayerOptions = new();
         private readonly List<float> _hideDurationOptions = new();
@@ -39,6 +43,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private readonly List<string> _labelBuffer = new();
         private readonly List<List<Selectable>> _navigationRows = new();
         private TextInputRow _nameRow;
+        private ChoiceRow _modeRow;
         private ChoiceRow _visibilityRow;
         private ChoiceRow _maxPlayersRow;
         private ChoiceRow _mapRow;
@@ -86,6 +91,10 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _nameRow.SetTextWithoutNotify(_lobbyConfigData.DefaultName);
 
             _labelBuffer.Clear();
+            foreach (var mode in _modeOptions) _labelBuffer.Add(GetModeLabel(mode));
+            _modeRow = CreateChoiceRow(_modeLabel, Mathf.Max(0, _modeOptions.IndexOf(defaults.Mode)));
+
+            _labelBuffer.Clear();
             foreach (var visibility in _visibilityOptions) _labelBuffer.Add(GetVisibilityLabel(visibility));
             _visibilityRow = CreateChoiceRow(_visibilityLabel, _visibilityOptions.IndexOf(defaults.Visibility));
 
@@ -116,6 +125,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             return CreateChoiceRow(label, LobbyConfigData.FindClosestIndex(options, durationInSeconds));
         }
 
+        private string GetModeLabel(GameMode mode) => mode switch
+        {
+            GameMode.Infection => _infectionLabel,
+            _ => _classicLabel
+        };
+
         private string GetVisibilityLabel(LobbyVisibility visibility) => visibility switch
         {
             LobbyVisibility.FriendsOnly => _friendsOnlyLabel,
@@ -140,6 +155,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             {
                 Name = LobbyConfig.ToName(_lobbyConfigData.SanitizeName(_nameRow.Text)),
                 Visibility = _visibilityOptions[_visibilityRow.Index],
+                Mode = _modeOptions[_modeRow.Index],
                 MaxPlayers = _maxPlayerOptions[_maxPlayersRow.Index],
                 MapIndex = _mapRow.Index,
                 RoundDurationInSeconds = _roundDurationOptions[_roundLengthRow.Index],

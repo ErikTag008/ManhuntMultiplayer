@@ -7,6 +7,7 @@ using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Attributes;
 using Reflex.Extensions;
 using Reflex.Injectors;
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -123,6 +124,7 @@ namespace Project.Assets._Project._Scripts.Managers
         {
             if (!IsHost || !IsLobbyConfigEditable(_gameStateMachine.CurrentState)) return;
             if (config.MapIndex < 0 || config.MapIndex >= _mapCatalog.MapCount) return;
+            if (!Enum.IsDefined(typeof(GameMode), config.Mode)) return;
             if (config.MaxPlayers < Mathf.Max(NetworkManager.ConnectedClientsIds.Count, _connectionService.TakenSlotCount)) return;
 
             _activeLobbyConfig.Set(config);

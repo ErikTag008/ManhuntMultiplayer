@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using Project.Assets._Project._Scripts;
 using Project.Assets._Project._Scripts.Networking;
 using System.Collections.Generic;
 using UnityEngine;
@@ -60,6 +61,17 @@ namespace Project.Assets._Project.Tests.EditMode
             CollectionAssert.Contains(roundOptions, config.RoundDurationInSeconds);
             Assert.AreEqual(_data.DefaultName, config.Name.ToString());
             Assert.AreEqual(LobbyVisibility.Public, config.Visibility);
+            Assert.AreEqual(GameMode.Classic, config.Mode);
+        }
+
+        [Test]
+        public void Configs_WithDifferentModes_AreNotEqual()
+        {
+            var classic = _data.CreateDefault();
+            var infection = classic;
+            infection.Mode = GameMode.Infection;
+
+            Assert.IsFalse(classic.Equals(infection));
         }
 
         [Test]

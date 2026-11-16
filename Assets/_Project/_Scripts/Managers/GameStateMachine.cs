@@ -35,6 +35,8 @@ namespace Project.Assets._Project._Scripts.Managers
         private CancellationTokenSource _gameLoopCTS;
         private CancellationTokenSource _countdownCTS;
         private bool _gameStartRequested;
+        // Server only: read from the lobby config once per round, like the map and the timers
+        private GameMode _roundMode;
         private GameSystemsRegistry _gameSystemsRegistry;
 
         public GameState CurrentState => _state.Value;
@@ -54,6 +56,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _state.OnValueChanged += HandleStateChanged;
             _lastRoundResult.OnValueChanged += HandleLastRoundResultChanged;
             _countdownEndTime.OnValueChanged += StartCountdown;
+            if (IsServer) _playerRegistry.OnBledOut += HandleBledOut;
             // the spawn value doesn't raise OnValueChanged
             RefreshPhases();
         }
@@ -112,6 +115,7 @@ namespace Project.Assets._Project._Scripts.Managers
 
                 // read once per round, so a lobby change only applies from the next round on
                 var config = _lobbyConfigSync.Config;
+                _roundMode = config.Mode;
                 _state.Value = GameState.AssigningTeams;
                 _lastRoundResult.Value = RoundResult.None;
                 _teamAssignmentService.AssignTeams();
@@ -195,6 +199,24 @@ namespace Project.Assets._Project._Scripts.Managers
             return result;
         }
 
+        // Infection turns a runner who bleeds out during the hunt into a catcher back at the catcher spawns;
+        // otherwise (Classic, or a bleed-out after the hunt ended) the runner is out of the round
+        private void HandleBledOut(ulong clientId)
+        {
+            bool isInfected = _roundMode == GameMode.Infection && _state.Value == GameState.Playing;
+            if (!isInfected)
+            {
+                _playerRegistry.SetLifeState(clientId, LifeState.Eliminated);
+                return;
+            }
+
+            _playerRegistry.Infect(clientId);
+            var spawnDistributor = _gameSystemsRegistry.SpawnDistributor;
+            if (spawnDistributor == null || !_playerRegistry.TryGetPlayer(clientId, out var player)) return;
+
+            spawnDistributor.SendToCatcherSpawn(player);
+        }
+
         private void HandleStateChanged(GameState previous, GameState current)
         {
             RefreshPhases();
@@ -248,6 +270,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _state.OnValueChanged -= HandleStateChanged;
             _lastRoundResult.OnValueChanged -= HandleLastRoundResultChanged;
             _countdownEndTime.OnValueChanged -= StartCountdown;
+            _playerRegistry.OnBledOut -= HandleBledOut;
             _hidePhase.Toggle(false);
             _huntPhase.Toggle(false);
             DisposeCTS(ref _countdownCTS);

@@ -4,7 +4,8 @@ using System.Collections.Generic;
 namespace Project.Assets._Project._Scripts.Managers
 {
     // Manhunt rules: catchers win once no runner is standing (knocked runners have nobody left to rescue them),
-    // runners win if at least one is standing when time runs out, or if every catcher has left
+    // runners win if at least one is standing when time runs out, or if every catcher has left.
+    // Holds for every GameMode: an infected runner is already a catcher in the sessions.
     public class WinConditionEvaluator : IWinConditionEvaluator
     {
         public RoundResult Evaluate(IReadOnlyList<PlayerSession> sessions, bool isTimeUp)

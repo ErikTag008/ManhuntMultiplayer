@@ -127,7 +127,7 @@ namespace Project.Assets._Project._Scripts.DevTools
         private void ReportLobby()
         {
             var config = _activeLobbyConfig.Config;
-            EUtils.Logger.Log($"[DevTestDriver] client {_networkManager.LocalClientId} lobby: name={config.Name} map={config.MapIndex} max={config.MaxPlayers} " +
+            EUtils.Logger.Log($"[DevTestDriver] client {_networkManager.LocalClientId} lobby: name={config.Name} mode={config.Mode} map={config.MapIndex} max={config.MaxPlayers} " +
                 $"round={config.RoundDurationInSeconds} hide={config.HideDurationInSeconds} visibility={config.Visibility} canEdit={_lobbyMenuState.CanEditLobbySettings}");
         }
 

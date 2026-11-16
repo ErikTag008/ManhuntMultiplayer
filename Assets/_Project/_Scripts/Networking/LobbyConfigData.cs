@@ -13,6 +13,7 @@ namespace Project.Assets._Project._Scripts.Networking
         [field: SerializeField] public string DefaultName { get; private set; } = "Manhunt lobby";
         [field: SerializeField, Min(1)] public int MaxNameLength { get; private set; } = 32;
         [field: SerializeField] public LobbyVisibility DefaultVisibility { get; private set; } = LobbyVisibility.Public;
+        [field: SerializeField] public GameMode DefaultMode { get; private set; } = GameMode.Classic;
         [field: SerializeField, Min(0)] public int DefaultMapIndex { get; private set; } = 0;
 
         [field: SerializeField, Min(1)] public int MinMaxPlayers { get; private set; } = 4;
@@ -34,6 +35,7 @@ namespace Project.Assets._Project._Scripts.Networking
         {
             Name = LobbyConfig.ToName(DefaultName),
             Visibility = DefaultVisibility,
+            Mode = DefaultMode,
             MaxPlayers = DefaultMaxPlayers,
             MapIndex = DefaultMapIndex,
             HideDurationInSeconds = DefaultHideDurationInSeconds,
