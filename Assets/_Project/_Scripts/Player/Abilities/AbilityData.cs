@@ -1,3 +1,4 @@
+using Project.Assets._Project._Scripts.Player.Feedback;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -15,6 +16,8 @@ namespace Project.Assets._Project._Scripts.Player.Abilities
         [field: SerializeField] public string AnimationTrigger { get; private set; } = "";
         // how long the effect lasts after a use, counted from the use; 0 for instant abilities
         [field: SerializeField, Min(0f)] public float ActiveDurationInSeconds { get; private set; }
+        // what everyone hears and sees on a use; left empty, PlayerFeedbackData.AbilityUsed plays instead
+        [field: SerializeField] public FeedbackCue UseFeedback { get; private set; } = new();
 
         // while active, the user sees where every catcher is, through walls
         public virtual bool RevealsCatchersWhileActive => false;

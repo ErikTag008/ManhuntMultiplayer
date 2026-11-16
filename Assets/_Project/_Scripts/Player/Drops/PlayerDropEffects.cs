@@ -22,6 +22,10 @@ namespace Project.Assets._Project._Scripts.Player.Drops
 
         // Every instance: raised when the active effect starts, is replaced or ends (null), expiry included
         public event Action<DropEffectData> OnActiveEffectChanged;
+        // Every instance, for feedback: a pickup gave this runner an effect (also when it replaces the same one)
+        public event Action<DropEffectData> OnEffectTaken;
+        // Every instance, for feedback: the shield took a catcher's hit and is used up
+        public event Action OnShieldBlocked;
 
         private readonly NetworkVariable<int> _effectId = new(NoEffectId);
         private readonly NetworkVariable<double> _endTime = new();
@@ -70,6 +74,7 @@ namespace Project.Assets._Project._Scripts.Player.Drops
 
             _effectId.Value = effect.Id;
             _endTime.Value = NetworkManager.ServerTime.Time + effect.DurationInSeconds;
+            NotifyEffectTakenRpc(effect.Id);
         }
 
         // Server only: a shield blocks one catch and is used up by it
@@ -78,8 +83,18 @@ namespace Project.Assets._Project._Scripts.Player.Drops
             if (!IsServer || !Has(DropStatus.Shielded)) return false;
 
             ClearEffect();
+            NotifyShieldBlockedRpc();
             return true;
         }
+
+        [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Server)]
+        private void NotifyEffectTakenRpc(int effectId)
+        {
+            if (_catalog.TryGet(effectId, out var effect)) OnEffectTaken?.Invoke(effect);
+        }
+
+        [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Server)]
+        private void NotifyShieldBlockedRpc() => OnShieldBlocked?.Invoke();
 
         // A team change starts a new round or returns to the lobby, so the effect ends
         private void HandleStatsChanged(PlayerStats _)

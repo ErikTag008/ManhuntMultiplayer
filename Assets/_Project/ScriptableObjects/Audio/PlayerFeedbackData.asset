@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ff844f634dabce469daae2e0177b38c, type: 3}
+  m_Name: PlayerFeedbackData
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.Feedback.PlayerFeedbackData
+  <Knocked>k__BackingField:
+    <Clips>k__BackingField:
+    - {fileID: 8300000, guid: 2f5af4df66efdd1438291ab784a5a8fb, type: 3}
+    <Volume>k__BackingField: 0.8
+    <PitchRange>k__BackingField: {x: 0.95, y: 1.05}
+    <VfxPrefab>k__BackingField: {fileID: 6318414788188804568, guid: 0a55061e32724a243844572fbd8178b5, type: 3}
+    <IsVfxShownToOwner>k__BackingField: 0
+  <ShieldBlocked>k__BackingField:
+    <Clips>k__BackingField:
+    - {fileID: 8300000, guid: 5b5ff309f99584748b4b2e1711591252, type: 3}
+    <Volume>k__BackingField: 0.8
+    <PitchRange>k__BackingField: {x: 0.95, y: 1.05}
+    <VfxPrefab>k__BackingField: {fileID: 4022357288200967848, guid: c9f53cda93ac3334daf8d224902025d9, type: 3}
+    <IsVfxShownToOwner>k__BackingField: 0
+  <Revived>k__BackingField:
+    <Clips>k__BackingField:
+    - {fileID: 8300000, guid: 3ca99b040ada91d4fb388d2e221d2b94, type: 3}
+    <Volume>k__BackingField: 0.8
+    <PitchRange>k__BackingField: {x: 0.95, y: 1.05}
+    <VfxPrefab>k__BackingField: {fileID: 722571572599891689, guid: 14eafc2f46b0b764d9ec12da9c13768f, type: 3}
+    <IsVfxShownToOwner>k__BackingField: 0
+  <BledOut>k__BackingField:
+    <Clips>k__BackingField:
+    - {fileID: 8300000, guid: c1b97c09492bce24b9a50861037f0eaf, type: 3}
+    <Volume>k__BackingField: 0.8
+    <PitchRange>k__BackingField: {x: 0.95, y: 1.05}
+    <VfxPrefab>k__BackingField: {fileID: 7244830709846629747, guid: 3d1d5a1eccb76db4e894fcd51097024c, type: 3}
+    <IsVfxShownToOwner>k__BackingField: 0
+  <GoodDropTaken>k__BackingField:
+    <Clips>k__BackingField:
+    - {fileID: 8300000, guid: 943b7aacbf9cd8c4a81960cebdc24092, type: 3}
+    <Volume>k__BackingField: 0.8
+    <PitchRange>k__BackingField: {x: 0.95, y: 1.05}
+    <VfxPrefab>k__BackingField: {fileID: 5647522887458860583, guid: 84defc762e59deb4191f95a66bcc7691, type: 3}
+    <IsVfxShownToOwner>k__BackingField: 0
+  <BadDropTaken>k__BackingField:
+    <Clips>k__BackingField:
+    - {fileID: 8300000, guid: a20d74ad69290d346aec18df9a8f3301, type: 3}
+    <Volume>k__BackingField: 0.8
+    <PitchRange>k__BackingField: {x: 0.95, y: 1.05}
+    <VfxPrefab>k__BackingField: {fileID: 4740923590153334804, guid: 8cfee2780a2deeb4d8acbd4533a8da24, type: 3}
+    <IsVfxShownToOwner>k__BackingField: 0
+  <AbilityUsed>k__BackingField:
+    <Clips>k__BackingField:
+    - {fileID: 8300000, guid: 424ea3b5d50999f4bbb2626763bf5029, type: 3}
+    <Volume>k__BackingField: 0.8
+    <PitchRange>k__BackingField: {x: 0.95, y: 1.05}
+    <VfxPrefab>k__BackingField: {fileID: 7948600206382030837, guid: 435567e82f9e07a42abf5c4471a44c65, type: 3}
+    <IsVfxShownToOwner>k__BackingField: 0

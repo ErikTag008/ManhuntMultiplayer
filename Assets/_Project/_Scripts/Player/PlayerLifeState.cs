@@ -17,6 +17,11 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
 
         public event Action<LifeState> OnLifeStateChanged;
+        // Every instance, for feedback: a catch knocked this player, a rescue stood them up, or the bleed-out ran out.
+        // Round resets change the life state too, but raise none of these.
+        public event Action OnKnocked;
+        public event Action OnRevived;
+        public event Action OnBledOut;
 
         private readonly NetworkVariable<double> _bleedOutEndTime = new();
         private readonly NetworkVariable<bool> _isBleedOutPaused = new();
@@ -65,6 +70,7 @@ namespace Project.Assets._Project._Scripts.Player
             }
 
             _playerRegistry.SetLifeState(OwnerClientId, LifeState.Knocked);
+            NotifyKnockedRpc();
         }
 
         // Server only: a finished rescue stands the player back up
@@ -79,6 +85,7 @@ namespace Project.Assets._Project._Scripts.Player
 
             _invulnerableUntil = NetworkManager.ServerTime.Time + _runnerStats.ReviveInvulnerabilityDurationInSeconds;
             _playerRegistry.SetLifeState(OwnerClientId, LifeState.Up);
+            NotifyRevivedRpc();
         }
 
         // Server only: a rescue in progress holds the timer and keeps what was left for a cancelled rescue
@@ -198,7 +205,17 @@ namespace Project.Assets._Project._Scripts.Player
             if (!IsKnocked) return;
 
             _playerRegistry.SetLifeState(OwnerClientId, LifeState.Eliminated);
+            NotifyBledOutRpc();
         }
+
+        [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Server)]
+        private void NotifyKnockedRpc() => OnKnocked?.Invoke();
+
+        [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Server)]
+        private void NotifyRevivedRpc() => OnRevived?.Invoke();
+
+        [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Server)]
+        private void NotifyBledOutRpc() => OnBledOut?.Invoke();
 
         private static void RestartCTS(ref CancellationTokenSource cts)
         {
