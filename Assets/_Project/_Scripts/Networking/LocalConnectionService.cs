@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -14,6 +15,8 @@ namespace Project.Assets._Project._Scripts.Networking
 
         private readonly ConnectionSettings _settings;
         private readonly Action<NetworkManager.ConnectionApprovalRequest, NetworkManager.ConnectionApprovalResponse> _approvalCallback;
+        // approved clients that haven't finished connecting yet still take a slot
+        private readonly HashSet<ulong> _pendingClientIds = new();
 
         public event Action<string> OnDisconnected;
 
@@ -31,6 +34,7 @@ namespace Project.Assets._Project._Scripts.Networking
 
         public bool IsConnected => _sessionNetworkManager != null && _sessionNetworkManager.IsListening;
         public string LastFailureReason => _lastFailureReason;
+        public int TakenSlotCount => _approvingNetworkManager != null ? CountTakenSlots() : 0;
 
         // Visibility only matters to the lobby directory; a local host is reachable by address either way
         public async UniTask<bool> Host(LobbyConfig config, CancellationToken token)
@@ -39,7 +43,7 @@ namespace Project.Assets._Project._Scripts.Networking
             var networkManager = await GetIdleNetworkManager(token);
             if (networkManager == null) return Fail(_settings.HostFailedReason);
 
-            ConfigureTransport(networkManager, _settings.Address);
+            ConfigureTransport(networkManager, _settings.Address, _settings.Port);
             StartApproving(networkManager, config.MaxPlayers);
             if (!networkManager.StartHost())
             {
@@ -58,8 +62,11 @@ namespace Project.Assets._Project._Scripts.Networking
             var networkManager = await GetIdleNetworkManager(token);
             if (networkManager == null) return Fail(_settings.JoinFailedReason);
 
-            var address = string.IsNullOrWhiteSpace(target) ? _settings.Address : target.Trim();
-            ConfigureTransport(networkManager, address);
+            if (!ConnectionTarget.TryParse(target, _settings.Address, _settings.Port, out var address, out var port))
+            {
+                return Fail(string.Format(_settings.InvalidAddressReasonFormat, target));
+            }
+            ConfigureTransport(networkManager, address, port);
 
             var connectResult = new UniTaskCompletionSource<bool>();
             void HandleConnected(ulong clientId)
@@ -96,7 +103,7 @@ namespace Project.Assets._Project._Scripts.Networking
                 var reason = winnerIndex == 0
                     ? GetDisconnectReason(networkManager)
                     : string.Format(_settings.JoinTimedOutReasonFormat, _settings.ConnectTimeoutInSeconds);
-                EUtils.Logger.LogWarning($"[LocalConnectionService] Could not join {address}:{_settings.Port}. {reason}");
+                EUtils.Logger.LogWarning($"[LocalConnectionService] Could not join {address}:{port}. {reason}");
                 return Fail(reason);
             }
             finally
@@ -105,6 +112,12 @@ namespace Project.Assets._Project._Scripts.Networking
                 networkManager.OnClientConnectedCallback -= HandleConnected;
                 networkManager.OnClientStopped -= HandleStopped;
             }
+        }
+
+        public void UpdateHostedLobby(LobbyConfig config)
+        {
+            if (_approvingNetworkManager == null) return;
+            _hostedMaxPlayers = config.MaxPlayers;
         }
 
         public void Leave()
@@ -146,11 +159,11 @@ namespace Project.Assets._Project._Scripts.Networking
             return networkManager;
         }
 
-        private void ConfigureTransport(NetworkManager networkManager, string address)
+        private void ConfigureTransport(NetworkManager networkManager, string address, ushort port)
         {
             if (networkManager.NetworkConfig.NetworkTransport is UnityTransport transport)
             {
-                transport.SetConnectionData(address, _settings.Port, _settings.ServerListenAddress);
+                transport.SetConnectionData(address, port, _settings.ServerListenAddress);
             }
         }
 
@@ -161,22 +174,42 @@ namespace Project.Assets._Project._Scripts.Networking
             _approvingNetworkManager = networkManager;
             _hostedMaxPlayers = maxPlayers;
             _approvingNetworkManager.ConnectionApprovalCallback = _approvalCallback;
+            _approvingNetworkManager.OnClientConnectedCallback += HandleClientSettled;
+            _approvingNetworkManager.OnClientDisconnectCallback += HandleClientSettled;
         }
 
         private void StopApproving()
         {
-            if (_approvingNetworkManager != null && _approvingNetworkManager.ConnectionApprovalCallback == _approvalCallback)
+            if (_approvingNetworkManager != null)
             {
-                _approvingNetworkManager.ConnectionApprovalCallback = null;
+                if (_approvingNetworkManager.ConnectionApprovalCallback == _approvalCallback) _approvingNetworkManager.ConnectionApprovalCallback = null;
+                _approvingNetworkManager.OnClientConnectedCallback -= HandleClientSettled;
+                _approvingNetworkManager.OnClientDisconnectCallback -= HandleClientSettled;
             }
             _approvingNetworkManager = null;
+            _pendingClientIds.Clear();
+        }
+
+        private void HandleClientSettled(ulong clientId) => _pendingClientIds.Remove(clientId);
+
+        private int CountTakenSlots()
+        {
+            var connectedClientIds = _approvingNetworkManager.ConnectedClientsIds;
+            int pendingCount = _pendingClientIds.Count;
+            foreach (var clientId in connectedClientIds)
+            {
+                if (_pendingClientIds.Contains(clientId)) pendingCount--;
+            }
+
+            return connectedClientIds.Count + pendingCount;
         }
 
         // Netcode also runs this for the host's own client during StartHost (and always approves it), so the host is let through first
         private void ApproveConnection(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
         {
             bool isHostClient = request.ClientNetworkId == NetworkManager.ServerClientId;
-            bool isFull = !isHostClient && _approvingNetworkManager.ConnectedClientsIds.Count >= _hostedMaxPlayers;
+            bool isFull = !isHostClient && CountTakenSlots() >= _hostedMaxPlayers;
+            if (!isHostClient && !isFull) _pendingClientIds.Add(request.ClientNetworkId);
 
             response.Approved = !isFull;
             response.Reason = isFull ? _settings.LobbyFullReason : string.Empty;

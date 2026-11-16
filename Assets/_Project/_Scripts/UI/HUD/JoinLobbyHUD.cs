@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
@@ -84,6 +85,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private void Start()
         {
             _state.OnScreenChanged += HandleScreenChanged;
+            _state.OnBusyChanged += HandleBusyChanged;
             _joinButton.onClick.AddListener(JoinByAddress);
             _refreshButton.onClick.AddListener(StartRefreshing);
             _backButton.onClick.AddListener(Back);
@@ -255,6 +257,29 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
             _listStatusText.text = GetListStatus();
             LinkNavigation();
+            RestoreFocusIfLost();
+        }
+
+        // a refresh can hide or fill the focused row, and a failed join can leave nothing focused; a gamepad needs a target again
+        private void RestoreFocusIfLost()
+        {
+            if (!_panel.IsShown || _state.IsBusy) return;
+
+            var eventSystem = EventSystem.current;
+            if (eventSystem == null || IsUsable(eventSystem.currentSelectedGameObject)) return;
+
+            var firstRow = _rows.Find(row => row.gameObject.activeInHierarchy && row.Selectable.interactable);
+            if (firstRow != null) firstRow.Selectable.Select();
+            else _regionRow.Selectable.Select();
+        }
+
+        // the selectable's own flag, not IsInteractable: the busy overlay turns the whole menu off for a moment, which isn't lost focus
+        private static bool IsUsable(GameObject target) =>
+            target != null && target.activeInHierarchy && (!target.TryGetComponent(out Selectable selectable) || selectable.interactable);
+
+        private void HandleBusyChanged(bool isBusy)
+        {
+            if (!isBusy) RestoreFocusIfLost();
         }
 
         private LobbyListRow CreateLobbyRow()
@@ -298,7 +323,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private void JoinListedLobby(int index)
         {
             if (index < 0 || index >= _shownLobbies.Count) return;
-            _state.RequestJoin(_shownLobbies[index].Address);
+            var lobby = _shownLobbies[index];
+            _state.RequestJoin(ConnectionTarget.Format(lobby.Address, lobby.Port));
         }
 
         private void JoinByAddress() => _state.RequestJoin(_addressRow.Text);
@@ -309,6 +335,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             StopRefreshing();
             _state.OnScreenChanged -= HandleScreenChanged;
+            _state.OnBusyChanged -= HandleBusyChanged;
             _joinButton.onClick.RemoveListener(JoinByAddress);
             _refreshButton.onClick.RemoveListener(StartRefreshing);
             _backButton.onClick.RemoveListener(Back);

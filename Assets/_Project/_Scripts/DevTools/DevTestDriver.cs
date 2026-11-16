@@ -1,6 +1,7 @@
 using Project.Assets._Project._Scripts.Input;
 using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player;
+using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Attributes;
 using Unity.Collections;
 using Unity.Netcode;
@@ -13,6 +14,8 @@ namespace Project.Assets._Project._Scripts.DevTools
     public class DevTestDriver : MonoBehaviour
     {
         [Inject] private readonly IConnectionService _connectionService;
+        [Inject] private readonly ActiveLobbyConfig _activeLobbyConfig;
+        [Inject] private readonly LobbyMenuState _lobbyMenuState;
         [SerializeField] private NetworkManager _networkManager;
         [SerializeField] private string _messageName = "DevTestCommand";
         [SerializeField] private int _messageSizeInBytes = 32;
@@ -40,6 +43,9 @@ namespace Project.Assets._Project._Scripts.DevTools
         public void SendTeleport(ulong clientId, Vector3 position) => Send(clientId, DevTestCommandType.Teleport, false, position);
 
         public void SendLeave(ulong clientId) => Send(clientId, DevTestCommandType.Leave, false, Vector3.zero);
+
+        // the client logs its lobby config and whether its lobby menu may edit it
+        public void SendReportLobby(ulong clientId) => Send(clientId, DevTestCommandType.ReportLobby, false, Vector3.zero);
 
         private void Send(ulong clientId, DevTestCommandType type, bool flag, Vector3 vector)
         {
@@ -89,6 +95,12 @@ namespace Project.Assets._Project._Scripts.DevTools
                 return;
             }
 
+            if (type == DevTestCommandType.ReportLobby)
+            {
+                ReportLobby();
+                return;
+            }
+
             if (playerObject == null || !playerObject.TryGetComponent(out InputReader inputReader))
             {
                 EUtils.Logger.LogWarning($"[DevTestDriver] client {_networkManager.LocalClientId} has no local player for {type}.");
@@ -112,6 +124,13 @@ namespace Project.Assets._Project._Scripts.DevTools
             }
         }
 
+        private void ReportLobby()
+        {
+            var config = _activeLobbyConfig.Config;
+            EUtils.Logger.Log($"[DevTestDriver] client {_networkManager.LocalClientId} lobby: name={config.Name} map={config.MapIndex} max={config.MaxPlayers} " +
+                $"round={config.RoundDurationInSeconds} hide={config.HideDurationInSeconds} visibility={config.Visibility} canEdit={_lobbyMenuState.CanEditLobbySettings}");
+        }
+
         private void UnregisterHandler()
         {
             if (!_isHandlerRegistered) return;
@@ -133,6 +152,7 @@ namespace Project.Assets._Project._Scripts.DevTools
         InteractHeld,
         Move,
         Teleport,
-        Leave
+        Leave,
+        ReportLobby
     }
 }

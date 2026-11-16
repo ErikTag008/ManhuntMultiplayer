@@ -1,3 +1,4 @@
+using Project.Assets._Project._Scripts.Networking;
 using System;
 using System.Collections.Generic;
 
@@ -11,17 +12,22 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private bool _isOpen;
         private int _selectedAbilityId;
         private bool _isReady;
+        private bool _canEditLobbySettings;
 
         public event Action<bool> OnOpenChanged;
         public event Action OnAbilityOptionsChanged;
         public event Action OnChoiceChanged;
         public event Action<int> OnAbilityPickRequested;
         public event Action OnReadyToggleRequested;
+        public event Action<bool> OnCanEditLobbySettingsChanged;
+        public event Action<LobbyConfig> OnLobbyConfigChangeRequested;
 
         public bool IsOpen => _isOpen;
         public IReadOnlyList<LobbyOption> AbilityOptions => _abilityOptions;
         public int SelectedAbilityId => _selectedAbilityId;
         public bool IsReady => _isReady;
+        // only the host, and only before the countdown starts
+        public bool CanEditLobbySettings => _canEditLobbySettings;
 
         public void ToggleOpen(bool isOpen)
         {
@@ -50,6 +56,20 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public void RequestAbilityPick(int abilityId) => OnAbilityPickRequested?.Invoke(abilityId);
 
         public void RequestReadyToggle() => OnReadyToggleRequested?.Invoke();
+
+        public void ToggleCanEditLobbySettings(bool canEdit)
+        {
+            if (_canEditLobbySettings == canEdit) return;
+
+            _canEditLobbySettings = canEdit;
+            OnCanEditLobbySettingsChanged?.Invoke(canEdit);
+        }
+
+        public void RequestLobbyConfigChange(LobbyConfig config)
+        {
+            if (!_canEditLobbySettings) return;
+            OnLobbyConfigChangeRequested?.Invoke(config);
+        }
     }
 
     public readonly struct LobbyOption

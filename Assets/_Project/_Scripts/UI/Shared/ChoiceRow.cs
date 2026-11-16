@@ -42,6 +42,13 @@ namespace Project.Assets._Project._Scripts.UI.Shared
             _valueText.text = _options.Count == 0 ? string.Empty : _options[_index];
         }
 
+        // a read-only row shows its value without the arrows
+        public void ToggleEditable(bool isEditable)
+        {
+            if (_previousButton.gameObject.activeSelf != isEditable) _previousButton.gameObject.SetActive(isEditable);
+            if (_nextButton.gameObject.activeSelf != isEditable) _nextButton.gameObject.SetActive(isEditable);
+        }
+
         private void SelectPrevious() => Step(-1);
 
         private void SelectNext() => Step(1);

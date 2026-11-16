@@ -3,6 +3,7 @@ using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player;
 using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.UI;
+using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Attributes;
 using Reflex.Extensions;
 using Reflex.Injectors;
@@ -21,6 +22,9 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly GameLobbySettings _gameLobbySettings;
         [Inject] private readonly GameScenes _gameScenes;
         [Inject] private readonly ActiveLobbyConfig _activeLobbyConfig;
+        [Inject] private readonly IMapCatalog _mapCatalog;
+        [Inject] private readonly IConnectionService _connectionService;
+        [Inject] private readonly LobbyMenuState _lobbyMenuState;
         [SerializeField, Self] private PlayerRegistry _playerRegistry;
         [SerializeField, Self] private GameStateMachine _gameStateMachine;
         [SerializeField] private string _catchersWinTitle = "Catchers win!";
@@ -60,8 +64,11 @@ namespace Project.Assets._Project._Scripts.Managers
             EUtils.Logger.LogColorized($"[GameManager] Called OnNetworkSpawn for Client {NetworkManager.Singleton.LocalClientId}...", "yellow");
             EUtils.Logger.LogColorized($"[GameManager] IsHost = {IsHost}...", "yellow");
             EUtils.Logger.LogColorized($"[GameManager] IsClient = {IsClient}...", "yellow");
+            // project-scoped events outlive this object, so every one is dropped again in OnNetworkDespawn
             _uiManager.OnRequestLobbyUIInitialization += HandleLobbyUIInitialization;
             _uiManager.OnRequestGameUIInitialization += HandleGameUIInitialization;
+            _uiManager.OnRequestGameStart += HandleGameStartRequest;
+            _lobbyMenuState.OnLobbyConfigChangeRequested += HandleLobbyConfigChangeRequested;
             EUtils.Logger.Log($"Spawn: State={_gameStateMachine.CurrentState}, PlayerCount={_playerRegistry.PlayerCount}");
             if (!IsServer) return;
 
@@ -98,8 +105,6 @@ namespace Project.Assets._Project._Scripts.Managers
                 SubscribeToServerChanges();
                 OnStateChanged(_gameStateMachine.CurrentState, _gameStateMachine.CurrentState);
                 ShowPlayerCount();
-
-                _uiManager.OnRequestGameStart += HandleGameStartRequest;
             }
             if (IsClient)
             {
@@ -113,9 +118,24 @@ namespace Project.Assets._Project._Scripts.Managers
             _gameStateMachine.RequestGameStart();
         }
 
+        // Host only: the lobby can still change the config until the countdown starts; the next round reads it
+        private void HandleLobbyConfigChangeRequested(LobbyConfig config)
+        {
+            if (!IsHost || !IsLobbyConfigEditable(_gameStateMachine.CurrentState)) return;
+            if (config.MapIndex < 0 || config.MapIndex >= _mapCatalog.MapCount) return;
+            if (config.MaxPlayers < Mathf.Max(NetworkManager.ConnectedClientsIds.Count, _connectionService.TakenSlotCount)) return;
+
+            _activeLobbyConfig.Set(config);
+            _connectionService.UpdateHostedLobby(config);
+        }
+
+        private static bool IsLobbyConfigEditable(GameState state) => state == GameState.Lobby || state == GameState.WaitingForPlayers;
+
         public override void OnNetworkDespawn()
         {
+            UnsubscribeFromUI();
             UnsubscribeFromServerChanges();
+            _lobbyMenuState.ToggleCanEditLobbySettings(false);
             if (IsServer)
             {
                 _gameStateMachine.StopGameLoop();
@@ -138,6 +158,17 @@ namespace Project.Assets._Project._Scripts.Managers
             _gameStateMachine.OnLastRoundResultChanged += HandleLastRoundResultChanged;
             _playerRegistry.OnSessionsChanged += ShowPlayerCount;
             _activeLobbyConfig.OnChanged += HandleLobbyConfigChanged;
+        }
+
+        private void UnsubscribeFromUI()
+        {
+            if (_uiManager != null)
+            {
+                _uiManager.OnRequestLobbyUIInitialization -= HandleLobbyUIInitialization;
+                _uiManager.OnRequestGameUIInitialization -= HandleGameUIInitialization;
+                _uiManager.OnRequestGameStart -= HandleGameStartRequest;
+            }
+            if (_lobbyMenuState != null) _lobbyMenuState.OnLobbyConfigChangeRequested -= HandleLobbyConfigChangeRequested;
         }
 
         private void UnsubscribeFromServerChanges()
@@ -171,6 +202,7 @@ namespace Project.Assets._Project._Scripts.Managers
         private void RefreshStartAvailability()
         {
             _uiManager.ChangeStartGameButtonVisibility(IsHost);
+            _lobbyMenuState.ToggleCanEditLobbySettings(IsHost && IsLobbyConfigEditable(_gameStateMachine.CurrentState));
             if (!IsHost)
             {
                 _uiManager.ChangeStartGameButtonAvailability(false);
@@ -184,7 +216,6 @@ namespace Project.Assets._Project._Scripts.Managers
 
         private void OnStateChanged(GameState previous, GameState current)
         {
-            print($"Game State Changed to {current}");
             RefreshStartAvailability();
             switch (current)
             {
@@ -242,6 +273,7 @@ namespace Project.Assets._Project._Scripts.Managers
         public override void OnDestroy()
         {
             base.OnDestroy();
+            UnsubscribeFromUI();
             SceneManager.sceneLoaded -= OnSceneLoaded;
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
         }
