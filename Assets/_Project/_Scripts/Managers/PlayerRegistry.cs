@@ -96,6 +96,15 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
+        // nobody is left to rescue them, so their bleed-out ends here instead of running on through the results
+        public void EliminateKnockedPlayers()
+        {
+            for (int i = 0; i < _sessions.Count; i++)
+            {
+                if (_sessions[i].LifeState == LifeState.Knocked) SetLifeState(_sessions[i].ClientId, LifeState.Eliminated);
+            }
+        }
+
         // Teams are rolled each round, so the lobby is neutral: default model, no weapon, everyone up and not ready.
         // The ability pick is kept between rounds.
         public void ResetForLobby()

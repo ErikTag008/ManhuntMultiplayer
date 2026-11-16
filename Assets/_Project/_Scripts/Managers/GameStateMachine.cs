@@ -128,6 +128,7 @@ namespace Project.Assets._Project._Scripts.Managers
                 _countdownEndTime.Value = NetworkManager.ServerTime.Time + config.RoundDurationInSeconds;
                 _state.Value = GameState.Playing;
                 var result = await PlayRound(token);
+                if (result == RoundResult.CatchersWin) _playerRegistry.EliminateKnockedPlayers();
 
                 _state.Value = GameState.DeterminingWinner;
                 _countdownEndTime.Value = NetworkManager.ServerTime.Time;
