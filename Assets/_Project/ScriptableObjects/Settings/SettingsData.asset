@@ -80,7 +80,7 @@ MonoBehaviour:
     <Action>k__BackingField: {fileID: 1903506563957944628, guid: c396ece31d49f4148abf609015547b3f, type: 3}
     <CompositePart>k__BackingField: 
     <HasGamepadBinding>k__BackingField: 1
-    <ShareGroup>k__BackingField: Catch/Spectate
+    <ShareGroup>k__BackingField: SpectateNext, SpectatePrevious
   - <DisplayName>k__BackingField: Ability
     <Action>k__BackingField: {fileID: 7415530987008885037, guid: c396ece31d49f4148abf609015547b3f, type: 3}
     <CompositePart>k__BackingField: 
@@ -95,12 +95,12 @@ MonoBehaviour:
     <Action>k__BackingField: {fileID: -756349785758388124, guid: c396ece31d49f4148abf609015547b3f, type: 3}
     <CompositePart>k__BackingField: 
     <HasGamepadBinding>k__BackingField: 1
-    <ShareGroup>k__BackingField: Catch/Spectate
+    <ShareGroup>k__BackingField: SpectateNext
   - <DisplayName>k__BackingField: Spectate previous
     <Action>k__BackingField: {fileID: -3242120720471163448, guid: c396ece31d49f4148abf609015547b3f, type: 3}
     <CompositePart>k__BackingField: 
     <HasGamepadBinding>k__BackingField: 1
-    <ShareGroup>k__BackingField: Catch/Spectate
+    <ShareGroup>k__BackingField: SpectatePrevious
   - <DisplayName>k__BackingField: Pause menu
     <Action>k__BackingField: {fileID: -8338598726356848359, guid: c396ece31d49f4148abf609015547b3f, type: 3}
     <CompositePart>k__BackingField: 

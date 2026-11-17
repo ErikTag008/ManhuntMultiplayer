@@ -313,11 +313,11 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _navigationRows.Clear();
             LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)_filterContainer);
             LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)_listContainer);
-            NavigationGrid.AddRows(_filterContainer, _navigationRows);
-            NavigationGrid.AddRows(_listContainer, _navigationRows);
+            EUtils.UI.AddNavigationRows(_filterContainer, _navigationRows);
+            EUtils.UI.AddNavigationRows(_listContainer, _navigationRows);
             _navigationRows.Add(new List<Selectable> { _addressRow.Selectable, _joinButton });
             _navigationRows.Add(new List<Selectable> { _refreshButton, _backButton });
-            NavigationGrid.Link(_navigationRows);
+            EUtils.UI.LinkNavigation(_navigationRows);
         }
 
         private void JoinListedLobby(int index)

@@ -1,3 +1,4 @@
+using KBCore.Refs;
 using Project.Assets._Project._Scripts.Settings;
 using Reflex.Attributes;
 using UnityEngine;
@@ -12,21 +13,15 @@ namespace Project.Assets._Project._Scripts.UI.HUD
     // Menus still choose their own first selection; this only restores the last usable one on a navigate press.
     // Stays out of the way while a key is being rebound: that clears the focus on purpose, so the bound key can't also press a button.
     [RequireComponent(typeof(EventSystem), typeof(InputSystemUIInputModule))]
-    public class SelectionKeeper : MonoBehaviour
+    public class SelectionKeeper : ValidatedMonoBehaviour
     {
         [Inject] private readonly KeybindService _keybinds;
-        [SerializeField] private EventSystem _eventSystem;
-        [SerializeField] private InputSystemUIInputModule _inputModule;
+        [SerializeField, Self] private EventSystem _eventSystem;
+        [SerializeField, Self] private InputSystemUIInputModule _inputModule;
 
         private InputAction _navigateAction;
         private GameObject _lastSelected;
         private bool _isRestorePending;
-
-        private void Reset()
-        {
-            _eventSystem = GetComponent<EventSystem>();
-            _inputModule = GetComponent<InputSystemUIInputModule>();
-        }
 
         private void OnEnable()
         {

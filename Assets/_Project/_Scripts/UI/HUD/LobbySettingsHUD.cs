@@ -184,8 +184,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             _navigationRows.Clear();
             LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)_container);
-            NavigationGrid.AddRows(_container, _navigationRows);
-            NavigationGrid.Link(_navigationRows);
+            EUtils.UI.AddNavigationRows(_container, _navigationRows);
+            EUtils.UI.LinkNavigation(_navigationRows);
 
             var leftTarget = _leftNeighbourList.GetSelectedSelectable();
             foreach (var row in _navigationRows)

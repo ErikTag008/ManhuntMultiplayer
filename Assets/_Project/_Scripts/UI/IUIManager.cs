@@ -17,9 +17,6 @@ namespace Project.Assets._Project._Scripts.UI
         event Action OnRequestGameUIInitialization;
         event Action OnRequestGameStart;
         event Action<string, string> OnResultsShown;
-        event Action<bool> OnBlindfoldToggled;
-
-        bool IsBlindfolded { get; }
 
         void RaiseHostStart();
         void RaiseClientStart();
@@ -34,6 +31,5 @@ namespace Project.Assets._Project._Scripts.UI
         void RequestLobbyUIInitialization();
         void RequestGameUIInitialization();
         void ShowResults(string title, string subtitle);
-        void ToggleBlindfold(bool isBlindfolded);
     }
 }

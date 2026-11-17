@@ -143,9 +143,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             _navigationRows.Clear();
             LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)_container);
-            NavigationGrid.AddRows(_container, _navigationRows);
+            EUtils.UI.AddNavigationRows(_container, _navigationRows);
             _navigationRows.Add(new List<Selectable> { _createButton, _backButton });
-            NavigationGrid.Link(_navigationRows);
+            EUtils.UI.LinkNavigation(_navigationRows);
         }
 
         // The option lists are never empty (a range always holds its min), so the row indices are valid

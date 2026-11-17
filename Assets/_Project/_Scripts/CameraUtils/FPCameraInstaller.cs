@@ -24,13 +24,11 @@ namespace Project.Assets._Project._Scripts.CameraUtils
         private void Start()
         {
             CinemachineCore.CameraUpdatedEvent.AddListener(OnCameraUpdate);
-
         }
 
         private void OnDestroy()
         {
             CinemachineCore.CameraUpdatedEvent.RemoveListener(OnCameraUpdate);
-
         }
 
         private void OnCameraUpdate(CinemachineBrain brain)
@@ -53,16 +51,10 @@ namespace Project.Assets._Project._Scripts.CameraUtils
 
         public void BindCameraToPlayer(IFirstPersonCameraTarget player)
         {
-            print(EUtils.Logger.Colorize("Bind Camera Was Called", "blue"));
-            if (player == null)
-            {
-                print(EUtils.Logger.Colorize("PLAYER IS NULL TO THE FPCAMERA", "red"));
-                return;
-            }
+            if (player == null) return;
+
             _camera.Target.TrackingTarget = player.CameraTarget;
             _inputReader = player.InputReader;
-            print(EUtils.Logger.Colorize("Successfully Binded Camera To Player", "green"));
-
         }
     }
 }

@@ -1,3 +1,4 @@
+using KBCore.Refs;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -8,10 +9,10 @@ namespace Project.Assets._Project._Scripts.UI.Shared
     // Outline around the focused selectable of this frame's canvas, so keyboard and gamepad players see where they are.
     // Keep it the canvas's last child so it draws on top; it fades with the panels the focused selectable sits in.
     [RequireComponent(typeof(CanvasGroup))]
-    public class SelectionFrame : MonoBehaviour
+    public class SelectionFrame : ValidatedMonoBehaviour
     {
-        [SerializeField] private RectTransform _frame;
-        [SerializeField] private CanvasGroup _canvasGroup;
+        [SerializeField, Self] private RectTransform _frame;
+        [SerializeField, Self] private CanvasGroup _canvasGroup;
         // space between the selectable's edge and the outline
         [SerializeField] private float _padding = 6f;
 
@@ -19,12 +20,6 @@ namespace Project.Assets._Project._Scripts.UI.Shared
         private readonly List<CanvasGroup> _parentGroups = new();
         private Transform _canvasRoot;
         private RectTransform _frameParent;
-
-        private void Reset()
-        {
-            _frame = transform as RectTransform;
-            _canvasGroup = GetComponent<CanvasGroup>();
-        }
 
         private void Awake()
         {

@@ -7,6 +7,13 @@
       "dependencies": {},
       "hash": "33e88d06919e847a4c5c6adca4a928e418c1ea69"
     },
+    "com.community.netcode.transport.facepunch": {
+      "version": "https://github.com/Unity-Technologies/multiplayer-community-contributions.git?path=/Transports/com.community.netcode.transport.facepunch#0fab638470379ace12b0149dfb41c043d23dbce5",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "0fab638470379ace12b0149dfb41c043d23dbce5"
+    },
     "com.coplaydev.unity-mcp": {
       "version": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main",
       "depth": 0,

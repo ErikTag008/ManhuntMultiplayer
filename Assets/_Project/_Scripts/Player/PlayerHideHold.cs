@@ -1,6 +1,5 @@
 using KBCore.Refs;
 using Reflex.Attributes;
-using System;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -14,8 +13,6 @@ namespace Project.Assets._Project._Scripts.Player
     {
         [Inject] private readonly HidePhase _hidePhase;
         [SerializeField, Self] private PlayerTeam _team;
-
-        public event Action<bool> OnHeldChanged;
 
         private bool _isHeld;
 
@@ -38,13 +35,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void RefreshHeld() => ToggleHeld(_hidePhase.IsActive && _team.Team == Team.Catcher);
 
-        private void ToggleHeld(bool isHeld)
-        {
-            if (_isHeld == isHeld) return;
-
-            _isHeld = isHeld;
-            OnHeldChanged?.Invoke(isHeld);
-        }
+        private void ToggleHeld(bool isHeld) => _isHeld = isHeld;
 
         public override void OnNetworkDespawn()
         {

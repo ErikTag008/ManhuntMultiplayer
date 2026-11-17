@@ -76,14 +76,14 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             var page = _tabs[_currentTab].Page.transform;
             LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)_tabList.transform);
             LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)page);
-            NavigationGrid.AddRows(page, _navigationRows);
+            EUtils.UI.AddNavigationRows(page, _navigationRows);
             bool hasPageRows = _navigationRows.Count > 1;
 
             _navigationRows.Add(new List<Selectable> { _resetButton, _backButton });
-            NavigationGrid.Link(_navigationRows);
+            EUtils.UI.LinkNavigation(_navigationRows);
 
             var openTab = _tabList.GetSelectedSelectable();
-            if (hasPageRows && openTab != null) NavigationGrid.SetUp(_navigationRows[1], openTab);
+            if (hasPageRows && openTab != null) EUtils.UI.SetNavigationUp(_navigationRows[1], openTab);
         }
 
         private void ResetCurrentTab()

@@ -19,12 +19,6 @@ namespace Project.Assets._Project._Scripts.UI
         public event Action OnRequestGameUIInitialization;
         public event Action OnRequestGameStart;
         public event Action<string, string> OnResultsShown;
-        public event Action<bool> OnBlindfoldToggled;
-
-        private bool _isBlindfolded;
-
-        public bool IsBlindfolded => _isBlindfolded;
-
 
         public void RaiseHostStart() => OnHostStart?.Invoke();
         public void RaiseClientStart() => OnClientStart?.Invoke();
@@ -39,13 +33,5 @@ namespace Project.Assets._Project._Scripts.UI
         public void RequestLobbyUIInitialization() => OnRequestLobbyUIInitialization?.Invoke(); 
         public void RequestGameUIInitialization() => OnRequestGameUIInitialization?.Invoke();
         public void ShowResults(string title, string subtitle) => OnResultsShown?.Invoke(title, subtitle);
-
-        public void ToggleBlindfold(bool isBlindfolded)
-        {
-            if (_isBlindfolded == isBlindfolded) return;
-
-            _isBlindfolded = isBlindfolded;
-            OnBlindfoldToggled?.Invoke(isBlindfolded);
-        }
     }
 }

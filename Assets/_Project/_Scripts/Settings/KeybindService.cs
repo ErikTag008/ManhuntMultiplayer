@@ -74,9 +74,9 @@ namespace Project.Assets._Project._Scripts.Settings
                 .WithCancelingThrough(_data.RebindCancelPath)
                 .WithTimeout(_data.RebindTimeoutInSeconds)
                 .OnMatchWaitForAnother(0f)
-                .OnApplyBinding((_, path) =>
+                .OnApplyBinding((operation, path) =>
                 {
-                    if (TryFindConflict(entry, action, bindingIndex, path, isGamepad, out conflictControl, out conflictActionName)) return;
+                    if (TryFindConflict(entry, action, bindingIndex, operation.selectedControl, isGamepad, out conflictControl, out conflictActionName)) return;
 
                     action.ApplyBindingOverride(bindingIndex, path);
                 })
@@ -101,11 +101,14 @@ namespace Project.Assets._Project._Scripts.Settings
             _rebindOperation.Start();
         }
 
-        // Any other binding of the same device group in the action's map, rebindable or not (e.g. Pause on Start), unless both rows share a group
-        private bool TryFindConflict(KeybindEntry entry, InputAction action, int bindingIndex, string path, bool isGamepad, out string control, out string actionName)
+        // Any other binding of the same device group in the action's map, rebindable or not (e.g. Pause on Start), unless both rows share a group.
+        // Matched against the pressed control, so a binding written another way (a device layout, a usage) still counts.
+        private bool TryFindConflict(KeybindEntry entry, InputAction action, int bindingIndex, InputControl selectedControl, bool isGamepad, out string control, out string actionName)
         {
             control = null;
             actionName = null;
+            if (selectedControl == null) return false;
+
             var mask = InputBinding.MaskByGroup(isGamepad ? _data.GamepadGroup : _data.KeyboardMouseGroup);
             foreach (var other in action.actionMap.actions)
             {
@@ -116,7 +119,7 @@ namespace Project.Assets._Project._Scripts.Settings
 
                     var binding = bindings[i];
                     if (binding.isComposite || !mask.Matches(binding)) continue;
-                    if (!string.Equals(binding.effectivePath, path, StringComparison.OrdinalIgnoreCase)) continue;
+                    if (string.IsNullOrEmpty(binding.effectivePath) || !InputControlPath.Matches(binding.effectivePath, selectedControl)) continue;
 
                     var otherEntry = FindEntry(other, i, isGamepad);
                     if (entry.CanShareKeyWith(otherEntry)) continue;
