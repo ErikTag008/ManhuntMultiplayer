@@ -132,9 +132,10 @@ namespace Project.Assets._Project._Scripts.Managers
                 _countdownEndTime.Value = NetworkManager.ServerTime.Time + config.RoundDurationInSeconds;
                 _state.Value = GameState.Playing;
                 var result = await PlayRound(token);
-                if (result == RoundResult.CatchersWin) _playerRegistry.EliminateKnockedPlayers();
 
                 _state.Value = GameState.DeterminingWinner;
+                // after the hunt ends, so runners put out here stay spectators instead of becoming ghosts
+                if (result == RoundResult.CatchersWin) _playerRegistry.EliminateKnockedPlayers();
                 _countdownEndTime.Value = NetworkManager.ServerTime.Time;
                 _lastRoundResult.Value = result;
                 EUtils.Logger.Log($"[GameStateMachine] Round over: {result}");

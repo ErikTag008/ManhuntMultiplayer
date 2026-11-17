@@ -23,6 +23,7 @@ namespace Project.Assets._Project._Scripts.DI
         public FPCameraInstaller FPCameraInstaller => _fpcameraInstaller;
         public SpectatorCamera SpectatorCamera => null;
         public ILobbyUI LobbyUI => _lobbyUI;
+        public MapBounds MapBounds => null;
 
         [Inject]
         private void RegisterActiveCamera(ActiveCameraProvider activeCameraProvider)

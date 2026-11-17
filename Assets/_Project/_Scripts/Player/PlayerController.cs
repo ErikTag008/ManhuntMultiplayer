@@ -22,7 +22,7 @@ namespace Project.Assets._Project._Scripts.Player
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerLifeState), typeof(PlayerCombat))]
     [RequireComponent(typeof(PlayerNetworkSync), typeof(PlayerCameraBinder), typeof(PlayerRescue))]
     [RequireComponent(typeof(PlayerSpectator), typeof(PlayerLobbyChoices))]
-    [RequireComponent(typeof(PlayerPosture), typeof(PlayerDropEffects))]
+    [RequireComponent(typeof(PlayerPosture), typeof(PlayerDropEffects), typeof(PlayerGhost))]
     public class PlayerController : NetworkBehaviour, ISceneInitialized, IFirstPersonCameraTarget
     {
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
@@ -47,6 +47,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerLobbyChoices _lobbyChoices;
         [SerializeField, Self] private PlayerPosture _posture;
         [SerializeField, Self] private PlayerDropEffects _dropEffects;
+        [SerializeField, Self] private PlayerGhost _ghost;
         [SerializeField] private Transform _groundCheck;
         [SerializeField] private Transform _cameraTarget;
         [SerializeField] private Transform _cameraFollower;
@@ -126,6 +127,7 @@ namespace Project.Assets._Project._Scripts.Player
             _networkRb.SetAngularVelocity(Vector3.zero);
             _networkRb.SetPosition(position);
             _networkRb.SetRotation(rotation);
+            _ghost.HandleTeleported();
             _movement?.ToggleMovement(CanMove);
         }
 
@@ -140,11 +142,13 @@ namespace Project.Assets._Project._Scripts.Player
                 EUtils.Logger.LogError($"[PlayerController] No {sceneType} scene context registered.");
                 _cameraBinder.Unbind();
                 _spectator.ChangeSpectatorCamera(null);
+                _ghost.ChangeMapBounds(null);
                 return;
             }
 
             _cameraBinder.Bind(sceneContext, this);
             _spectator.ChangeSpectatorCamera(sceneContext.SpectatorCamera);
+            _ghost.ChangeMapBounds(sceneContext.MapBounds);
             CreateMovementIfNeeded();
             if (_movement != null && _cameraBinder.Camera != null) _movement.ChangeCamera(_cameraBinder.Camera);
             // a menu can stay open across the load (pause is project-wide), and the new scene's rig starts with look on
@@ -162,6 +166,7 @@ namespace Project.Assets._Project._Scripts.Player
             if (!IsOwner) return;
 
             _spectator.ChangeSpectatorCamera(null);
+            _ghost.ChangeMapBounds(null);
             if (sceneType != SceneType.Lobby) return;
 
             UnbindLobbyInput();

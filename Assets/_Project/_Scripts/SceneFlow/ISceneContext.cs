@@ -14,5 +14,7 @@ namespace Project.Assets._Project._Scripts.SceneFlow
         SpectatorCamera SpectatorCamera { get; }
         // Null outside the lobby
         ILobbyUI LobbyUI { get; }
+        // Null outside gameplay, or when the map has none
+        MapBounds MapBounds { get; }
     }
 }

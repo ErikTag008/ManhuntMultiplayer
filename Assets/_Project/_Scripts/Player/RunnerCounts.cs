@@ -2,18 +2,20 @@ using System.Collections.Generic;
 
 namespace Project.Assets._Project._Scripts.Player
 {
-    // How many runners are up, knocked and eliminated in a set of sessions
+    // How many runners are up, knocked and eliminated in a set of sessions, and how many catchers there are
     public readonly struct RunnerCounts
     {
         public readonly int Up;
         public readonly int Knocked;
         public readonly int Eliminated;
+        public readonly int Catchers;
 
-        public RunnerCounts(int up, int knocked, int eliminated)
+        public RunnerCounts(int up, int knocked, int eliminated, int catchers)
         {
             Up = up;
             Knocked = knocked;
             Eliminated = eliminated;
+            Catchers = catchers;
         }
 
         public static RunnerCounts From(IEnumerable<PlayerSession> sessions)
@@ -21,8 +23,10 @@ namespace Project.Assets._Project._Scripts.Player
             int up = 0;
             int knocked = 0;
             int eliminated = 0;
+            int catchers = 0;
             foreach (var session in sessions)
             {
+                if (session.Team == Team.Catcher) catchers++;
                 if (session.Team != Team.Runner) continue;
 
                 switch (session.LifeState)
@@ -39,7 +43,7 @@ namespace Project.Assets._Project._Scripts.Player
                 }
             }
 
-            return new RunnerCounts(up, knocked, eliminated);
+            return new RunnerCounts(up, knocked, eliminated, catchers);
         }
     }
 }

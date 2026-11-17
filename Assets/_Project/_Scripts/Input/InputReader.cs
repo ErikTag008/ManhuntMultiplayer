@@ -35,6 +35,7 @@ namespace Project.Assets._Project._Scripts.Input
         public bool IsUsingMouse => _playerInput.currentControlScheme == _keyboardMouseControlScheme;
         public bool IsWalkHeld { get; private set; }
         public bool IsCrouchHeld { get; private set; }
+        public bool IsJumpHeld { get; private set; }
         public InputActionAsset Actions => _playerInput.actions;
 
         public void Move(InputAction.CallbackContext context)
@@ -79,10 +80,12 @@ namespace Project.Assets._Project._Scripts.Input
         {
             if (context.performed)
             {
+                IsJumpHeld = true;
                 OnJump?.Invoke(true);
             }
             else if (context.canceled)
             {
+                IsJumpHeld = false;
                 OnJump?.Invoke(false);
             }
         }

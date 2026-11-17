@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
-    // Gameplay HUD: runner counts for everyone, plus the local player's bleed-out bar, rescue ring, ability, drop effect
+    // Gameplay HUD: catcher and runner counts for everyone, plus the local player's bleed-out bar, rescue ring, ability, drop effect
     // and, for catchers, markers over revealed runners
     public class GameHUD : MonoBehaviour
     {
@@ -17,6 +17,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [Inject] private readonly ControlSchemeState _controlScheme;
         [SerializeField] private TMP_Text _runnerCountsText;
         [SerializeField] private string _runnerCountsFormat = "Up {0}  ·  Knocked {1}  ·  Out {2}";
+        // shown before the runner counts in the same label
+        [SerializeField] private string _catcherCountFormat = "Catchers {0}";
+        [SerializeField] private string _countsSeparator = "  ·  ";
         [SerializeField] private FadePanel _bleedOutPanel;
         [SerializeField] private FillMeter _bleedOutMeter;
         [SerializeField] private string _bleedOutLabelFormat = "{0:0}";
@@ -63,7 +66,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         }
 
         private void HandleRunnerCountsChanged() =>
-            _runnerCountsText.text = string.Format(_runnerCountsFormat, _state.RunnersUp, _state.RunnersKnocked, _state.RunnersOut);
+            _runnerCountsText.text = string.Format(_catcherCountFormat, _state.Catchers) + _countsSeparator
+                + string.Format(_runnerCountsFormat, _state.RunnersUp, _state.RunnersKnocked, _state.RunnersOut);
 
         private void HandleBleedOutChanged()
         {

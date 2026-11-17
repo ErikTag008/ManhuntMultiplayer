@@ -814,6 +814,7 @@ GameObject:
   - component: {fileID: 6824229384966564008}
   - component: {fileID: 5562349592101709355}
   - component: {fileID: 8827356498442155708}
+  - component: {fileID: 2243932752006811638}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -898,6 +899,7 @@ MonoBehaviour:
   _lobbyChoices: {fileID: 1196470119741336347}
   _posture: {fileID: 6150287395128894317}
   _dropEffects: {fileID: 439525795068621114}
+  _ghost: {fileID: 2243932752006811638}
   _groundCheck: {fileID: 7460693758395271466}
   _cameraTarget: {fileID: 4853491123650079907}
   _cameraFollower: {fileID: 3526512074580094625}
@@ -1349,6 +1351,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _lifeState: {fileID: 1513991399820021913}
   _inputReader: {fileID: 4851020409925496502}
+  _ghost: {fileID: 2243932752006811638}
 --- !u!114 &7900401039691343269
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1383,6 +1386,7 @@ MonoBehaviour:
   _dropEffects: {fileID: 439525795068621114}
   _cameraBinder: {fileID: 36421261748081134}
   _combat: {fileID: 91084392635682791}
+  _ghost: {fileID: 2243932752006811638}
   _revealMarkerHeightInMeters: 2.2
   _revealMarkerEdgeMargin: 0.05
   _stationMarkerHeightInMeters: 2.5
@@ -1608,6 +1612,25 @@ MonoBehaviour:
   _heartbeatSource: {fileID: 6019627117832639252}
   _musicSource: {fileID: 1753878514064105712}
   _data: {fileID: 11400000, guid: c8be07e6a87cdd44aaf49f4f0a4f36ab, type: 2}
+--- !u!114 &2243932752006811638
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c93c72eb4bf8e104d9ad50eaf859dbd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerGhost
+  ShowTopMostFoldoutHeaderGroup: 1
+  _lifeState: {fileID: 1513991399820021913}
+  _team: {fileID: 2895491558510482950}
+  _rb: {fileID: 4515986925934261871}
+  _inputReader: {fileID: 4851020409925496502}
+  _cameraBinder: {fileID: 36421261748081134}
+  _spectator: {fileID: 3464033196263984798}
 --- !u!1 &8770936375934030648
 GameObject:
   m_ObjectHideFlags: 0

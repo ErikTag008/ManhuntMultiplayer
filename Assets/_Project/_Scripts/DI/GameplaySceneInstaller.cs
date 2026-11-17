@@ -13,6 +13,8 @@ namespace Project.Assets._Project._Scripts.DI
         [SerializeField] private Camera _gameplayCamera;
         [SerializeField, Scene] private FPCameraInstaller _fpcameraInstaller;
         [SerializeField, Scene] private SpectatorCamera _spectatorCamera;
+        // optional: without it ghosts can fly anywhere
+        [SerializeField, Scene(Flag.Optional)] private MapBounds _mapBounds;
 
         private ActiveCameraProvider _activeCameraProvider;
         private SceneContextProvider _sceneContextProvider;
@@ -22,6 +24,7 @@ namespace Project.Assets._Project._Scripts.DI
         public FPCameraInstaller FPCameraInstaller => _fpcameraInstaller;
         public SpectatorCamera SpectatorCamera => _spectatorCamera;
         public ILobbyUI LobbyUI => null;
+        public MapBounds MapBounds => _mapBounds;
 
         [Inject]
         private void RegisterActiveCamera(ActiveCameraProvider activeCameraProvider)

@@ -11,11 +11,12 @@ namespace Project.Assets._Project.Tests.EditMode
             new() { ClientId = clientId, Team = team, LifeState = lifeState };
 
         [Test]
-        public void RunnerCounts_CountsOnlyRunnersByLifeState()
+        public void RunnerCounts_CountsRunnersByLifeStateAndCatchers()
         {
             var sessions = new List<PlayerSession>
             {
                 Session(0, Team.Catcher, LifeState.Up),
+                Session(6, Team.Catcher, LifeState.Eliminated),
                 Session(1, Team.Runner, LifeState.Up),
                 Session(2, Team.Runner, LifeState.Up),
                 Session(3, Team.Runner, LifeState.Knocked),
@@ -28,13 +29,14 @@ namespace Project.Assets._Project.Tests.EditMode
             Assert.AreEqual(2, counts.Up);
             Assert.AreEqual(1, counts.Knocked);
             Assert.AreEqual(1, counts.Eliminated);
+            Assert.AreEqual(2, counts.Catchers);
         }
 
         [Test]
         public void RunnerCounts_NoSessions_AllZero()
         {
             var counts = RunnerCounts.From(new List<PlayerSession>());
-            Assert.AreEqual(0, counts.Up + counts.Knocked + counts.Eliminated);
+            Assert.AreEqual(0, counts.Up + counts.Knocked + counts.Eliminated + counts.Catchers);
         }
 
         [TestCase(25f, "0:25")]

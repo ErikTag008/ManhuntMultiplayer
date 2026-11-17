@@ -10,13 +10,15 @@ namespace Project.Assets._Project._Scripts.Player
 {
     // Owner only: while this player is eliminated, the scene's spectator camera orbits another player still in the round.
     // Next/previous cycle through those players in client id order; nothing to watch keeps the last view.
-    [RequireComponent(typeof(PlayerLifeState), typeof(InputReader))]
+    // A ghost flies instead and only watches after switching to this view.
+    [RequireComponent(typeof(PlayerLifeState), typeof(InputReader), typeof(PlayerGhost))]
     public class PlayerSpectator : NetworkBehaviour
     {
         [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
         [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
         [SerializeField, Self] private PlayerLifeState _lifeState;
         [SerializeField, Self] private InputReader _inputReader;
+        [SerializeField, Self] private PlayerGhost _ghost;
 
         private readonly List<ulong> _candidateIds = new();
         private SpectatorCamera _spectatorCamera;
@@ -31,6 +33,8 @@ namespace Project.Assets._Project._Scripts.Player
             if (!IsOwner) return;
 
             _lifeState.OnLifeStateChanged += HandleLifeStateChanged;
+            _ghost.OnGhostChanged += HandleGhostViewChanged;
+            _ghost.OnViewChanged += HandleGhostViewChanged;
             _sessionDirectory.OnSessionChanged += HandleSessionChanged;
             _spawnedPlayers.OnPlayerRemoved += HandlePlayerRemoved;
             _inputReader.OnSpectateNext += SpectateNext;
@@ -47,11 +51,22 @@ namespace Project.Assets._Project._Scripts.Player
             RefreshTarget();
         }
 
+        // Owner only: whether there is a camera and anyone still in the round to watch
+        public bool HasWatchableTarget()
+        {
+            if (!IsOwner || _spectatorCamera == null) return false;
+
+            CollectCandidates();
+            return _candidateIds.Count > 0;
+        }
+
         private void SpectateNext() => CycleTarget(true);
 
         private void SpectatePrevious() => CycleTarget(false);
 
         private void HandleLifeStateChanged(LifeState _) => RefreshTarget();
+
+        private void HandleGhostViewChanged(bool _) => RefreshTarget();
 
         private void HandleSessionChanged(PlayerSession session)
         {
@@ -109,7 +124,7 @@ namespace Project.Assets._Project._Scripts.Player
             if (_spectatorCamera != null) _spectatorCamera.Stop();
         }
 
-        private bool CanSpectate() => IsOwner && _lifeState.IsEliminated && _spectatorCamera != null;
+        private bool CanSpectate() => IsOwner && _lifeState.IsEliminated && _spectatorCamera != null && (!_ghost.IsGhost || _ghost.IsInSpectatorView);
 
         private bool IsWatchable(ulong clientId) =>
             clientId != OwnerClientId
@@ -133,6 +148,8 @@ namespace Project.Assets._Project._Scripts.Player
             if (!IsOwner) return;
 
             _lifeState.OnLifeStateChanged -= HandleLifeStateChanged;
+            _ghost.OnGhostChanged -= HandleGhostViewChanged;
+            _ghost.OnViewChanged -= HandleGhostViewChanged;
             _sessionDirectory.OnSessionChanged -= HandleSessionChanged;
             _spawnedPlayers.OnPlayerRemoved -= HandlePlayerRemoved;
             _inputReader.OnSpectateNext -= SpectateNext;

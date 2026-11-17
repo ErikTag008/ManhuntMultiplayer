@@ -13,5 +13,6 @@
   <Project Path="Project.DevTools.csproj" />
   <Project Path="Project.Weapons.csproj" />
   <Project Path="Project.SceneFlow.csproj" />
+  <Project Path="Project.Editor.csproj" />
   <Project Path="SceneReference.Editor.csproj" />
 </Solution>

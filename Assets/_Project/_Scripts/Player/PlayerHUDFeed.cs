@@ -10,11 +10,12 @@ using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player
 {
-    // Owner only: pushes the round's runner counts and this player's bleed-out, rescue progress, ability cooldown and drop effect
-    // into the gameplay HUD, plus, for catchers, where revealed runners are on screen and the lunge charge, and for everyone the objective stations
+    // Owner only: pushes the round's runner and catcher counts and this player's bleed-out, rescue progress, ability cooldown and drop effect
+    // into the gameplay HUD, plus, for catchers, where revealed runners are on screen and the lunge charge, for runners the catchers
+    // ghosts pinged, for ghosts their ping and view, and for everyone the objective stations
     [RequireComponent(typeof(PlayerLifeState), typeof(PlayerRescue), typeof(PlayerAbility))]
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerDropEffects), typeof(PlayerCameraBinder))]
-    [RequireComponent(typeof(PlayerCombat))]
+    [RequireComponent(typeof(PlayerCombat), typeof(PlayerGhost))]
     public class PlayerHUDFeed : NetworkBehaviour
     {
         private const float ViewportCenter = 0.5f;
@@ -26,6 +27,7 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly StationDirectory _stations;
         [Inject] private readonly HuntPhase _huntPhase;
         [Inject] private readonly SmokeCloudDirectory _smokeClouds;
+        [Inject] private readonly GhostPingDirectory _ghostPings;
         [SerializeField, Self] private PlayerLifeState _lifeState;
         [SerializeField, Self] private PlayerRescue _rescue;
         [SerializeField, Self] private PlayerAbility _ability;
@@ -33,6 +35,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerDropEffects _dropEffects;
         [SerializeField, Self] private PlayerCameraBinder _cameraBinder;
         [SerializeField, Self] private PlayerCombat _combat;
+        [SerializeField, Self] private PlayerGhost _ghost;
         // the marker sits this far above the revealed runner's feet
         [SerializeField] private float _revealMarkerHeightInMeters = 2.2f;
         // off-screen runners get a marker pinned this far (viewport units) inside the screen edge, pointing their way
@@ -71,6 +74,7 @@ namespace Project.Assets._Project._Scripts.Player
             RefreshStationCounts();
             RefreshStationMarkers();
             RefreshLunge();
+            RefreshGhost();
         }
 
         private void HandleSessionChanged(PlayerSession _) => RefreshRunnerCounts();
@@ -85,7 +89,7 @@ namespace Project.Assets._Project._Scripts.Player
         private void RefreshRunnerCounts()
         {
             var counts = RunnerCounts.From(_sessionDirectory.Sessions);
-            _hudState.SetRunnerCounts(counts.Up, counts.Knocked, counts.Eliminated);
+            _hudState.SetRunnerCounts(counts.Up, counts.Knocked, counts.Eliminated, counts.Catchers);
         }
 
         // The knocked state and the bleed-out end time come from different network objects, so right after a knock
@@ -125,6 +129,20 @@ namespace Project.Assets._Project._Scripts.Player
             bool isCharging = _combat.IsCharging;
             bool isHintShown = _huntPhase.IsActive && _combat.IsAttackReady && !isCharging;
             _hudState.SetLunge(isHintShown, isCharging, _combat.ChargeProgress);
+        }
+
+        private void RefreshGhost()
+        {
+            if (!_ghost.IsGhost)
+            {
+                _hudState.SetGhost(false, false, false, 0f, 0f);
+                return;
+            }
+
+            // the ping and its cooldown only matter during the hunt
+            bool isHuntActive = _huntPhase.IsActive;
+            _hudState.SetGhost(true, _ghost.IsFlying, _ghost.CanPing,
+                isHuntActive ? _ghost.PingCooldownRemainingInSeconds : 0f, isHuntActive ? _ghost.PingCooldownProgress : 0f);
         }
 
         private bool TryGetWorkableStation(out Station station)
@@ -191,20 +209,27 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetDropEffect(true, effect.DisplayName, effect.IsGood, remaining, progress);
         }
 
-        // Catchers see revealed runners through walls, except inside smoke; a runner with Sixth Sense active sees every catcher.
+        // Catchers see revealed runners through walls, except inside smoke; a runner with Sixth Sense active sees every catcher,
+        // and runners still in the round (and ghosts) see the catchers ghosts pinged. One marker per player whatever marks them.
         // Players off screen or behind the camera are pinned to the screen edge.
         private void RefreshRevealMarkers()
         {
             _revealViewportPositions.Clear();
+            float now = Time.time;
+            _ghostPings.RemoveExpired(now);
             var camera = _cameraBinder.Camera;
             bool isCatcher = _team.Team == Team.Catcher;
-            if ((isCatcher || IsSensingCatchers()) && camera != null)
+            bool isSensing = !isCatcher && IsSensingCatchers();
+            bool seesPings = IsSeeingGhostPings();
+            if ((isCatcher || isSensing || seesPings) && camera != null)
             {
                 foreach (var player in _spawnedPlayers.Players)
                 {
                     if (player == null || player.OwnerClientId == OwnerClientId) continue;
 
-                    bool isMarked = isCatcher ? IsRevealedToCatchers(player) : player.Team == Team.Catcher;
+                    bool isMarked = isCatcher
+                        ? IsRevealedToCatchers(player)
+                        : player.Team == Team.Catcher && (isSensing || (seesPings && _ghostPings.IsPinged(player.OwnerClientId, now)));
                     if (!isMarked) continue;
 
                     Vector3 viewportPoint = camera.WorldToViewportPoint(player.transform.position + Vector3.up * _revealMarkerHeightInMeters);
@@ -217,6 +242,9 @@ namespace Project.Assets._Project._Scripts.Player
 
         private bool IsRevealedToCatchers(PlayerController player) =>
             player.DropEffects.Has(DropStatus.Revealed) && !_smokeClouds.IsInsideAny(player.transform.position);
+
+        private bool IsSeeingGhostPings() =>
+            _ghostPings.CatcherIds.Count > 0 && _team.Team == Team.Runner && (!_lifeState.IsEliminated || _ghost.IsGhost);
 
         private bool IsSensingCatchers()
         {
@@ -256,6 +284,7 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetStationCounts(false, 0, 0);
             _hudState.SetStationHint(false);
             _hudState.SetLunge(false, false, 0f);
+            _hudState.SetGhost(false, false, false, 0f, 0f);
             _stationViewportPositions.Clear();
             _hudState.SetStationMarkers(_stationViewportPositions);
         }

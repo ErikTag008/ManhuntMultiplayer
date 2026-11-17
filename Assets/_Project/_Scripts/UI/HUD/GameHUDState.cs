@@ -11,6 +11,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private int _runnersUp;
         private int _runnersKnocked;
         private int _runnersOut;
+        private int _catchers;
         private bool _isBleedOutShown;
         private float _bleedOutRemainingInSeconds;
         private float _bleedOutProgress;
@@ -36,6 +37,11 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private bool _isLungeHintShown;
         private bool _isLungeChargeShown;
         private float _lungeChargeProgress;
+        private bool _isGhost;
+        private bool _isGhostFlying;
+        private bool _isGhostPingReady;
+        private float _ghostPingCooldownRemainingInSeconds;
+        private float _ghostPingCooldownProgress;
 
         public event Action OnRunnerCountsChanged;
         public event Action OnBleedOutChanged;
@@ -47,12 +53,14 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public event Action OnStationHintChanged;
         public event Action OnStationMarkersChanged;
         public event Action OnLungeChanged;
+        public event Action OnGhostChanged;
         // the seconds a station just took off the round; a one-off, so a HUD that starts later doesn't replay it
         public event Action<float> OnStationCompleted;
 
         public int RunnersUp => _runnersUp;
         public int RunnersKnocked => _runnersKnocked;
         public int RunnersOut => _runnersOut;
+        public int Catchers => _catchers;
         public bool IsBleedOutShown => _isBleedOutShown;
         public float BleedOutRemainingInSeconds => _bleedOutRemainingInSeconds;
         // 1 when the bleed-out starts, 0 when it runs out
@@ -84,14 +92,22 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public bool IsLungeHintShown => _isLungeHintShown;
         public bool IsLungeChargeShown => _isLungeChargeShown;
         public float LungeChargeProgress => _lungeChargeProgress;
+        public bool IsGhost => _isGhost;
+        // false while the ghost watches through the spectator camera
+        public bool IsGhostFlying => _isGhostFlying;
+        public bool IsGhostPingReady => _isGhostPingReady;
+        public float GhostPingCooldownRemainingInSeconds => _ghostPingCooldownRemainingInSeconds;
+        // 1 right after a ping, 0 when ready
+        public float GhostPingCooldownProgress => _ghostPingCooldownProgress;
 
-        public void SetRunnerCounts(int up, int knocked, int eliminated)
+        public void SetRunnerCounts(int up, int knocked, int eliminated, int catchers)
         {
-            if (_runnersUp == up && _runnersKnocked == knocked && _runnersOut == eliminated) return;
+            if (_runnersUp == up && _runnersKnocked == knocked && _runnersOut == eliminated && _catchers == catchers) return;
 
             _runnersUp = up;
             _runnersKnocked = knocked;
             _runnersOut = eliminated;
+            _catchers = catchers;
             OnRunnerCountsChanged?.Invoke();
         }
 
@@ -182,6 +198,19 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _isLungeChargeShown = isChargeShown;
             _lungeChargeProgress = chargeProgress;
             OnLungeChanged?.Invoke();
+        }
+
+        public void SetGhost(bool isGhost, bool isFlying, bool isPingReady, float pingCooldownRemainingInSeconds, float pingCooldownProgress)
+        {
+            if (_isGhost == isGhost && _isGhostFlying == isFlying && _isGhostPingReady == isPingReady
+                && _ghostPingCooldownRemainingInSeconds == pingCooldownRemainingInSeconds && _ghostPingCooldownProgress == pingCooldownProgress) return;
+
+            _isGhost = isGhost;
+            _isGhostFlying = isFlying;
+            _isGhostPingReady = isPingReady;
+            _ghostPingCooldownRemainingInSeconds = pingCooldownRemainingInSeconds;
+            _ghostPingCooldownProgress = pingCooldownProgress;
+            OnGhostChanged?.Invoke();
         }
 
         // false when nothing changed, so no event is raised
