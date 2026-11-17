@@ -10,6 +10,7 @@ using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.Settings;
 using Project.Assets._Project._Scripts.UI;
 using Project.Assets._Project._Scripts.UI.HUD;
+using Project.Assets._Project._Scripts.Voice;
 using Reflex.Core;
 using System;
 using UnityEngine;
@@ -64,6 +65,9 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(connectionServiceType, new Type[] { typeof(IConnectionService) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             var lobbyDirectoryType = isSteamMode ? typeof(SteamLobbyDirectory) : typeof(LocalLobbyDirectory);
             builder.RegisterType(lobbyDirectoryType, new Type[] { typeof(ILobbyDirectory) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
+            var voiceChatType = isSteamMode ? typeof(SteamVoiceChat) : typeof(DisabledVoiceChat);
+            builder.RegisterType(voiceChatType, new Type[] { typeof(IVoiceChat) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
+            builder.RegisterType(typeof(VoiceMuteList), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(ActiveLobbyConfig), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             // Eager so it listens for disconnects from the first session on
             builder.RegisterType(typeof(SessionEndHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);

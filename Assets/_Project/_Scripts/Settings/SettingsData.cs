@@ -27,11 +27,16 @@ namespace Project.Assets._Project._Scripts.Settings
         [field: SerializeField] public string MusicVolumeParameter { get; private set; } = "MusicVolume";
         [field: SerializeField] public string SfxVolumeParameter { get; private set; } = "SfxVolume";
         [field: SerializeField] public string UiVolumeParameter { get; private set; } = "UiVolume";
+        [field: SerializeField] public string VoiceVolumeParameter { get; private set; } = "VoiceVolume";
         [field: SerializeField] public float MinVolumeInDecibels { get; private set; } = -80f;
         [field: SerializeField, Range(0f, 1f)] public float DefaultMasterVolume { get; private set; } = 1f;
         [field: SerializeField, Range(0f, 1f)] public float DefaultMusicVolume { get; private set; } = 0.7f;
         [field: SerializeField, Range(0f, 1f)] public float DefaultSfxVolume { get; private set; } = 1f;
         [field: SerializeField, Range(0f, 1f)] public float DefaultUiVolume { get; private set; } = 1f;
+        [field: SerializeField, Range(0f, 1f)] public float DefaultVoiceVolume { get; private set; } = 1f;
+        [field: SerializeField] public bool DefaultIsMicOn { get; private set; } = true;
+        // off means open mic: Steam's voice detection decides when there is something to send
+        [field: SerializeField] public bool DefaultIsPushToTalk { get; private set; } = false;
 
         [field: Header("Game")]
         [field: SerializeField] public float DefaultSensitivity { get; private set; } = 1f;
@@ -61,6 +66,9 @@ namespace Project.Assets._Project._Scripts.Settings
             MusicVolume = DefaultMusicVolume,
             SfxVolume = DefaultSfxVolume,
             UiVolume = DefaultUiVolume,
+            VoiceVolume = DefaultVoiceVolume,
+            IsMicOn = DefaultIsMicOn,
+            IsPushToTalk = DefaultIsPushToTalk,
             MouseSensitivityX = DefaultSensitivity,
             MouseSensitivityY = DefaultSensitivity,
             GamepadSensitivityX = DefaultSensitivity,
@@ -78,6 +86,7 @@ namespace Project.Assets._Project._Scripts.Settings
             values.MusicVolume = Mathf.Clamp01(values.MusicVolume);
             values.SfxVolume = Mathf.Clamp01(values.SfxVolume);
             values.UiVolume = Mathf.Clamp01(values.UiVolume);
+            values.VoiceVolume = Mathf.Clamp01(values.VoiceVolume);
             values.MouseSensitivityX = Mathf.Clamp(values.MouseSensitivityX, MinSensitivity, MaxSensitivity);
             values.MouseSensitivityY = Mathf.Clamp(values.MouseSensitivityY, MinSensitivity, MaxSensitivity);
             values.GamepadSensitivityX = Mathf.Clamp(values.GamepadSensitivityX, MinSensitivity, MaxSensitivity);

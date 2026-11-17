@@ -26,11 +26,15 @@ MonoBehaviour:
   <MusicVolumeParameter>k__BackingField: MusicVolume
   <SfxVolumeParameter>k__BackingField: SfxVolume
   <UiVolumeParameter>k__BackingField: UiVolume
+  <VoiceVolumeParameter>k__BackingField: VoiceVolume
   <MinVolumeInDecibels>k__BackingField: -80
   <DefaultMasterVolume>k__BackingField: 1
   <DefaultMusicVolume>k__BackingField: 0.7
   <DefaultSfxVolume>k__BackingField: 1
   <DefaultUiVolume>k__BackingField: 1
+  <DefaultVoiceVolume>k__BackingField: 1
+  <DefaultIsMicOn>k__BackingField: 1
+  <DefaultIsPushToTalk>k__BackingField: 0
   <DefaultSensitivity>k__BackingField: 1
   <MinSensitivity>k__BackingField: 0.1
   <MaxSensitivity>k__BackingField: 3
@@ -110,6 +114,11 @@ MonoBehaviour:
     <Action>k__BackingField: {fileID: -665073760888656299, guid: c396ece31d49f4148abf609015547b3f, type: 3}
     <CompositePart>k__BackingField: 
     <HasGamepadBinding>k__BackingField: 0
+    <ShareGroup>k__BackingField: 
+  - <DisplayName>k__BackingField: Push to talk
+    <Action>k__BackingField: {fileID: -332383050745070959, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: 
+    <HasGamepadBinding>k__BackingField: 1
     <ShareGroup>k__BackingField: 
   <KeyboardMouseGroup>k__BackingField: Keyboard&Mouse
   <GamepadGroup>k__BackingField: Gamepad

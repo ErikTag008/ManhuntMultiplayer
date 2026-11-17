@@ -114,6 +114,35 @@ namespace Project.Tests.EditMode
         }
 
         [Test]
+        public void Service_SaveWithoutVoiceFieldsLoadsVoiceDefaults()
+        {
+            PlayerPrefs.SetString(TestSaveKey, "{ \"MasterVolume\": 0.4 }");
+
+            var service = new GameSettingsService(_data);
+
+            Assert.AreEqual(0.4f, service.Values.MasterVolume, 0.0001f);
+            Assert.AreEqual(_data.DefaultVoiceVolume, service.Values.VoiceVolume);
+            Assert.AreEqual(_data.DefaultIsMicOn, service.Values.IsMicOn);
+            Assert.AreEqual(_data.DefaultIsPushToTalk, service.Values.IsPushToTalk);
+        }
+
+        [Test]
+        public void CopyCategoryFrom_AudioCopiesTheVoiceSettings()
+        {
+            var target = _data.CreateDefaults();
+            var source = _data.CreateDefaults();
+            source.VoiceVolume = 0.2f;
+            source.IsMicOn = false;
+            source.IsPushToTalk = true;
+
+            target.CopyCategoryFrom(source, SettingsCategory.Audio);
+
+            Assert.AreEqual(0.2f, target.VoiceVolume);
+            Assert.IsFalse(target.IsMicOn);
+            Assert.IsTrue(target.IsPushToTalk);
+        }
+
+        [Test]
         public void Service_UnreadableSaveFallsBackToDefaults()
         {
             PlayerPrefs.SetString(TestSaveKey, "{ not json");

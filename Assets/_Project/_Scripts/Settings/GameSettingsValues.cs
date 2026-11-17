@@ -21,6 +21,9 @@ namespace Project.Assets._Project._Scripts.Settings
         public float MusicVolume;
         public float SfxVolume;
         public float UiVolume;
+        public float VoiceVolume;
+        public bool IsMicOn;
+        public bool IsPushToTalk;
 
         // multipliers on the player stats' base sensitivities
         public float MouseSensitivityX;
@@ -54,6 +57,9 @@ namespace Project.Assets._Project._Scripts.Settings
                     MusicVolume = source.MusicVolume;
                     SfxVolume = source.SfxVolume;
                     UiVolume = source.UiVolume;
+                    VoiceVolume = source.VoiceVolume;
+                    IsMicOn = source.IsMicOn;
+                    IsPushToTalk = source.IsPushToTalk;
                     break;
                 case SettingsCategory.Game:
                     MouseSensitivityX = source.MouseSensitivityX;

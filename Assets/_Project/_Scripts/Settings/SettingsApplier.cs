@@ -70,6 +70,7 @@ namespace Project.Assets._Project._Scripts.Settings
             SetVolume(data.MusicVolumeParameter, values.MusicVolume);
             SetVolume(data.SfxVolumeParameter, values.SfxVolume);
             SetVolume(data.UiVolumeParameter, values.UiVolume);
+            SetVolume(data.VoiceVolumeParameter, values.VoiceVolume);
         }
 
         private void SetVolume(string parameter, float linear)

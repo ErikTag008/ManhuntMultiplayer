@@ -1970,10 +1970,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Project.UI::Project.Assets._Project._Scripts.UI.HUD.AudioSettingsPage
   _container: {fileID: 4510810132836224868}
   _sliderRowPrefab: {fileID: 4641837160650702550, guid: 8366054810e58ab4487c9fa37a926d54, type: 3}
+  _toggleRowPrefab: {fileID: 4025063584880291048, guid: c812a3a14e24e4b42ae8fecaeda84ea0, type: 3}
   _masterLabel: Master
   _musicLabel: Music
   _sfxLabel: Effects
   _uiLabel: Interface
+  _voiceLabel: Voice
+  _micLabel: Microphone
+  _pushToTalkLabel: Push to talk
+  _muteLabelFormat: Mute {0}
   _percentFormat: '{0:0}%'
 --- !u!1 &4812079826413875368
 GameObject:
