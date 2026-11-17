@@ -1,6 +1,4 @@
 using Cysharp.Threading.Tasks;
-using System;
-using System.Collections.Generic;
 using System.Threading;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -8,38 +6,14 @@ using Unity.Netcode.Transports.UTP;
 namespace Project.Assets._Project._Scripts.Networking
 {
     // Direct UnityTransport connection (localhost / LAN); used for development and Multiplayer Play Mode
-    public class LocalConnectionService : IConnectionService
+    public class LocalConnectionService : ConnectionServiceBase
     {
-        private const string LeftReason = "Left the session";
-        private const string StoppedReason = "Connection closed";
-
-        private readonly ConnectionSettings _settings;
-        private readonly Action<NetworkManager.ConnectionApprovalRequest, NetworkManager.ConnectionApprovalResponse> _approvalCallback;
-        // approved clients that haven't finished connecting yet still take a slot
-        private readonly HashSet<ulong> _pendingClientIds = new();
-
-        public event Action<string> OnDisconnected;
-
-        private NetworkManager _sessionNetworkManager;
-        private NetworkManager _approvingNetworkManager;
-        private int _hostedMaxPlayers;
-        private bool _isLeaving;
-        private string _lastFailureReason;
-
-        public LocalConnectionService(ConnectionSettings settings)
-        {
-            _settings = settings;
-            _approvalCallback = ApproveConnection;
-        }
-
-        public bool IsConnected => _sessionNetworkManager != null && _sessionNetworkManager.IsListening;
-        public string LastFailureReason => _lastFailureReason;
-        public int TakenSlotCount => _approvingNetworkManager != null ? CountTakenSlots() : 0;
+        public LocalConnectionService(ConnectionSettings settings) : base(settings) { }
 
         // Visibility only matters to the lobby directory; a local host is reachable by address either way
-        public async UniTask<bool> Host(LobbyConfig config, CancellationToken token)
+        public override async UniTask<bool> Host(LobbyConfig config, CancellationToken token)
         {
-            _lastFailureReason = null;
+            ClearFailure();
             var networkManager = await GetIdleNetworkManager(token);
             if (networkManager == null) return Fail(_settings.HostFailedReason);
 
@@ -56,9 +30,9 @@ namespace Project.Assets._Project._Scripts.Networking
             return true;
         }
 
-        public async UniTask<bool> Join(string target, CancellationToken token)
+        public override async UniTask<bool> Join(string target, CancellationToken token)
         {
-            _lastFailureReason = null;
+            ClearFailure();
             var networkManager = await GetIdleNetworkManager(token);
             if (networkManager == null) return Fail(_settings.JoinFailedReason);
 
@@ -68,95 +42,7 @@ namespace Project.Assets._Project._Scripts.Networking
             }
             ConfigureTransport(networkManager, address, port);
 
-            var connectResult = new UniTaskCompletionSource<bool>();
-            void HandleConnected(ulong clientId)
-            {
-                if (clientId == networkManager.LocalClientId) connectResult.TrySetResult(true);
-            }
-            void HandleStopped(bool wasHost) => connectResult.TrySetResult(false);
-
-            networkManager.OnClientConnectedCallback += HandleConnected;
-            networkManager.OnClientStopped += HandleStopped;
-            using var timeoutCTS = CancellationTokenSource.CreateLinkedTokenSource(token);
-            try
-            {
-                if (!networkManager.StartClient())
-                {
-                    EUtils.Logger.LogError("[LocalConnectionService] StartClient failed.");
-                    return Fail(_settings.JoinFailedReason);
-                }
-
-                var timeout = UniTask.WaitForSeconds(_settings.ConnectTimeoutInSeconds, ignoreTimeScale: true, cancellationToken: timeoutCTS.Token)
-                    .SuppressCancellationThrow();
-                var (winnerIndex, isConnected, _) = await UniTask.WhenAny(connectResult.Task, timeout);
-
-                if (winnerIndex == 0 && isConnected)
-                {
-                    BeginSession(networkManager);
-                    return true;
-                }
-
-                if (networkManager.IsListening) networkManager.Shutdown();
-                token.ThrowIfCancellationRequested();
-
-                // a rejected approval (e.g. a full lobby) arrives as the disconnect reason
-                var reason = winnerIndex == 0
-                    ? GetDisconnectReason(networkManager)
-                    : string.Format(_settings.JoinTimedOutReasonFormat, _settings.ConnectTimeoutInSeconds);
-                EUtils.Logger.LogWarning($"[LocalConnectionService] Could not join {address}:{port}. {reason}");
-                return Fail(reason);
-            }
-            finally
-            {
-                timeoutCTS.Cancel();
-                networkManager.OnClientConnectedCallback -= HandleConnected;
-                networkManager.OnClientStopped -= HandleStopped;
-            }
-        }
-
-        public void UpdateHostedLobby(LobbyConfig config)
-        {
-            if (_approvingNetworkManager == null) return;
-            _hostedMaxPlayers = config.MaxPlayers;
-        }
-
-        public void Leave()
-        {
-            if (!IsConnected) return;
-
-            _isLeaving = true;
-            _sessionNetworkManager.Shutdown();
-        }
-
-        private bool Fail(string reason)
-        {
-            _lastFailureReason = reason;
-            return false;
-        }
-
-        // Shutdown() only completes on Netcode's next network update, so a Host/Join right after a failed join or Leave() waits for it
-        private static async UniTask<NetworkManager> GetIdleNetworkManager(CancellationToken token)
-        {
-            var networkManager = NetworkManager.Singleton;
-            if (networkManager == null)
-            {
-                EUtils.Logger.LogError("[LocalConnectionService] No NetworkManager in the scene.");
-                return null;
-            }
-
-            if (networkManager.ShutdownInProgress)
-            {
-                await UniTask.WaitWhile(() => networkManager != null && networkManager.ShutdownInProgress, cancellationToken: token);
-                if (networkManager == null) return null;
-            }
-
-            if (networkManager.IsListening)
-            {
-                EUtils.Logger.LogWarning("[LocalConnectionService] Already in a session.");
-                return null;
-            }
-
-            return networkManager;
+            return await ConnectClient(networkManager, $"{address}:{port}", token);
         }
 
         private void ConfigureTransport(NetworkManager networkManager, string address, ushort port)
@@ -165,83 +51,6 @@ namespace Project.Assets._Project._Scripts.Networking
             {
                 transport.SetConnectionData(address, port, _settings.ServerListenAddress);
             }
-        }
-
-        // Needs NetworkConfig.ConnectionApproval on; Netcode warns at StartHost when it's off
-        private void StartApproving(NetworkManager networkManager, int maxPlayers)
-        {
-            StopApproving();
-            _approvingNetworkManager = networkManager;
-            _hostedMaxPlayers = maxPlayers;
-            _approvingNetworkManager.ConnectionApprovalCallback = _approvalCallback;
-            _approvingNetworkManager.OnClientConnectedCallback += HandleClientSettled;
-            _approvingNetworkManager.OnClientDisconnectCallback += HandleClientSettled;
-        }
-
-        private void StopApproving()
-        {
-            if (_approvingNetworkManager != null)
-            {
-                if (_approvingNetworkManager.ConnectionApprovalCallback == _approvalCallback) _approvingNetworkManager.ConnectionApprovalCallback = null;
-                _approvingNetworkManager.OnClientConnectedCallback -= HandleClientSettled;
-                _approvingNetworkManager.OnClientDisconnectCallback -= HandleClientSettled;
-            }
-            _approvingNetworkManager = null;
-            _pendingClientIds.Clear();
-        }
-
-        private void HandleClientSettled(ulong clientId) => _pendingClientIds.Remove(clientId);
-
-        private int CountTakenSlots()
-        {
-            var connectedClientIds = _approvingNetworkManager.ConnectedClientsIds;
-            int pendingCount = _pendingClientIds.Count;
-            foreach (var clientId in connectedClientIds)
-            {
-                if (_pendingClientIds.Contains(clientId)) pendingCount--;
-            }
-
-            return connectedClientIds.Count + pendingCount;
-        }
-
-        // Netcode also runs this for the host's own client during StartHost (and always approves it), so the host is let through first
-        private void ApproveConnection(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
-        {
-            bool isHostClient = request.ClientNetworkId == NetworkManager.ServerClientId;
-            bool isFull = !isHostClient && CountTakenSlots() >= _hostedMaxPlayers;
-            if (!isHostClient && !isFull) _pendingClientIds.Add(request.ClientNetworkId);
-
-            response.Approved = !isFull;
-            response.Reason = isFull ? _settings.LobbyFullReason : string.Empty;
-            response.CreatePlayerObject = false;
-            response.Pending = false;
-        }
-
-        private void BeginSession(NetworkManager networkManager)
-        {
-            _sessionNetworkManager = networkManager;
-            _isLeaving = false;
-            _sessionNetworkManager.OnClientStopped += HandleSessionStopped;
-            EUtils.Logger.Log($"[LocalConnectionService] Session started as {(networkManager.IsHost ? "host" : "client")} (client id {networkManager.LocalClientId}).");
-        }
-
-        private void HandleSessionStopped(bool wasHost)
-        {
-            var reason = _isLeaving ? LeftReason : GetDisconnectReason(_sessionNetworkManager);
-
-            _sessionNetworkManager.OnClientStopped -= HandleSessionStopped;
-            _sessionNetworkManager = null;
-            _isLeaving = false;
-            StopApproving();
-
-            EUtils.Logger.Log($"[LocalConnectionService] Session ended: {reason}");
-            OnDisconnected?.Invoke(reason);
-        }
-
-        private static string GetDisconnectReason(NetworkManager networkManager)
-        {
-            var reason = networkManager.DisconnectReason;
-            return string.IsNullOrEmpty(reason) ? StoppedReason : reason;
         }
     }
 }

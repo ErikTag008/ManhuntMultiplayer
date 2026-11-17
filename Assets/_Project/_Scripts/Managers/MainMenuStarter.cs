@@ -23,6 +23,7 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly LobbyConfigData _lobbyConfigData;
         [Inject] private readonly ActiveLobbyConfig _activeLobbyConfig;
         [Inject] private readonly SessionEndHandler _sessionEndHandler;
+        [Inject] private readonly SteamPlatform _steamPlatform;
         [SerializeField, AssetsOnly] private NetworkObject _gameSystemsPrefab;
         [SerializeField] private string _hostingStatus = "Creating lobby...";
         // {0} is the address
@@ -36,16 +37,46 @@ namespace Project.Assets._Project._Scripts.Managers
             _uiManager.OnClientStart += HandleClientStart;
             _mainMenuState.OnHostRequested += HandleHostRequested;
             _mainMenuState.OnJoinRequested += HandleJoinRequested;
+            _steamPlatform.OnLobbyJoinRequested += HandleLobbyJoinRequested;
+            // the game was launched from a Steam invite
+            if (_steamPlatform.TryTakePendingLobbyId(out var lobbyId)) HandleLobbyJoinRequested(lobbyId);
         }
 
         private void HandleHostStart() => HandleHostRequested(_lobbyConfigData.CreateDefault());
 
-        private void HandleClientStart() => HandleJoinRequested(_connectionSettings.Address);
+        // the dev quick join targets the local address, which means nothing to Steam
+        private void HandleClientStart()
+        {
+            if (_connectionSettings.ResolvedMode == ConnectionMode.Steam)
+            {
+                EUtils.Logger.LogWarning("[MainMenuStarter] Quick join only works in Local mode.");
+                return;
+            }
+
+            HandleJoinRequested(_connectionSettings.Address);
+        }
 
         // App-lifetime token: a successful host or join replaces this scene
         private void HandleHostRequested(LobbyConfig config) => HostSession(config, Application.exitCancellationToken).Forget();
 
         private void HandleJoinRequested(string target) => JoinSession(target, Application.exitCancellationToken).Forget();
+
+        // Steam overlay invite or "Join Game"; never leaves a session to follow one
+        private void HandleLobbyJoinRequested(ulong lobbyId)
+        {
+            if (_connectionService.IsConnected)
+            {
+                EUtils.Logger.Log($"[MainMenuStarter] Ignored the request to join lobby {lobbyId}: already in a session.");
+                return;
+            }
+            if (_mainMenuState.IsBusy)
+            {
+                EUtils.Logger.Log($"[MainMenuStarter] Ignored the request to join lobby {lobbyId}: another host or join is running.");
+                return;
+            }
+
+            HandleJoinRequested(SteamLobbyId.Format(lobbyId));
+        }
 
         private async UniTaskVoid HostSession(LobbyConfig config, CancellationToken token)
         {
@@ -106,6 +137,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _uiManager.OnClientStart -= HandleClientStart;
             _mainMenuState.OnHostRequested -= HandleHostRequested;
             _mainMenuState.OnJoinRequested -= HandleJoinRequested;
+            _steamPlatform.OnLobbyJoinRequested -= HandleLobbyJoinRequested;
         }
     }
 }

@@ -1,3 +1,4 @@
+using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.UI.Shared;
 using Reflex.Attributes;
 using System.Collections.Generic;
@@ -11,11 +12,14 @@ namespace Project.Assets._Project._Scripts.UI.HUD
     public class LobbyMenuHUD : MonoBehaviour
     {
         [Inject] private readonly LobbyMenuState _state;
+        [Inject] private readonly IConnectionService _connectionService;
         [SerializeField] private FadePanel _panel;
         [SerializeField] private OptionList _abilityList;
         [SerializeField] private Button _readyButton;
         [SerializeField] private TMP_Text _readyButtonLabel;
         [SerializeField] private Image _readyButtonImage;
+        // optional: shown only when the session can invite friends (Steam)
+        [SerializeField] private Button _inviteFriendsButton;
         // the label says what clicking does; the colour says where you stand
         [SerializeField] private string _readyUpLabel = "Ready up";
         [SerializeField] private string _cancelReadyLabel = "You're ready\n<size=60%>click to cancel</size>";
@@ -31,6 +35,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnChoiceChanged += HandleChoiceChanged;
             _abilityList.OnOptionClicked += _state.RequestAbilityPick;
             _readyButton.onClick.AddListener(_state.RequestReadyToggle);
+            if (_inviteFriendsButton != null) _inviteFriendsButton.onClick.AddListener(_connectionService.OpenInviteDialog);
+            RefreshInviteButton();
             // values set before this scene's UI started
             HandleAbilityOptionsChanged();
             HandleChoiceChanged();
@@ -43,6 +49,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
             if (isOpen)
             {
+                RefreshInviteButton();
                 _panel.Show();
                 // a gamepad has no cursor, so navigation needs a focused button to start from
                 _abilityList.FocusSelected();
@@ -51,6 +58,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             {
                 _panel.Hide();
             }
+        }
+
+        private void RefreshInviteButton()
+        {
+            if (_inviteFriendsButton == null) return;
+            _inviteFriendsButton.gameObject.SetActive(_connectionService.CanInviteFriends);
         }
 
         private void HandleAbilityOptionsChanged()
@@ -74,6 +87,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnChoiceChanged -= HandleChoiceChanged;
             _abilityList.OnOptionClicked -= _state.RequestAbilityPick;
             _readyButton.onClick.RemoveListener(_state.RequestReadyToggle);
+            if (_inviteFriendsButton != null) _inviteFriendsButton.onClick.RemoveListener(_connectionService.OpenInviteDialog);
         }
     }
 }

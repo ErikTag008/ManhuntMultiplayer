@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e6919180de81754ab8036f9c21ea0a3, type: 3}
   m_Name: ConnectionSettings
   m_EditorClassIdentifier: Project.Networking::Project.Assets._Project._Scripts.Networking.ConnectionSettings
+  <Mode>k__BackingField: 0
+  <SteamAppId>k__BackingField: 480
   <Address>k__BackingField: 127.0.0.1
   <Port>k__BackingField: 7777
   <ServerListenAddress>k__BackingField: 127.0.0.1
@@ -25,3 +27,7 @@ MonoBehaviour:
   <JoinFailedReason>k__BackingField: Could not join the lobby
   <JoinTimedOutReasonFormat>k__BackingField: Timed out after {0}s
   <InvalidAddressReasonFormat>k__BackingField: '"{0}" is not a valid address'
+  <SteamNotRunningReason>k__BackingField: Steam is not running
+  <LobbyNotFoundReason>k__BackingField: The lobby no longer exists
+  <JoinDeniedReason>k__BackingField: You can't join this lobby
+  <InvalidLobbyIdReasonFormat>k__BackingField: '"{0}" is not a valid lobby'

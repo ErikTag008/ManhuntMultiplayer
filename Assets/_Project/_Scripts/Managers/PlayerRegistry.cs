@@ -1,3 +1,4 @@
+using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player;
 using Reflex.Attributes;
 using System;
@@ -10,6 +11,7 @@ namespace Project.Assets._Project._Scripts.Managers
     // Single source of player session data: a server-written NetworkList, mirrored into PlayerSessionDirectory on every instance
     public class PlayerRegistry : NetworkBehaviour, IPlayerRegistry
     {
+        [Inject] private readonly IConnectionService _connectionService;
         [SerializeField] private string _defaultDisplayNameFormat = "Player {0}";
 
         public event Action OnSessionsChanged;
@@ -66,7 +68,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _sessions.Add(new PlayerSession
             {
                 ClientId = player.OwnerClientId,
-                DisplayName = string.Format(_defaultDisplayNameFormat, player.OwnerClientId),
+                DisplayName = GetDisplayName(player.OwnerClientId),
                 Team = Team.None,
                 LifeState = LifeState.Up,
                 AbilityId = PlayerSession.NoAbility,
@@ -178,6 +180,10 @@ namespace Project.Assets._Project._Scripts.Managers
         }
 
         private int TakeNextCatcherQueueOrder() => ++_lastCatcherQueueOrder;
+
+        // the name the client connected with (Steam), else the numbered default
+        private string GetDisplayName(ulong clientId) =>
+            _connectionService.TryGetPlayerName(clientId, out var name) ? name : string.Format(_defaultDisplayNameFormat, clientId);
 
         private int IndexOf(ulong clientId)
         {
