@@ -21,6 +21,7 @@ namespace Project.Assets._Project._Scripts.Networking
         private string _localName;
         private string _failureReason;
         private ulong _pendingLobbyId;
+        private Lobby? _currentLobby;
 
         public SteamPlatform(ConnectionSettings settings)
         {
@@ -35,6 +36,10 @@ namespace Project.Assets._Project._Scripts.Networking
         public string LocalName => _localName;
         // Why Steam isn't ready, for the menu to show; null when it is (or when not in Steam mode)
         public string FailureReason => _failureReason;
+        // The Steam lobby this player is in, kept by SteamConnectionService; SteamLobbyDirectory updates the hosted one's data
+        public Lobby? CurrentLobby => _currentLobby;
+
+        public void SetCurrentLobby(Lobby? lobby) => _currentLobby = lobby;
 
         // The lobby from the "+connect_lobby" launch argument, handed out once
         public bool TryTakePendingLobbyId(out ulong lobbyId)
@@ -105,6 +110,7 @@ namespace Project.Assets._Project._Scripts.Networking
             if (!_isReady) return;
 
             _isReady = false;
+            _currentLobby = null;
             _callbacksCTS?.Cancel();
             _callbacksCTS?.Dispose();
             _callbacksCTS = null;

@@ -8,6 +8,13 @@ namespace Project.Assets._Project._Scripts.Networking
         [field: SerializeField] public ConnectionMode Mode { get; private set; } = ConnectionMode.Auto;
         // 480 is Valve's Spacewar test app
         [field: SerializeField] public uint SteamAppId { get; private set; } = 480;
+        // written into every hosted Steam lobby and required by searches, since other games share the test app id
+        [field: SerializeField] public string SteamLobbyGameId { get; private set; } = "ManhuntMultiplayer";
+        [field: SerializeField, Min(1)] public int SteamLobbySearchMaxResults { get; private set; } = 50;
+        // friends' lobbies aren't in the search; their data is requested and waited for this long
+        [field: SerializeField, Min(0.1f)] public float FriendLobbyDataTimeoutInSeconds { get; private set; } = 2f;
+        // the join field's placeholder in Steam mode, where an empty field joins nothing
+        [field: SerializeField] public string SteamJoinFieldHint { get; private set; } = "Lobby code";
 
         [field: SerializeField] public string Address { get; private set; } = "127.0.0.1";
         [field: SerializeField] public ushort Port { get; private set; } = 7777;
@@ -34,6 +41,8 @@ namespace Project.Assets._Project._Scripts.Networking
         [field: SerializeField] public string InvalidLobbyIdReasonFormat { get; private set; } = "\"{0}\" is not a valid lobby";
 
         public ConnectionMode ResolvedMode => ResolveMode(Mode, Application.isEditor);
+        // Local: an empty join field joins the default address, so that is the hint
+        public string JoinFieldHint => ResolvedMode == ConnectionMode.Steam ? SteamJoinFieldHint : Address;
 
         public static ConnectionMode ResolveMode(ConnectionMode mode, bool isEditor) => mode switch
         {

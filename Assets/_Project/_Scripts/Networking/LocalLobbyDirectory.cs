@@ -31,6 +31,8 @@ namespace Project.Assets._Project._Scripts.Networking
             _pendingWritePath = Path.Combine(_folderPath, _ownId + PendingWriteExtension);
         }
 
+        public bool HasSearchDistance => false;
+
         public void Publish(LobbyListing listing)
         {
             listing.Id = _ownId;
@@ -59,7 +61,8 @@ namespace Project.Assets._Project._Scripts.Networking
             TryDelete(_pendingWritePath);
         }
 
-        public async UniTask FetchLobbies(List<LobbyListing> results, CancellationToken token)
+        // every lobby on this PC is "close", so the distance doesn't matter
+        public async UniTask FetchLobbies(LobbySearchDistance distance, List<LobbyListing> results, CancellationToken token)
         {
             // file access can stall (antivirus, slow disks), so it runs off the main thread; parsing and results stay on it
             var adverts = await UniTask.RunOnThreadPool(ReadAdverts, cancellationToken: token);
@@ -81,6 +84,7 @@ namespace Project.Assets._Project._Scripts.Networking
                 // private lobbies are joined by address only
                 if (listing.Visibility == LobbyVisibility.Private) continue;
 
+                listing.JoinTarget = ConnectionTarget.Format(listing.Address, listing.Port);
                 results.Add(listing);
             }
         }

@@ -1,14 +1,16 @@
+using Cysharp.Threading.Tasks;
 using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.UI.Shared;
 using Reflex.Attributes;
 using System.Collections.Generic;
+using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
-    // Lobby menu: ability pick and ready-up, shown while the local player has the menu open
+    // Lobby menu: ability pick, ready-up, invites and the join code, shown while the local player has the menu open
     public class LobbyMenuHUD : MonoBehaviour
     {
         [Inject] private readonly LobbyMenuState _state;
@@ -20,6 +22,16 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private Image _readyButtonImage;
         // optional: shown only when the session can invite friends (Steam)
         [SerializeField] private Button _inviteFriendsButton;
+        // optional: shown only when the session has a join code (Steam)
+        [SerializeField] private GameObject _joinCodeGroup;
+        [SerializeField] private TMP_Text _joinCodeText;
+        [SerializeField] private Button _copyJoinCodeButton;
+        [SerializeField] private TMP_Text _copyJoinCodeButtonLabel;
+        // {0} is the join code
+        [SerializeField] private string _joinCodeFormat = "Code: {0}";
+        [SerializeField] private string _copyLabel = "Copy";
+        [SerializeField] private string _copiedLabel = "Copied!";
+        [SerializeField, Min(0f)] private float _copiedLabelDurationInSeconds = 1.5f;
         // the label says what clicking does; the colour says where you stand
         [SerializeField] private string _readyUpLabel = "Ready up";
         [SerializeField] private string _cancelReadyLabel = "You're ready\n<size=60%>click to cancel</size>";
@@ -27,6 +39,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private Color _readyColor = new(0.2f, 0.6f, 0.3f, 1f);
 
         private readonly List<(int id, string label)> _optionBuffer = new();
+        private CancellationTokenSource _copiedLabelCTS;
 
         private void Start()
         {
@@ -36,7 +49,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _abilityList.OnOptionClicked += _state.RequestAbilityPick;
             _readyButton.onClick.AddListener(_state.RequestReadyToggle);
             if (_inviteFriendsButton != null) _inviteFriendsButton.onClick.AddListener(_connectionService.OpenInviteDialog);
+            if (_copyJoinCodeButton != null) _copyJoinCodeButton.onClick.AddListener(CopyJoinCode);
             RefreshInviteButton();
+            RefreshJoinCode();
             // values set before this scene's UI started
             HandleAbilityOptionsChanged();
             HandleChoiceChanged();
@@ -50,6 +65,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             if (isOpen)
             {
                 RefreshInviteButton();
+                RefreshJoinCode();
                 _panel.Show();
                 // a gamepad has no cursor, so navigation needs a focused button to start from
                 _abilityList.FocusSelected();
@@ -64,6 +80,45 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             if (_inviteFriendsButton == null) return;
             _inviteFriendsButton.gameObject.SetActive(_connectionService.CanInviteFriends);
+        }
+
+        private void RefreshJoinCode()
+        {
+            if (_joinCodeGroup == null || _joinCodeText == null || _copyJoinCodeButtonLabel == null) return;
+
+            var joinCode = _connectionService.JoinCode;
+            _joinCodeGroup.SetActive(!string.IsNullOrEmpty(joinCode));
+            if (string.IsNullOrEmpty(joinCode)) return;
+
+            _joinCodeText.text = string.Format(_joinCodeFormat, joinCode);
+            StopCopiedLabel();
+            _copyJoinCodeButtonLabel.text = _copyLabel;
+        }
+
+        private void CopyJoinCode()
+        {
+            var joinCode = _connectionService.JoinCode;
+            if (string.IsNullOrEmpty(joinCode) || _copyJoinCodeButtonLabel == null) return;
+
+            GUIUtility.systemCopyBuffer = joinCode;
+            StopCopiedLabel();
+            _copiedLabelCTS = new();
+            ShowCopiedLabel(_copiedLabelCTS.Token).Forget();
+        }
+
+        // the menu runs in real time
+        private async UniTaskVoid ShowCopiedLabel(CancellationToken token)
+        {
+            _copyJoinCodeButtonLabel.text = _copiedLabel;
+            await UniTask.WaitForSeconds(_copiedLabelDurationInSeconds, ignoreTimeScale: true, cancellationToken: token);
+            _copyJoinCodeButtonLabel.text = _copyLabel;
+        }
+
+        private void StopCopiedLabel()
+        {
+            _copiedLabelCTS?.Cancel();
+            _copiedLabelCTS?.Dispose();
+            _copiedLabelCTS = null;
         }
 
         private void HandleAbilityOptionsChanged()
@@ -88,6 +143,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _abilityList.OnOptionClicked -= _state.RequestAbilityPick;
             _readyButton.onClick.RemoveListener(_state.RequestReadyToggle);
             if (_inviteFriendsButton != null) _inviteFriendsButton.onClick.RemoveListener(_connectionService.OpenInviteDialog);
+            if (_copyJoinCodeButton != null) _copyJoinCodeButton.onClick.RemoveListener(CopyJoinCode);
+            StopCopiedLabel();
         }
     }
 }

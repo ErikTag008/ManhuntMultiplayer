@@ -13,13 +13,15 @@ namespace Project.Assets._Project._Scripts.Networking
         string LastFailureReason { get; }
         // True while in a session whose friends can be invited through the platform (Steam)
         bool CanInviteFriends { get; }
+        // A short code others can type to join this session (Steam: SteamLobbyId.FormatCode); null when there is none
+        string JoinCode { get; }
 
         // Raised when an established session ends (host stopped, kicked, connection lost); payload is the reason
         event Action<string> OnDisconnected;
 
         UniTask<bool> Host(LobbyConfig config, CancellationToken token);
         // Local: an address, optionally with ":port" (ConnectionTarget); without one the default port is used.
-        // Steam: a lobby id in decimal (SteamLobbyId).
+        // Steam: a lobby id in decimal or a join code (SteamLobbyId).
         UniTask<bool> Join(string target, CancellationToken token);
         // Host only: the lobby changed its config after hosting (e.g. max players)
         void UpdateHostedLobby(LobbyConfig config);

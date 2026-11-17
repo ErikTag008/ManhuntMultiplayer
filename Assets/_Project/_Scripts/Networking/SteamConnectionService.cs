@@ -14,14 +14,13 @@ namespace Project.Assets._Project._Scripts.Networking
     {
         private readonly SteamPlatform _steamPlatform;
 
-        private Lobby? _lobby;
-
         public SteamConnectionService(ConnectionSettings settings, SteamPlatform steamPlatform) : base(settings)
         {
             _steamPlatform = steamPlatform;
         }
 
-        public override bool CanInviteFriends => _steamPlatform.IsReady && _lobby.HasValue && IsConnected;
+        public override bool CanInviteFriends => _steamPlatform.IsReady && _steamPlatform.CurrentLobby.HasValue && IsConnected;
+        public override string JoinCode => CanInviteFriends ? SteamLobbyId.FormatCode(_steamPlatform.CurrentLobby.Value.Id.Value) : null;
 
         public override async UniTask<bool> Host(LobbyConfig config, CancellationToken token)
         {
@@ -38,7 +37,7 @@ namespace Project.Assets._Project._Scripts.Networking
                 return Fail(_settings.HostFailedReason);
             }
 
-            _lobby = createdLobby;
+            _steamPlatform.SetCurrentLobby(createdLobby);
             if (token.IsCancellationRequested || networkManager == null)
             {
                 LeaveLobby();
@@ -50,6 +49,9 @@ namespace Project.Assets._Project._Scripts.Networking
             lobby.SetData(SteamLobbyData.HostSteamIdKey, SteamLobbyId.Format(_steamPlatform.LocalSteamId));
             lobby.SetData(SteamLobbyData.VersionKey, Application.version);
             lobby.SetData(SteamLobbyData.InProgressKey, SteamLobbyData.FalseValue);
+            lobby.SetData(SteamLobbyData.GameKey, _settings.SteamLobbyGameId);
+            lobby.SetData(SteamLobbyData.HostNameKey, _steamPlatform.LocalName);
+            lobby.SetData(SteamLobbyData.CountryKey, SteamUtils.IpCountry ?? string.Empty);
             ApplyLobbyData(lobby, config);
             // nobody may enter until the relay socket is listening
             lobby.SetJoinable(false);
@@ -95,7 +97,7 @@ namespace Project.Assets._Project._Scripts.Networking
                 return Fail(GetRoomEnterReason(enterResult));
             }
 
-            _lobby = lobby;
+            _steamPlatform.SetCurrentLobby(lobby);
             bool isJoined = false;
             try
             {
@@ -116,16 +118,17 @@ namespace Project.Assets._Project._Scripts.Networking
         public override void UpdateHostedLobby(LobbyConfig config)
         {
             base.UpdateHostedLobby(config);
-            if (!IsHosting || !_lobby.HasValue || !_steamPlatform.IsReady) return;
+            var lobby = _steamPlatform.CurrentLobby;
+            if (!IsHosting || !lobby.HasValue || !_steamPlatform.IsReady) return;
 
-            ApplyLobbyData(_lobby.Value, config);
-            ApplyLobbyVisibility(_lobby.Value, config.Visibility);
+            ApplyLobbyData(lobby.Value, config);
+            ApplyLobbyVisibility(lobby.Value, config.Visibility);
         }
 
         public override void OpenInviteDialog()
         {
             if (!CanInviteFriends) return;
-            SteamFriends.OpenGameInviteOverlay(_lobby.Value.Id);
+            SteamFriends.OpenGameInviteOverlay(_steamPlatform.CurrentLobby.Value.Id);
         }
 
         // Clients leave the lobby too once the host is gone, so a later invite doesn't find them still inside
@@ -137,6 +140,7 @@ namespace Project.Assets._Project._Scripts.Networking
             lobby.SetData(SteamLobbyData.NameKey, config.Name.ToString());
             lobby.SetData(SteamLobbyData.MapIndexKey, config.MapIndex.ToString(CultureInfo.InvariantCulture));
             lobby.SetData(SteamLobbyData.ModeKey, config.Mode.ToString());
+            lobby.SetData(SteamLobbyData.VisibilityKey, config.Visibility.ToString());
         }
 
         // private lobbies are never returned by searches; only invites get in
@@ -180,10 +184,11 @@ namespace Project.Assets._Project._Scripts.Networking
 
         private void LeaveLobby()
         {
-            if (!_lobby.HasValue) return;
+            var lobby = _steamPlatform.CurrentLobby;
+            if (!lobby.HasValue) return;
 
-            if (_steamPlatform.IsReady) _lobby.Value.Leave();
-            _lobby = null;
+            if (_steamPlatform.IsReady) lobby.Value.Leave();
+            _steamPlatform.SetCurrentLobby(null);
         }
     }
 }

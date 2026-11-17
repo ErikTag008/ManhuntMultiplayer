@@ -21,6 +21,8 @@ namespace Project.Assets._Project._Scripts.Networking
         public string Address;
         public ushort Port;
         public long LastUpdatedUtcTicks;
+        // what IConnectionService.Join takes for this lobby; set by the directory that found it, never written into adverts
+        [NonSerialized] public string JoinTarget;
 
         public bool IsFull => PlayerCount >= MaxPlayers;
         public bool HasPing => PingInMilliseconds >= 0;

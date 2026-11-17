@@ -36,6 +36,51 @@ namespace Project.Assets._Project.Tests.EditMode
         }
 
         [Test]
+        public void Code_RoundTrips()
+        {
+            var code = SteamLobbyId.FormatCode(LobbyId);
+            Assert.AreEqual(SteamLobbyId.CodeLength, code.Length);
+            Assert.IsTrue(SteamLobbyId.TryParse(code, out var lobbyId));
+            Assert.AreEqual(LobbyId, lobbyId);
+        }
+
+        [TestCase(1UL)]
+        [TestCase(ulong.MaxValue)]
+        public void Code_RoundTripsAtTheLimits(ulong id)
+        {
+            Assert.IsTrue(SteamLobbyId.TryParse(SteamLobbyId.FormatCode(id), out var lobbyId));
+            Assert.AreEqual(id, lobbyId);
+        }
+
+        [Test]
+        public void Code_UsesOnlyCrockfordCharacters()
+        {
+            StringAssert.IsMatch("^[0-9A-HJKMNP-TV-Z]+$", SteamLobbyId.FormatCode(LobbyId));
+        }
+
+        [Test]
+        public void Code_IgnoresCaseAndReadsLookalikes()
+        {
+            var code = SteamLobbyId.FormatCode(LobbyId);
+            Assert.IsTrue(SteamLobbyId.TryParse($"  {code.ToLowerInvariant()} ", out var lobbyId));
+            Assert.AreEqual(LobbyId, lobbyId);
+
+            Assert.IsTrue(SteamLobbyId.TryParse("OOOOOOOOOOOOl", out var lookalikeId));
+            Assert.AreEqual(1UL, lookalikeId);
+            Assert.IsTrue(SteamLobbyId.TryParse("oooooooooooOI", out lookalikeId));
+            Assert.AreEqual(1UL, lookalikeId);
+        }
+
+        [TestCase("000000000000U")]
+        [TestCase("00000000000-1")]
+        [TestCase("G000000000000")]
+        [TestCase("0000000000000")]
+        public void InvalidCode_IsRejected(string code)
+        {
+            Assert.IsFalse(SteamLobbyId.TryParse(code, out _));
+        }
+
+        [Test]
         public void LaunchArgs_FindConnectLobby()
         {
             var args = new[] { "Game.exe", "-screen-fullscreen", "0", "+connect_lobby", "109775241234567890" };

@@ -59,9 +59,11 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(typeof(UIManager), new Type[] { typeof(IUIManager) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             // Eager so Steam is up (and its join requests are caught) before the main menu starts; does nothing outside Steam mode
             builder.RegisterType(typeof(SteamPlatform), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
-            var connectionServiceType = _connectionSettings.ResolvedMode == ConnectionMode.Steam ? typeof(SteamConnectionService) : typeof(LocalConnectionService);
+            bool isSteamMode = _connectionSettings.ResolvedMode == ConnectionMode.Steam;
+            var connectionServiceType = isSteamMode ? typeof(SteamConnectionService) : typeof(LocalConnectionService);
             builder.RegisterType(connectionServiceType, new Type[] { typeof(IConnectionService) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
-            builder.RegisterType(typeof(LocalLobbyDirectory), new Type[] { typeof(ILobbyDirectory) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
+            var lobbyDirectoryType = isSteamMode ? typeof(SteamLobbyDirectory) : typeof(LocalLobbyDirectory);
+            builder.RegisterType(lobbyDirectoryType, new Type[] { typeof(ILobbyDirectory) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             builder.RegisterType(typeof(ActiveLobbyConfig), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             // Eager so it listens for disconnects from the first session on
             builder.RegisterType(typeof(SessionEndHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);

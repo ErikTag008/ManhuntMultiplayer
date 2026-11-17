@@ -32,6 +32,10 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private TMP_Text _listStatusText;
         [SerializeField, Min(0.5f)] private float _autoRefreshIntervalInSeconds = 5f;
         [SerializeField, Min(1)] private int _addressCharacterLimit = 64;
+        [SerializeField] private string _distanceLabel = "Distance";
+        // in LobbySearchDistance order
+        [SerializeField] private string[] _distanceOptionLabels = { "Close", "Nearby", "Far", "Worldwide" };
+        [SerializeField] private LobbySearchDistance _defaultDistance = LobbySearchDistance.Default;
         [SerializeField] private string _regionLabel = "Region";
         [SerializeField] private string _mapLabel = "Map";
         [SerializeField] private string _minLobbySizeLabel = "Lobby size";
@@ -69,6 +73,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private readonly List<int> _minLobbySizeOptions = new();
         private readonly List<string> _labelBuffer = new();
         private readonly List<List<Selectable>> _navigationRows = new();
+        private ChoiceRow _distanceRow;
         private ChoiceRow _regionRow;
         private ChoiceRow _mapRow;
         private ChoiceRow _minLobbySizeRow;
@@ -78,9 +83,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private ToggleRow _hideInProgressRow;
         private LobbyListFilter _filter;
         private LobbySortOrder _sortOrder;
+        private LobbySearchDistance _distance;
         private CancellationTokenSource _refreshCTS;
         private bool _isBuilt;
         private bool _hasFetched;
+
+        private ChoiceRow FirstFilterRow => _distanceRow != null ? _distanceRow : _regionRow;
 
         private void Start()
         {
@@ -89,8 +97,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _joinButton.onClick.AddListener(JoinByAddress);
             _refreshButton.onClick.AddListener(StartRefreshing);
             _backButton.onClick.AddListener(Back);
-            // an empty field joins the default address, so that is the hint
-            _addressRow.Setup(_addressLabel, _connectionSettings.Address, _addressCharacterLimit);
+            _addressRow.Setup(_addressLabel, _connectionSettings.JoinFieldHint, _addressCharacterLimit);
             HandleScreenChanged(_state.CurrentScreen, _state.CurrentScreen);
         }
 
@@ -110,7 +117,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _hasFetched = false;
             ShowLobbies();
             // a gamepad has no cursor, so navigation needs a focused row to start from
-            _regionRow.Selectable.Select();
+            FirstFilterRow.Selectable.Select();
             StartRefreshing();
         }
 
@@ -123,6 +130,15 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private void Build()
         {
             _isBuilt = true;
+
+            // only directories that search by distance (Steam) get the row; a change needs a new search, not just a new filter
+            _distance = _defaultDistance;
+            if (_lobbyDirectory.HasSearchDistance)
+            {
+                _distanceRow = CreateChoiceRow(_distanceLabel, _distanceOptionLabels);
+                _distanceRow.SetIndexWithoutNotify((int)_defaultDistance);
+                _distanceRow.OnIndexChanged += ChangeDistance;
+            }
 
             _regionOptions.Clear();
             _regionOptions.Add(null);
@@ -189,6 +205,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             ShowLobbies();
         }
 
+        private void ChangeDistance(int index)
+        {
+            _distance = (LobbySearchDistance)index;
+            StartRefreshing();
+        }
+
         private void ChangeSortOrder(int index)
         {
             _sortOrder = (LobbySortOrder)index;
@@ -214,7 +236,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             while (!token.IsCancellationRequested)
             {
-                await _lobbyDirectory.FetchLobbies(_foundLobbies, token);
+                await _lobbyDirectory.FetchLobbies(_distance, _foundLobbies, token);
                 _hasFetched = true;
                 RefreshRegionOptions();
                 ShowLobbies();
@@ -270,7 +292,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
             var firstRow = _rows.Find(row => row.gameObject.activeInHierarchy && row.Selectable.interactable);
             if (firstRow != null) firstRow.Selectable.Select();
-            else _regionRow.Selectable.Select();
+            else FirstFilterRow.Selectable.Select();
         }
 
         // the selectable's own flag, not IsInteractable: the busy overlay turns the whole menu off for a moment, which isn't lost focus
@@ -324,7 +346,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             if (index < 0 || index >= _shownLobbies.Count) return;
             var lobby = _shownLobbies[index];
-            _state.RequestJoin(ConnectionTarget.Format(lobby.Address, lobby.Port));
+            _state.RequestJoin(lobby.JoinTarget);
         }
 
         private void JoinByAddress() => _state.RequestJoin(_addressRow.Text);
