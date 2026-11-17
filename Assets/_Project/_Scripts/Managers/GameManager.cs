@@ -33,8 +33,12 @@ namespace Project.Assets._Project._Scripts.Managers
         [SerializeField] private string _localWinSubtitle = "You won";
         [SerializeField] private string _localLossSubtitle = "You lost";
         [SerializeField] private string _playerCountFormat = "{0}/{1} players joined  ·  {2} ready";
+        [SerializeField] private string _nextCatchersFormat = "Next catcher: {0}";
+        [SerializeField] private string _nextCatchersSeparator = ", ";
 
         private readonly List<PlayerSession> _sessionBuffer = new();
+        private readonly List<PlayerSession> _nextCatcherBuffer = new();
+        private readonly List<string> _nextCatcherNameBuffer = new();
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -186,6 +190,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _uiManager.ChangeLobbyStatusText("");
             _uiManager.ChangeJoinedPlayerAmount("");
             _uiManager.ChangeCountdownText("");
+            _uiManager.ChangeNextCatchersText("");
         }
 
         private void HandleLobbyConfigChanged(LobbyConfig _) => ShowPlayerCount();
@@ -197,7 +202,23 @@ namespace Project.Assets._Project._Scripts.Managers
             {
                 _playerRegistry.CopySessionsTo(_sessionBuffer);
                 _uiManager.ChangeJoinedPlayerAmount(string.Format(_playerCountFormat, _sessionBuffer.Count, _activeLobbyConfig.Config.MaxPlayers, LobbyReadiness.CountReady(_sessionBuffer)));
+                ShowNextCatchers();
             }
+        }
+
+        // every instance works this out from the synced sessions, the same way the server picks at round start
+        private void ShowNextCatchers()
+        {
+            CatcherQueue.CopyNextCatchers(_sessionBuffer, _gameLobbySettings.GetCatcherCount(_sessionBuffer.Count), _nextCatcherBuffer);
+            if (_nextCatcherBuffer.Count == 0)
+            {
+                _uiManager.ChangeNextCatchersText("");
+                return;
+            }
+
+            _nextCatcherNameBuffer.Clear();
+            foreach (var session in _nextCatcherBuffer) _nextCatcherNameBuffer.Add(session.DisplayName.ToString());
+            _uiManager.ChangeNextCatchersText(string.Format(_nextCatchersFormat, string.Join(_nextCatchersSeparator, _nextCatcherNameBuffer)));
         }
 
         // Host only: the start button works once enough players are in and everyone is ready; other players never see it

@@ -10,6 +10,7 @@ namespace Project.Assets._Project._Scripts.UI
         [SerializeField] private TMP_Text _joinedPlayerAmountText;
         [SerializeField] private TMP_Text _lobbyStatusText;
         [SerializeField] private TMP_Text _countdownText;
+        [SerializeField] private TMP_Text _nextCatchersText;
         [SerializeField] private Button _gameStartButton;
         [Inject] private readonly IUIManager _uiManager;
 
@@ -18,6 +19,7 @@ namespace Project.Assets._Project._Scripts.UI
             _uiManager.OnJoinedPlayerAmountChanged += HandleJoinedPlayerAmountChange;
             _uiManager.OnLobbyStatusTextChanged += HandleLobbyStatusChange;
             _uiManager.OnCountdownTextChanged += HandleCountdownChange;
+            _uiManager.OnNextCatchersTextChanged += HandleNextCatchersChange;
             _uiManager.OnStartGameButtonAvailabilityChanged += HandleGameStartButtonAvailabilityChange;
             _uiManager.OnStartGameButtonVisibilityChanged += HandleGameStartButtonVisibilityChange;
             // hidden until the host says it's theirs, so joining players never see it flash
@@ -54,12 +56,15 @@ namespace Project.Assets._Project._Scripts.UI
 
         private void HandleCountdownChange(string text) => HandleUITextChange(_countdownText, text);
 
+        private void HandleNextCatchersChange(string text) => HandleUITextChange(_nextCatchersText, text);
+
         private void OnDestroy()
         {
             var uiManager = _uiManager;
             uiManager.OnJoinedPlayerAmountChanged -= HandleJoinedPlayerAmountChange;
             uiManager.OnLobbyStatusTextChanged -= HandleLobbyStatusChange;
             uiManager.OnCountdownTextChanged -= HandleCountdownChange;
+            uiManager.OnNextCatchersTextChanged -= HandleNextCatchersChange;
             uiManager.OnStartGameButtonAvailabilityChanged -= HandleGameStartButtonAvailabilityChange;
             uiManager.OnStartGameButtonVisibilityChanged -= HandleGameStartButtonVisibilityChange;
             _gameStartButton.onClick.RemoveListener(uiManager.StartGame);

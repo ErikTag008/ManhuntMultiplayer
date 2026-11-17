@@ -20,6 +20,8 @@ namespace Project.Assets._Project._Scripts.Managers
         private readonly NetworkList<PlayerSession> _sessions = new();
         private GameSystemsRegistry _gameSystemsRegistry;
         private PlayerSessionDirectory _sessionDirectory;
+        // lives as long as the hosted session, so a player who leaves and rejoins goes to the back
+        private int _lastCatcherQueueOrder;
 
         public int PlayerCount => _sessions.Count;
 
@@ -67,7 +69,8 @@ namespace Project.Assets._Project._Scripts.Managers
                 DisplayName = string.Format(_defaultDisplayNameFormat, player.OwnerClientId),
                 Team = Team.None,
                 LifeState = LifeState.Up,
-                AbilityId = PlayerSession.NoAbility
+                AbilityId = PlayerSession.NoAbility,
+                CatcherQueueOrder = TakeNextCatcherQueueOrder()
             });
             EUtils.Logger.Log($"[PlayerRegistry] Registered player {player.OwnerClientId}. Total: {_sessions.Count}");
         }
@@ -117,6 +120,14 @@ namespace Project.Assets._Project._Scripts.Managers
 
         public void SetReady(ulong clientId, bool isReady) => UpdateSession(clientId, (ref PlayerSession session) => session.IsReady = isReady);
 
+        public void MoveToBackOfCatcherQueue(ulong clientId)
+        {
+            if (!IsServer || IndexOf(clientId) < 0) return;
+
+            int order = TakeNextCatcherQueueOrder();
+            UpdateSession(clientId, (ref PlayerSession session) => session.CatcherQueueOrder = order);
+        }
+
         public void ResetLifeStates()
         {
             for (int i = 0; i < _sessions.Count; i++)
@@ -134,7 +145,7 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
-        // Teams are rolled each round, so the lobby is neutral: default model, no weapon, everyone up and not ready.
+        // Teams are picked each round, so the lobby is neutral: default model, no weapon, everyone up and not ready.
         // The ability pick is kept between rounds.
         public void ResetForLobby()
         {
@@ -165,6 +176,8 @@ namespace Project.Assets._Project._Scripts.Managers
 
             _sessions[index] = session;
         }
+
+        private int TakeNextCatcherQueueOrder() => ++_lastCatcherQueueOrder;
 
         private int IndexOf(ulong clientId)
         {

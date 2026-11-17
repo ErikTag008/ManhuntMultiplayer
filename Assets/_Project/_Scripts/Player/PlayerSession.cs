@@ -18,6 +18,8 @@ namespace Project.Assets._Project._Scripts.Player
         // set by the lobby ability pick and ready-up (P1)
         public int AbilityId;
         public bool IsReady;
+        // catcher rotation: the lowest order is picked first; given out by the server on join and after each catcher turn
+        public int CatcherQueueOrder;
 
         public readonly bool Equals(PlayerSession other) =>
             ClientId == other.ClientId &&
@@ -26,7 +28,8 @@ namespace Project.Assets._Project._Scripts.Player
             Team == other.Team &&
             LifeState == other.LifeState &&
             AbilityId == other.AbilityId &&
-            IsReady == other.IsReady;
+            IsReady == other.IsReady &&
+            CatcherQueueOrder == other.CatcherQueueOrder;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
@@ -37,6 +40,7 @@ namespace Project.Assets._Project._Scripts.Player
             serializer.SerializeValue(ref LifeState);
             serializer.SerializeValue(ref AbilityId);
             serializer.SerializeValue(ref IsReady);
+            serializer.SerializeValue(ref CatcherQueueOrder);
         }
     }
 }

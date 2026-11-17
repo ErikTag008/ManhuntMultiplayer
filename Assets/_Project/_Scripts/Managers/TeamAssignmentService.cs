@@ -1,7 +1,5 @@
 using Project.Assets._Project._Scripts.Player;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.Netcode;
 
 namespace Project.Assets._Project._Scripts.Managers
 {
@@ -9,6 +7,8 @@ namespace Project.Assets._Project._Scripts.Managers
     {
         private readonly GameSystemsRegistry _gameSystemsRegistry;
         private readonly GameLobbySettings _settings;
+        private readonly List<PlayerSession> _sessionBuffer = new();
+        private readonly List<PlayerSession> _catcherBuffer = new();
 
         public TeamAssignmentService(GameSystemsRegistry gameSystemsRegistry, GameLobbySettings settings)
         {
@@ -16,6 +16,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _settings = settings;
         }
 
+        // Catchers come from the front of the rotation queue, then go to its back; players infected later keep their place
         public void AssignTeams()
         {
             var playerRegistry = _gameSystemsRegistry.PlayerRegistry;
@@ -25,21 +26,28 @@ namespace Project.Assets._Project._Scripts.Managers
                 return;
             }
 
-            var players = playerRegistry.GetPlayers();
-            EUtils.Logger.Log($"Assigning teams for {players.Count} players");
+            playerRegistry.CopySessionsTo(_sessionBuffer);
+            EUtils.Logger.Log($"Assigning teams for {_sessionBuffer.Count} players");
 
-            var shuffled = players.OrderBy(_ => UnityEngine.Random.value).ToList();
-            int catcherCount = _settings.GetCatcherCount(shuffled.Count);
-
-            var catcherIds = shuffled.Take(catcherCount).Select(p => p.OwnerClientId).ToHashSet();
+            CatcherQueue.CopyNextCatchers(_sessionBuffer, _settings.GetCatcherCount(_sessionBuffer.Count), _catcherBuffer);
 
             // the session list in PlayerRegistry is the only place the team lives
-            foreach (var player in players)
+            foreach (var session in _sessionBuffer)
             {
-                var team = catcherIds.Contains(player.OwnerClientId) ? Team.Catcher : Team.Runner;
-                playerRegistry.SetTeam(player.OwnerClientId, team);
-                EUtils.Logger.Log($"Player {player.OwnerClientId} -> {team}");
+                var team = IsCatcher(session.ClientId) ? Team.Catcher : Team.Runner;
+                playerRegistry.SetTeam(session.ClientId, team);
+                if (team == Team.Catcher) playerRegistry.MoveToBackOfCatcherQueue(session.ClientId);
+                EUtils.Logger.Log($"Player {session.ClientId} -> {team}");
             }
+        }
+
+        private bool IsCatcher(ulong clientId)
+        {
+            foreach (var catcher in _catcherBuffer)
+            {
+                if (catcher.ClientId == clientId) return true;
+            }
+            return false;
         }
     }
 }
