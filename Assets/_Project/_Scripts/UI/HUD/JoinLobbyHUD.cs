@@ -312,14 +312,14 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             return row;
         }
 
-        // full lobbies stay visible unless filtered, but can't be picked
+        // full and in-progress lobbies stay visible unless filtered, but can't be picked (the host would turn the player away)
         private void ShowLobby(LobbyListRow row, int index, LobbyListing lobby)
         {
             var mapName = lobby.IsInProgress ? string.Format(_inProgressMapFormat, lobby.MapName) : lobby.MapName;
             var ping = lobby.HasPing ? string.Format(_pingFormat, lobby.PingInMilliseconds, lobby.Region) : string.Format(_unknownPingFormat, lobby.Region);
             row.gameObject.SetActive(true);
             row.Setup(index, lobby.Name, lobby.HostName, mapName, string.Format(_playersFormat, lobby.PlayerCount, lobby.MaxPlayers), ping);
-            row.ToggleInteractable(!lobby.IsFull);
+            row.ToggleInteractable(!lobby.IsFull && !lobby.IsInProgress);
         }
 
         private string GetListStatus()

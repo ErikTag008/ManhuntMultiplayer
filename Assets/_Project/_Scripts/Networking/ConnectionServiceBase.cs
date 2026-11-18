@@ -26,6 +26,7 @@ namespace Project.Assets._Project._Scripts.Networking
         private NetworkManager _approvingNetworkManager;
         private int _hostedMaxPlayers;
         private bool _isLeaving;
+        private bool _isJoiningOpen;
         private string _lastFailureReason;
 
         protected ConnectionServiceBase(ConnectionSettings settings)
@@ -50,6 +51,12 @@ namespace Project.Assets._Project._Scripts.Networking
         {
             if (!IsHosting) return;
             _hostedMaxPlayers = config.MaxPlayers;
+        }
+
+        public void ToggleJoinsOpen(bool isOpen)
+        {
+            if (!IsHosting) return;
+            _isJoiningOpen = isOpen;
         }
 
         public void Leave()
@@ -103,6 +110,7 @@ namespace Project.Assets._Project._Scripts.Networking
             StopApproving();
             _approvingNetworkManager = networkManager;
             _hostedMaxPlayers = maxPlayers;
+            _isJoiningOpen = true;
             _approvingNetworkManager.ConnectionApprovalCallback = _approvalCallback;
             _approvingNetworkManager.OnClientConnectedCallback += HandleClientSettled;
             _approvingNetworkManager.OnClientDisconnectCallback += HandleClientDisconnected;
@@ -206,15 +214,23 @@ namespace Project.Assets._Project._Scripts.Networking
         private void ApproveConnection(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
         {
             bool isHostClient = request.ClientNetworkId == NetworkManager.ServerClientId;
-            bool isFull = !isHostClient && CountTakenSlots() >= _hostedMaxPlayers;
-            if (!isHostClient && !isFull) _pendingClientIds.Add(request.ClientNetworkId);
-            if (!isFull && PlayerNamePayload.TryDecode(request.Payload, out var name)) _playerNames[request.ClientNetworkId] = name;
+            var rejection = JoinAdmission.Evaluate(isHostClient, _isJoiningOpen, CountTakenSlots(), _hostedMaxPlayers);
+            bool isApproved = rejection == JoinRejection.None;
+            if (!isHostClient && isApproved) _pendingClientIds.Add(request.ClientNetworkId);
+            if (isApproved && PlayerNamePayload.TryDecode(request.Payload, out var name)) _playerNames[request.ClientNetworkId] = name;
 
-            response.Approved = !isFull;
-            response.Reason = isFull ? _settings.LobbyFullReason : string.Empty;
+            response.Approved = isApproved;
+            response.Reason = GetRejectionReason(rejection);
             response.CreatePlayerObject = false;
             response.Pending = false;
         }
+
+        private string GetRejectionReason(JoinRejection rejection) => rejection switch
+        {
+            JoinRejection.LobbyFull => _settings.LobbyFullReason,
+            JoinRejection.RoundInProgress => _settings.RoundInProgressReason,
+            _ => string.Empty
+        };
 
         private void HandleSessionStopped(bool wasHost)
         {

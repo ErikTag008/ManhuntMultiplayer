@@ -25,6 +25,8 @@ namespace Project.Assets._Project._Scripts.Networking
         UniTask<bool> Join(string target, CancellationToken token);
         // Host only: the lobby changed its config after hosting (e.g. max players)
         void UpdateHostedLobby(LobbyConfig config);
+        // Host only: while closed, connecting clients are turned away with ConnectionSettings.RoundInProgressReason
+        void ToggleJoinsOpen(bool isOpen);
         void Leave();
         // Host only: the name a client connected with; false when it sent none (local sessions)
         bool TryGetPlayerName(ulong clientId, out string name);

@@ -8,10 +8,12 @@ using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Managers
 {
-    // Server only: keeps this session's advert in the lobby directory up to date while it runs; private lobbies are never listed
+    // Server only: keeps this session's advert in the lobby directory up to date and closes joins while a round runs.
+    // Private lobbies are never listed
     public class LobbyAdvertiser : NetworkBehaviour
     {
         [Inject] private readonly ILobbyDirectory _lobbyDirectory;
+        [Inject] private readonly IConnectionService _connectionService;
         [Inject] private readonly ActiveLobbyConfig _activeLobbyConfig;
         [Inject] private readonly IMapCatalog _mapCatalog;
         [Inject] private readonly ConnectionSettings _connectionSettings;
@@ -28,7 +30,17 @@ namespace Project.Assets._Project._Scripts.Managers
         {
             if (!IsServer) return;
 
+            _gameStateMachine.OnStateChanged += HandleStateChanged;
+            _connectionService.ToggleJoinsOpen(!RoundProgress.IsInProgress(_gameStateMachine.CurrentState));
             StartAdvertising();
+        }
+
+        // browsers see a round start or end right away instead of on the next heartbeat
+        private void HandleStateChanged(GameState previous, GameState current)
+        {
+            bool isInProgress = RoundProgress.IsInProgress(current);
+            _connectionService.ToggleJoinsOpen(!isInProgress);
+            if (_isAdvertising && isInProgress != RoundProgress.IsInProgress(previous)) RefreshAdvert();
         }
 
         private void StartAdvertising()
@@ -75,7 +87,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _listing.MapName = _mapCatalog.GetMapDisplayName(config.MapIndex);
             _listing.PlayerCount = NetworkManager.ConnectedClientsIds.Count;
             _listing.MaxPlayers = config.MaxPlayers;
-            _listing.IsInProgress = IsInProgress(_gameStateMachine.CurrentState);
+            _listing.IsInProgress = RoundProgress.IsInProgress(_gameStateMachine.CurrentState);
             _listing.Visibility = config.Visibility;
             _listing.Region = _connectionSettings.LocalRegionLabel;
             _listing.PingInMilliseconds = LobbyListing.UnknownPing;
@@ -84,13 +96,11 @@ namespace Project.Assets._Project._Scripts.Managers
             _lobbyDirectory.Publish(_listing);
         }
 
-        private static bool IsInProgress(GameState state) => state switch
+        public override void OnNetworkDespawn()
         {
-            GameState.Lobby or GameState.WaitingForPlayers or GameState.Countdown => false,
-            _ => true
-        };
-
-        public override void OnNetworkDespawn() => StopAdvertising();
+            _gameStateMachine.OnStateChanged -= HandleStateChanged;
+            StopAdvertising();
+        }
 
         public override void OnDestroy()
         {

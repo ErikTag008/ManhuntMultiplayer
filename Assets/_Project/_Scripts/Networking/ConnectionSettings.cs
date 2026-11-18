@@ -28,6 +28,7 @@ namespace Project.Assets._Project._Scripts.Networking
         [field: SerializeField] public string LocalRegionLabel { get; private set; } = "Local";
 
         [field: SerializeField] public string LobbyFullReason { get; private set; } = "Lobby is full";
+        [field: SerializeField] public string RoundInProgressReason { get; private set; } = "A round is in progress, try again once it ends";
         [field: SerializeField] public string HostFailedReason { get; private set; } = "Could not create the lobby";
         [field: SerializeField] public string JoinFailedReason { get; private set; } = "Could not join the lobby";
         // {0} is the timeout in seconds

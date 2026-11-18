@@ -74,6 +74,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _uiManager.OnRequestGameUIInitialization += HandleGameUIInitialization;
             _uiManager.OnRequestGameStart += HandleGameStartRequest;
             _lobbyMenuState.OnLobbyConfigChangeRequested += HandleLobbyConfigChangeRequested;
+            SubscribeToServerChanges();
             EUtils.Logger.Log($"Spawn: State={_gameStateMachine.CurrentState}, PlayerCount={_playerRegistry.PlayerCount}");
             if (!IsServer) return;
 
@@ -103,18 +104,7 @@ namespace Project.Assets._Project._Scripts.Managers
             EUtils.Logger.LogColorized($"[GameManager] IsHost = {IsHost}...", "yellow");
             EUtils.Logger.LogColorized($"[GameManager] IsClient = {IsClient}...", "yellow");
 
-            RefreshStartAvailability();
-            if (IsHost)
-            {
-                EmptyLobbyUI();
-                SubscribeToServerChanges();
-                OnStateChanged(_gameStateMachine.CurrentState, _gameStateMachine.CurrentState);
-                ShowPlayerCount();
-            }
-            if (IsClient)
-            {
-                InitializeGameState();
-            }
+            RefreshLobbyUI();
         }
 
         private void HandleGameStartRequest()
@@ -148,15 +138,15 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
-        private void InitializeGameState()
+        // the lobby UI is new on every lobby load, so it is filled from the current state
+        private void RefreshLobbyUI()
         {
             EmptyLobbyUI();
-            SubscribeToServerChanges();
             OnStateChanged(_gameStateMachine.CurrentState, _gameStateMachine.CurrentState);
             ShowPlayerCount();
         }
 
-        // Runs on every lobby load, so drop the previous subscriptions first instead of stacking them
+        // Kept for the whole spawn, so state changes (e.g. the results) reach every instance whichever scene is open
         private void SubscribeToServerChanges()
         {
             UnsubscribeFromServerChanges();

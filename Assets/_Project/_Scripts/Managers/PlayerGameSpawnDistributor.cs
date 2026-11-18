@@ -12,6 +12,9 @@ namespace Project.Assets._Project._Scripts.Managers
         [SerializeField] private Transform[] _waitingRoomSpawns;
         [SerializeField] private Transform[] _gameRoomSpawns;
 
+        // the registry's list shrinks when someone leaves, and the loop below yields between players;
+        // one distribution per round (GameStateMachine), so two never share the buffer
+        private readonly List<PlayerController> _playerBuffer = new();
         private GameSystemsRegistry _gameSystemsRegistry;
 
         [Inject]
@@ -31,9 +34,13 @@ namespace Project.Assets._Project._Scripts.Managers
 
             int waitingIndex = 0;
             int gameIndex = 0;
+            _playerBuffer.Clear();
+            _playerBuffer.AddRange(players);
 
-            foreach (var player in players)
+            foreach (var player in _playerBuffer)
             {
+                if (player == null || !player.IsSpawned) continue;
+
                 Transform spawn;
                
                 if (player.Team == Team.Catcher)

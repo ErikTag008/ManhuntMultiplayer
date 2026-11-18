@@ -10,9 +10,16 @@ namespace Project.Assets._Project._Scripts.Player
     {
         [SerializeField, Self] private PlayerTeam _team;
         [SerializeField] private Transform _cameraFollower;
+        // a look unchanged this long has stopped; mouse frames without movement while turning stay shorter than this
+        [SerializeField] private float _lookRestDurationInSeconds = 0.15f;
 
         private readonly NetworkVariable<float> _modelYaw = new(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
         private readonly NetworkVariable<Quaternion> _cameraFollowerRotation = new(Quaternion.identity, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        // Owner only: the last look seen and since when, so a look that has come to rest still sends its final small step
+        private float _lastModelYaw;
+        private float _modelYawUnchangedSince;
+        private Quaternion _lastCameraFollowerRotation = Quaternion.identity;
+        private float _cameraFollowerUnchangedSince;
 
         private float SendThresholdInDegrees => _team.CurrentStats.NetworkVariableDetectionMinMagnitude;
 
@@ -38,11 +45,16 @@ namespace Project.Assets._Project._Scripts.Player
             _cameraFollower.rotation = EUtils.Math.Slerp(_cameraFollower.rotation, _cameraFollowerRotation.Value, smoothingSpeed);
         }
 
-        // Owner only; small changes are skipped to keep traffic down, remote smoothing hides the steps
+        // Owner only; small changes are skipped to keep traffic down while looking, remote smoothing hides the steps.
+        // Once the look stops, whatever is left under the threshold is sent, so remotes come to rest on the real rotation
         public void SendModelYaw(float yaw)
         {
             if (!IsOwner) return;
-            if (Mathf.Abs(Mathf.DeltaAngle(_modelYaw.Value, yaw)) < SendThresholdInDegrees) return;
+
+            bool hasStopped = HasRested(yaw == _lastModelYaw, ref _modelYawUnchangedSince);
+            _lastModelYaw = yaw;
+            if (yaw == _modelYaw.Value) return;
+            if (!hasStopped && Mathf.Abs(Mathf.DeltaAngle(_modelYaw.Value, yaw)) < SendThresholdInDegrees) return;
 
             _modelYaw.Value = yaw;
         }
@@ -50,9 +62,19 @@ namespace Project.Assets._Project._Scripts.Player
         public void SendCameraFollowerRotation(Quaternion rotation)
         {
             if (!IsOwner) return;
-            if (Quaternion.Angle(_cameraFollowerRotation.Value, rotation) < SendThresholdInDegrees) return;
+
+            bool hasStopped = HasRested(rotation == _lastCameraFollowerRotation, ref _cameraFollowerUnchangedSince);
+            _lastCameraFollowerRotation = rotation;
+            if (rotation == _cameraFollowerRotation.Value) return;
+            if (!hasStopped && Quaternion.Angle(_cameraFollowerRotation.Value, rotation) < SendThresholdInDegrees) return;
 
             _cameraFollowerRotation.Value = rotation;
+        }
+
+        private bool HasRested(bool isUnchanged, ref float unchangedSince)
+        {
+            if (!isUnchanged) unchangedSince = Time.unscaledTime;
+            return Time.unscaledTime - unchangedSince >= _lookRestDurationInSeconds;
         }
 
         // a fresh model would otherwise swing in from its default rotation
