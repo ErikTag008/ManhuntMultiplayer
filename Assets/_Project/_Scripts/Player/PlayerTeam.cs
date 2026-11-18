@@ -65,11 +65,20 @@ namespace Project.Assets._Project._Scripts.Player
             OnModelChanged?.Invoke(_model);
         }
 
-        private static void HideFromOwnCamera(Transform model)
+        // Owner only: a third-person view (an emote) shows the owner's own body until it goes back to first person
+        public void ToggleOwnModelShown(bool isShown)
+        {
+            if (!IsOwner || _model == null) return;
+            ChangeShadowCastingMode(_model, isShown ? ShadowCastingMode.On : ShadowCastingMode.ShadowsOnly);
+        }
+
+        private static void HideFromOwnCamera(Transform model) => ChangeShadowCastingMode(model, ShadowCastingMode.ShadowsOnly);
+
+        private static void ChangeShadowCastingMode(Transform model, ShadowCastingMode mode)
         {
             foreach (var renderer in model.GetComponentsInChildren<Renderer>(true))
             {
-                renderer.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+                renderer.shadowCastingMode = mode;
             }
         }
 

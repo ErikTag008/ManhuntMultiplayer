@@ -23,6 +23,7 @@ namespace Project.Assets._Project._Scripts.Player
     [RequireComponent(typeof(PlayerNetworkSync), typeof(PlayerCameraBinder), typeof(PlayerRescue))]
     [RequireComponent(typeof(PlayerSpectator), typeof(PlayerLobbyChoices))]
     [RequireComponent(typeof(PlayerPosture), typeof(PlayerDropEffects), typeof(PlayerGhost))]
+    [RequireComponent(typeof(PlayerEmote))]
     public class PlayerController : NetworkBehaviour, ISceneInitialized, IFirstPersonCameraTarget
     {
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
@@ -32,6 +33,7 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
         [Inject] private readonly LobbyMenuState _lobbyMenuState;
         [Inject] private readonly PauseMenuState _pauseMenuState;
+        [Inject] private readonly EmoteWheelState _emoteWheelState;
         [Inject] private readonly GameSettingsService _settings;
         [Inject] private readonly KeybindService _keybinds;
         [Inject] private readonly ControlSchemeState _controlScheme;
@@ -48,6 +50,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerPosture _posture;
         [SerializeField, Self] private PlayerDropEffects _dropEffects;
         [SerializeField, Self] private PlayerGhost _ghost;
+        [SerializeField, Self] private PlayerEmote _emote;
         [SerializeField] private Transform _groundCheck;
         [SerializeField] private Transform _cameraTarget;
         [SerializeField] private Transform _cameraFollower;
@@ -99,6 +102,8 @@ namespace Project.Assets._Project._Scripts.Player
             ApplyKeybinds();
             _lobbyMenuState.OnOpenChanged += HandleMenuOpenChanged;
             _pauseMenuState.OnOpenChanged += HandleMenuOpenChanged;
+            _emoteWheelState.OnOpenChanged += HandleLookBlockerChanged;
+            _emote.OnThirdPersonChanged += HandleLookBlockerChanged;
             _pauseMenuState.ChangeDoesLeavingEndSession(IsHost);
             _settings.OnChanged += HandleSettingsChanged;
             _inputReader.OnPause += HandlePausePressed;
@@ -144,12 +149,14 @@ namespace Project.Assets._Project._Scripts.Player
                 EUtils.Logger.LogError($"[PlayerController] No {sceneType} scene context registered.");
                 _cameraBinder.Unbind();
                 _spectator.ChangeSpectatorCamera(null);
+                _emote.ChangeThirdPersonCamera(null);
                 _ghost.ChangeMapBounds(null);
                 return;
             }
 
             _cameraBinder.Bind(sceneContext, this);
             _spectator.ChangeSpectatorCamera(sceneContext.SpectatorCamera);
+            _emote.ChangeThirdPersonCamera(sceneContext.SpectatorCamera);
             _ghost.ChangeMapBounds(sceneContext.MapBounds);
             CreateMovementIfNeeded();
             if (_movement != null && _cameraBinder.Camera != null) _movement.ChangeCamera(_cameraBinder.Camera);
@@ -168,6 +175,7 @@ namespace Project.Assets._Project._Scripts.Player
             if (!IsOwner) return;
 
             _spectator.ChangeSpectatorCamera(null);
+            _emote.ChangeThirdPersonCamera(null);
             _ghost.ChangeMapBounds(null);
             if (sceneType != SceneType.Lobby) return;
 
@@ -264,11 +272,18 @@ namespace Project.Assets._Project._Scripts.Player
         private void HandleMenuOpenChanged(bool _)
         {
             bool isAnyMenuOpen = IsAnyMenuOpen;
+            // the wheel aims with the look input, so a menu taking that input closes it without a pick
+            if (isAnyMenuOpen) _emote.CloseWheel();
             ToggleCursorFree(isAnyMenuOpen);
-            _cameraBinder.ToggleLook(!isAnyMenuOpen);
+            RefreshLook();
             _inputReader.ToggleGameplayActions(!_pauseMenuState.IsOpen);
             _movement?.ToggleMovement(CanMove);
         }
+
+        private void HandleLookBlockerChanged(bool _) => RefreshLook();
+
+        // Owner only: the emote wheel aims with the look input, and the emote's third-person camera orbits with it
+        private void RefreshLook() => _cameraBinder.ToggleLook(!IsAnyMenuOpen && !_emoteWheelState.IsOpen && !_emote.IsInThirdPerson);
 
         // Owner only: the pause key opens the menu, and while it is open steps back out of it
         private void HandlePausePressed()
@@ -330,6 +345,8 @@ namespace Project.Assets._Project._Scripts.Player
 
             _lobbyMenuState.OnOpenChanged -= HandleMenuOpenChanged;
             _pauseMenuState.OnOpenChanged -= HandleMenuOpenChanged;
+            _emoteWheelState.OnOpenChanged -= HandleLookBlockerChanged;
+            _emote.OnThirdPersonChanged -= HandleLookBlockerChanged;
             _settings.OnChanged -= HandleSettingsChanged;
             _inputReader.OnPause -= HandlePausePressed;
             _inputReader.OnWalkHeldChanged -= HandleWalkHeldChanged;

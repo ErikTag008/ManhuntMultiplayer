@@ -27,6 +27,9 @@ namespace Project.Assets._Project._Scripts.Input
         public event Action OnPause;
         public event Action<bool> OnWalkHeldChanged;
         public event Action<bool> OnCrouchHeldChanged;
+        public event Action<bool> OnEmoteHeldChanged;
+        // the hold ended because the gameplay actions were turned off (a menu opened), so the wheel closes without a pick
+        public event Action OnEmoteCanceled;
 
         public event Action OnStartButtonKeyPressed;
 
@@ -155,6 +158,19 @@ namespace Project.Assets._Project._Scripts.Input
                 else action.Disable();
             }
             _isDisablingGameplayActions = false;
+        }
+
+        public void Emote(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                OnEmoteHeldChanged?.Invoke(true);
+            }
+            else if (context.canceled)
+            {
+                if (_isDisablingGameplayActions) OnEmoteCanceled?.Invoke();
+                else OnEmoteHeldChanged?.Invoke(false);
+            }
         }
 
         public void Ability(InputAction.CallbackContext context)

@@ -90,6 +90,11 @@ MonoBehaviour:
     <CompositePart>k__BackingField: 
     <HasGamepadBinding>k__BackingField: 1
     <ShareGroup>k__BackingField: 
+  - <DisplayName>k__BackingField: Emote wheel (hold)
+    <Action>k__BackingField: {fileID: 387294884226814714, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: 
+    <HasGamepadBinding>k__BackingField: 1
+    <ShareGroup>k__BackingField: 
   - <DisplayName>k__BackingField: Lobby menu
     <Action>k__BackingField: {fileID: -7801919325872487568, guid: c396ece31d49f4148abf609015547b3f, type: 3}
     <CompositePart>k__BackingField: 

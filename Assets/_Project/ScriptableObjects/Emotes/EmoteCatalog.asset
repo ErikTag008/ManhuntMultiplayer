@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c0b4df2424e33f4fa04f267216f3834, type: 3}
+  m_Name: EmoteCatalog
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.Emotes.EmoteCatalog
+  <Emotes>k__BackingField:
+  - {fileID: 11400000, guid: c3e1e50f43ece894f8771209b0718e03, type: 2}
+  - {fileID: 11400000, guid: 1761080a278eafb4989ab7257c8ea92b, type: 2}
+  - {fileID: 11400000, guid: 40bc58715cdef1a43bf9069610243a55, type: 2}
+  - {fileID: 11400000, guid: b78b8cc66c6a6074d9b215e3de6a3ca8, type: 2}
+  <CooldownInSeconds>k__BackingField: 1

@@ -5,6 +5,7 @@ using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player;
 using Project.Assets._Project._Scripts.Player.Abilities;
 using Project.Assets._Project._Scripts.Player.Drops;
+using Project.Assets._Project._Scripts.Player.Emotes;
 using Project.Assets._Project._Scripts.Player.Stations;
 using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.Settings;
@@ -27,6 +28,7 @@ namespace Project.Assets._Project._Scripts.DI
         [SerializeField, AssetsOnly] private ConnectionSettings _connectionSettings;
         [SerializeField, AssetsOnly] private LobbyConfigData _lobbyConfigData;
         [SerializeField, AssetsOnly] private AbilityCatalog _abilityCatalog;
+        [SerializeField, AssetsOnly] private EmoteCatalog _emoteCatalog;
         [SerializeField, AssetsOnly] private DropCatalog _dropCatalog;
         [SerializeField, AssetsOnly] private StationSettings _stationSettings;
         [SerializeField, AssetsOnly] private GhostSettings _ghostSettings;
@@ -49,6 +51,7 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(typeof(GameHUDState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(LobbyMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PauseMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(EmoteWheelState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(SettingsMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             // Eager so saved settings and key bindings are loaded before the first player or camera reads them
             builder.RegisterType(typeof(GameSettingsService), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
@@ -85,6 +88,7 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterValue(_connectionSettings);
             builder.RegisterValue(_lobbyConfigData);
             builder.RegisterValue(_abilityCatalog);
+            builder.RegisterValue(_emoteCatalog);
             builder.RegisterValue(_dropCatalog);
             builder.RegisterValue(_stationSettings);
             builder.RegisterValue(_ghostSettings);

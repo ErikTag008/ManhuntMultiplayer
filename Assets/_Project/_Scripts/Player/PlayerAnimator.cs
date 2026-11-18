@@ -1,5 +1,6 @@
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.Player.Abilities;
+using Project.Assets._Project._Scripts.Player.Emotes;
 using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player
@@ -9,7 +10,7 @@ namespace Project.Assets._Project._Scripts.Player
     // (the placeholder now, the human-made one later).
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerLifeState), typeof(PlayerRescue))]
     [RequireComponent(typeof(PlayerAbility), typeof(PlayerMotion), typeof(PlayerPosture))]
-    [RequireComponent(typeof(PlayerCombat))]
+    [RequireComponent(typeof(PlayerCombat), typeof(PlayerEmote))]
     public class PlayerAnimator : ValidatedMonoBehaviour
     {
         [SerializeField, Self] private PlayerTeam _team;
@@ -19,6 +20,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerMotion _motion;
         [SerializeField, Self] private PlayerPosture _posture;
         [SerializeField, Self] private PlayerCombat _combat;
+        [SerializeField, Self] private PlayerEmote _emote;
         // the owner's look rotation, synced and smoothed on remote instances by PlayerNetworkSync
         [SerializeField] private Transform _cameraFollower;
         [SerializeField] private string _moveSpeedParameter = "MoveSpeed";
@@ -32,10 +34,14 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField] private string _attackParameter = "Attack";
         [SerializeField] private string _isChargingAttackParameter = "IsChargingAttack";
         [SerializeField] private string _lungeParameter = "Lunge";
+        [SerializeField] private string _isEmotingParameter = "IsEmoting";
         // the attack override layer only gets weight while it plays something: its idle state has no clip, and an
         // idle state with Write Defaults off keeps holding the last pose over the whole body, freezing the walk
         [SerializeField] private string _attackLayerName = "Attack";
         [SerializeField] private string _attackLayerIdleStateName = "Empty";
+        // the emote layer works the same way: full body, weighted only while an emote state plays
+        [SerializeField] private string _emoteLayerName = "Emote";
+        [SerializeField] private string _emoteLayerIdleStateName = "Empty";
         // looking up or down tilts the head, and the spine takes the rest so the body follows the gaze
         [SerializeField, Range(0f, 1f)] private float _headLookShare = 0.6f;
         [SerializeField] private float _maxLookPitchInDegrees = 70f;
@@ -53,11 +59,16 @@ namespace Project.Assets._Project._Scripts.Player
         private int _attackId;
         private int _isChargingAttackId;
         private int _lungeId;
+        private int _isEmotingId;
         private int _attackLayerIdleStateId;
-        // -1 when the model's controller has no attack layer
+        private int _emoteLayerIdleStateId;
+        // -1 when the model's controller has no attack or emote layer
         private int _attackLayerIndex = -1;
+        private int _emoteLayerIndex = -1;
         // the last ability trigger set, so it can be cleared if the player goes down before it plays
         private int _pendingAbilityTriggerId;
+        // the last emote trigger set, so it can't start late if the emote ends before it plays
+        private int _pendingEmoteTriggerId;
 
         private void Awake()
         {
@@ -72,7 +83,9 @@ namespace Project.Assets._Project._Scripts.Player
             _attackId = Animator.StringToHash(_attackParameter);
             _isChargingAttackId = Animator.StringToHash(_isChargingAttackParameter);
             _lungeId = Animator.StringToHash(_lungeParameter);
+            _isEmotingId = Animator.StringToHash(_isEmotingParameter);
             _attackLayerIdleStateId = Animator.StringToHash(_attackLayerIdleStateName);
+            _emoteLayerIdleStateId = Animator.StringToHash(_emoteLayerIdleStateName);
 
             // subscribed before any OnNetworkSpawn, so the first team model is caught too
             _team.OnModelChanged += HandleModelChanged;
@@ -80,6 +93,8 @@ namespace Project.Assets._Project._Scripts.Player
             _lifeState.OnLifeStateChanged += HandleLifeStateChanged;
             _combat.OnAttackStarted += HandleAttackStarted;
             _combat.OnLungeStarted += HandleLungeStarted;
+            _emote.OnEmoteStarted += HandleEmoteStarted;
+            _emote.OnEmoteEnded += HandleEmoteEnded;
         }
 
         private void Start() => HandleModelChanged(_team.Model);
@@ -98,18 +113,20 @@ namespace Project.Assets._Project._Scripts.Player
             _animator.SetBool(_isSlidingId, _posture.Posture == Posture.Sliding);
             _animator.SetBool(_isMantlingId, _posture.Posture == Posture.Mantling);
             _animator.SetBool(_isChargingAttackId, _combat.IsCharging);
-            RefreshAttackLayerWeight();
+            _animator.SetBool(_isEmotingId, _emote.IsEmoting);
+            RefreshLayerWeight(_attackLayerIndex, _attackLayerIdleStateId);
+            RefreshLayerWeight(_emoteLayerIndex, _emoteLayerIdleStateId);
             ApplyLookPitch();
         }
 
         // a trigger set this frame moves the layer out of idle on the next Animator update, a frame before it gets its weight
-        private void RefreshAttackLayerWeight()
+        private void RefreshLayerWeight(int layerIndex, int idleStateId)
         {
-            if (_attackLayerIndex < 0) return;
+            if (layerIndex < 0) return;
 
-            bool isAttackLayerBusy = _animator.IsInTransition(_attackLayerIndex)
-                || _animator.GetCurrentAnimatorStateInfo(_attackLayerIndex).shortNameHash != _attackLayerIdleStateId;
-            _animator.SetLayerWeight(_attackLayerIndex, isAttackLayerBusy ? 1f : 0f);
+            bool isLayerBusy = _animator.IsInTransition(layerIndex)
+                || _animator.GetCurrentAnimatorStateInfo(layerIndex).shortNameHash != idleStateId;
+            _animator.SetLayerWeight(layerIndex, isLayerBusy ? 1f : 0f);
         }
 
         // Runs after the Animator wrote this frame's pose, so the tilt is added on top of the animation.
@@ -129,9 +146,11 @@ namespace Project.Assets._Project._Scripts.Player
             _animator = model != null ? model.GetComponentInChildren<Animator>() : null;
             _rig = model != null ? model.GetComponentInChildren<CharacterRig>() : null;
             _attackLayerIndex = -1;
+            _emoteLayerIndex = -1;
             if (_animator == null) return;
 
             _attackLayerIndex = _animator.GetLayerIndex(_attackLayerName);
+            _emoteLayerIndex = _animator.GetLayerIndex(_emoteLayerName);
 
             _animator.applyRootMotion = false;
             // the look tilt is added to the animated pose every frame, so the pose must be rewritten every frame too
@@ -164,6 +183,21 @@ namespace Project.Assets._Project._Scripts.Player
             if (_animator != null) _animator.SetTrigger(_lungeId);
         }
 
+        private void HandleEmoteStarted(EmoteData emote)
+        {
+            if (_animator == null || string.IsNullOrEmpty(emote.AnimationTrigger)) return;
+
+            _pendingEmoteTriggerId = Animator.StringToHash(emote.AnimationTrigger);
+            _animator.SetTrigger(_pendingEmoteTriggerId);
+        }
+
+        // IsEmoting going false leaves the emote state on the next update
+        private void HandleEmoteEnded()
+        {
+            if (_animator == null || _pendingEmoteTriggerId == 0) return;
+            _animator.ResetTrigger(_pendingEmoteTriggerId);
+        }
+
         private void OnDestroy()
         {
             _team.OnModelChanged -= HandleModelChanged;
@@ -171,6 +205,8 @@ namespace Project.Assets._Project._Scripts.Player
             _lifeState.OnLifeStateChanged -= HandleLifeStateChanged;
             _combat.OnAttackStarted -= HandleAttackStarted;
             _combat.OnLungeStarted -= HandleLungeStarted;
+            _emote.OnEmoteStarted -= HandleEmoteStarted;
+            _emote.OnEmoteEnded -= HandleEmoteEnded;
         }
     }
 }

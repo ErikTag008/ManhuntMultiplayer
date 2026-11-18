@@ -946,6 +946,7 @@ GameObject:
   - component: {fileID: 8827356498442155708}
   - component: {fileID: 2243932752006811638}
   - component: {fileID: 5170205904657880768}
+  - component: {fileID: 3238097376751934692}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1032,6 +1033,7 @@ MonoBehaviour:
   _posture: {fileID: 6150287395128894317}
   _dropEffects: {fileID: 439525795068621114}
   _ghost: {fileID: 2243932752006811638}
+  _emote: {fileID: 3238097376751934692}
   _groundCheck: {fileID: 7460693758395271466}
   _cameraTarget: {fileID: 4853491123650079907}
   _cameraFollower: {fileID: 3526512074580094625}
@@ -1314,6 +1316,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: a22f4ee6-46f4-4e83-b4a5-95e517b7823d
     m_ActionName: Player/Pause
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4851020409925496502}
+        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Input.InputReader, Project.Input
+        m_MethodName: Emote
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: a651fcd8-21b5-4a36-9d68-3af98438f0d5
+    m_ActionName: Player/Emote
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -1601,6 +1619,7 @@ MonoBehaviour:
   _motion: {fileID: 5939890056578459048}
   _posture: {fileID: 6150287395128894317}
   _combat: {fileID: 91084392635682791}
+  _emote: {fileID: 3238097376751934692}
   _cameraFollower: {fileID: 3526512074580094625}
   _moveSpeedParameter: MoveSpeed
   _verticalSpeedParameter: VerticalSpeed
@@ -1613,8 +1632,11 @@ MonoBehaviour:
   _attackParameter: Attack
   _isChargingAttackParameter: IsChargingAttack
   _lungeParameter: Lunge
+  _isEmotingParameter: IsEmoting
   _attackLayerName: Attack
   _attackLayerIdleStateName: Empty
+  _emoteLayerName: Emote
+  _emoteLayerIdleStateName: Empty
   _headLookShare: 0.6
   _maxLookPitchInDegrees: 70
 --- !u!114 &5939890056578459048
@@ -1805,6 +1827,30 @@ MonoBehaviour:
   _inputReader: {fileID: 4851020409925496502}
   _audioSource: {fileID: 8647300674008990716}
   _settings: {fileID: 11400000, guid: dd492250cf8b64d42a9e682a1fbbe304, type: 2}
+--- !u!114 &3238097376751934692
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9ea3c60a5bf0f544bc6ed1de7e03b35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerEmote
+  ShowTopMostFoldoutHeaderGroup: 1
+  _inputReader: {fileID: 4851020409925496502}
+  _team: {fileID: 2895491558510482950}
+  _lifeState: {fileID: 1513991399820021913}
+  _motion: {fileID: 5939890056578459048}
+  _posture: {fileID: 6150287395128894317}
+  _ability: {fileID: 5068892008710688985}
+  _combat: {fileID: 91084392635682791}
+  _mouseAimScale: 0.01
+  _aimDeadZone: 0.35
+  _maxEmoteSpeed: 0.15
+  _viewHeadingOffsetInDegrees: 180
 --- !u!1 &8770936375934030648
 GameObject:
   m_ObjectHideFlags: 0
