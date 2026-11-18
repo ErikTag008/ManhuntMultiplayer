@@ -50,7 +50,7 @@ namespace Project.Assets._Project._Scripts.UI.Shared
         }
 
         // a hidden panel's CanvasGroup turns its selectables non-interactable, so a focus left behind there shows nothing
-        private RectTransform GetFocusedTarget()
+        public RectTransform GetFocusedTarget()
         {
             var eventSystem = EventSystem.current;
             var selected = eventSystem != null ? eventSystem.currentSelectedGameObject : null;

@@ -237,6 +237,7 @@ GameObject:
   - component: {fileID: 659073872263336129}
   - component: {fileID: 7802148499834205924}
   - component: {fileID: 4357190802776063972}
+  - component: {fileID: 5433165562484030944}
   m_Layer: 0
   m_Name: SelectionFrame
   m_TagString: Untagged
@@ -316,6 +317,25 @@ MonoBehaviour:
   _frame: {fileID: 8412585386535311927}
   _canvasGroup: {fileID: 659073872263336129}
   _padding: 6
+--- !u!114 &5433165562484030944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8454777519731013170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07ac438e3223d0c4bad9e6c50ce306ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.UI::Project.Assets._Project._Scripts.UI.Shared.SelectionPop
+  _selectionFrame: {fileID: 4357190802776063972}
+  _popScale: 1.08
+  _popInDuration: 0.15
+  _popOutDuration: 0.1
+  _popInEase: 27
+  _popOutEase: 9
+  _isHoverPopped: 1
 --- !u!1 &8712736964098839604
 GameObject:
   m_ObjectHideFlags: 0
