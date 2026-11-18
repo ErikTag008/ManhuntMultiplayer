@@ -11,7 +11,8 @@ namespace Project.Assets._Project._Scripts.DI
 {
     public class LobbySceneInstaller : ValidatedMonoBehaviour, IInstaller, ISceneContext
     {
-        [SerializeField, Scene] private Camera _gameplayCamera;
+        // set by hand: the camera prefab also holds the view model overlay camera, which a scene search could pick
+        [SerializeField] private Camera _gameplayCamera;
         [SerializeField, Scene] private FPCameraInstaller _fpcameraInstaller;
         [SerializeField, Scene] private LobbyUI _lobbyUI;
 

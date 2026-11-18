@@ -16,11 +16,15 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [Inject] private readonly ActiveLobbyConfig _activeLobbyConfig;
         [Inject] private readonly LobbyConfigData _lobbyConfigData;
         [Inject] private readonly IMapCatalog _mapCatalog;
+        [Inject] private readonly IUIManager _uiManager;
         [SerializeField] private Transform _container;
         [SerializeField] private ChoiceRow _choiceRowPrefab;
         [SerializeField] private TMP_Text _lobbyNameText;
         // a gamepad steps left out of the rows into the ability list
         [SerializeField] private OptionList _leftNeighbourList;
+        // the buttons under the rows (ready up, start game): a gamepad steps down from the last row onto the nearest
+        // shown one, and they link to each other left to right
+        [SerializeField] private List<Selectable> _belowNeighbours = new();
         [SerializeField] private string _modeLabel = "Mode";
         [SerializeField] private string _mapLabel = "Map";
         [SerializeField] private string _maxPlayersLabel = "Max players";
@@ -43,6 +47,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private readonly List<float> _roundDurationOptions = new();
         private readonly List<string> _labelBuffer = new();
         private readonly List<List<Selectable>> _navigationRows = new();
+        private readonly List<Selectable> _shownBelowNeighbours = new();
         private ChoiceRow _modeRow;
         private ChoiceRow _mapRow;
         private ChoiceRow _maxPlayersRow;
@@ -59,6 +64,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnOpenChanged += HandleOpenChanged;
             _state.OnChoiceChanged += MarkNavigationDirty;
             _state.OnAbilityOptionsChanged += MarkNavigationDirty;
+            _uiManager.OnStartGameButtonVisibilityChanged += HandleStartGameButtonChanged;
+            _uiManager.OnStartGameButtonAvailabilityChanged += HandleStartGameButtonChanged;
             ShowConfig(_activeLobbyConfig.Config);
             HandleCanEditChanged(_state.CanEditLobbySettings);
         }
@@ -171,6 +178,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
         private void MarkNavigationDirty() => _isNavigationDirty = true;
 
+        private void HandleStartGameButtonChanged(bool _) => MarkNavigationDirty();
+
         // after every handler of the frame ran, so the ability list has already rebuilt or reselected its buttons
         private void LateUpdate()
         {
@@ -194,6 +203,57 @@ namespace Project.Assets._Project._Scripts.UI.HUD
                 navigation.selectOnLeft = leftTarget;
                 row[0].navigation = navigation;
             }
+
+            LinkBelowNeighbours(leftTarget, _navigationRows.Count > 0 ? _navigationRows[^1] : null);
+        }
+
+        // the rows link to each other explicitly, so without this the last row's arrows lead nowhere going down
+        private void LinkBelowNeighbours(Selectable leftTarget, List<Selectable> lastRow)
+        {
+            _shownBelowNeighbours.Clear();
+            foreach (var neighbour in _belowNeighbours)
+            {
+                if (neighbour != null && neighbour.gameObject.activeInHierarchy && neighbour.interactable) _shownBelowNeighbours.Add(neighbour);
+            }
+
+            _shownBelowNeighbours.Sort((a, b) => a.transform.position.x.CompareTo(b.transform.position.x));
+            for (int i = 0; i < _shownBelowNeighbours.Count; i++)
+            {
+                var neighbour = _shownBelowNeighbours[i];
+                neighbour.navigation = new Navigation
+                {
+                    mode = Navigation.Mode.Explicit,
+                    selectOnLeft = i > 0 ? _shownBelowNeighbours[i - 1] : leftTarget,
+                    selectOnRight = i < _shownBelowNeighbours.Count - 1 ? _shownBelowNeighbours[i + 1] : null,
+                    // a guest has no arrows, so up leads back to the ability list
+                    selectOnUp = lastRow != null ? FindNearest(lastRow, neighbour) : leftTarget
+                };
+            }
+
+            if (lastRow == null) return;
+
+            foreach (var selectable in lastRow)
+            {
+                var navigation = selectable.navigation;
+                navigation.selectOnDown = FindNearest(_shownBelowNeighbours, selectable);
+                selectable.navigation = navigation;
+            }
+        }
+
+        private static Selectable FindNearest(List<Selectable> candidates, Selectable from)
+        {
+            Selectable nearest = null;
+            float nearestDistance = float.MaxValue;
+            foreach (var candidate in candidates)
+            {
+                float distance = Vector3.Distance(candidate.transform.position, from.transform.position);
+                if (distance >= nearestDistance) continue;
+
+                nearest = candidate;
+                nearestDistance = distance;
+            }
+
+            return nearest;
         }
 
         private void OnDestroy()
@@ -203,6 +263,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnOpenChanged -= HandleOpenChanged;
             _state.OnChoiceChanged -= MarkNavigationDirty;
             _state.OnAbilityOptionsChanged -= MarkNavigationDirty;
+            _uiManager.OnStartGameButtonVisibilityChanged -= HandleStartGameButtonChanged;
+            _uiManager.OnStartGameButtonAvailabilityChanged -= HandleStartGameButtonChanged;
             if (_modeRow != null) _modeRow.OnIndexChanged -= HandleRowChanged;
             if (_mapRow != null) _mapRow.OnIndexChanged -= HandleRowChanged;
             if (_maxPlayersRow != null) _maxPlayersRow.OnIndexChanged -= HandleRowChanged;

@@ -947,6 +947,7 @@ GameObject:
   - component: {fileID: 2243932752006811638}
   - component: {fileID: 5170205904657880768}
   - component: {fileID: 3238097376751934692}
+  - component: {fileID: 2209090428821468905}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1848,9 +1849,33 @@ MonoBehaviour:
   _ability: {fileID: 5068892008710688985}
   _combat: {fileID: 91084392635682791}
   _mouseAimScale: 0.01
+  _stickAimScale: 0.02
   _aimDeadZone: 0.35
   _maxEmoteSpeed: 0.15
+  _movementGraceInSeconds: 0.3
   _viewHeadingOffsetInDegrees: 180
+--- !u!114 &2209090428821468905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1233767bca6ed79438a71d0ee5c9ce3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerViewModel
+  ShowTopMostFoldoutHeaderGroup: 1
+  _team: {fileID: 2895491558510482950}
+  _combat: {fileID: 91084392635682791}
+  _lifeState: {fileID: 1513991399820021913}
+  _emote: {fileID: 3238097376751934692}
+  _cameraTarget: {fileID: 4853491123650079907}
+  _handPrefab: {fileID: 4208925311805940001, guid: 377046250932ed7468695c6157d9bc06, type: 3}
+  _viewModelLayerName: FirstPersonView
+  _positionOffset: {x: -0.08, y: 0.36, z: 0.5}
+  _rotationOffsetInDegrees: {x: 0, y: 0, z: -15}
 --- !u!1 &8770936375934030648
 GameObject:
   m_ObjectHideFlags: 0
