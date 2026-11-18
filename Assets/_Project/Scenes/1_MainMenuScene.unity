@@ -3587,6 +3587,13 @@ MonoBehaviour:
   _listStatusText: {fileID: 1698702867}
   _autoRefreshIntervalInSeconds: 5
   _addressCharacterLimit: 64
+  _distanceLabel: Distance
+  _distanceOptionLabels:
+  - Close
+  - Nearby
+  - Far
+  - Worldwide
+  _defaultDistance: 1
   _regionLabel: Region
   _mapLabel: Map
   _minLobbySizeLabel: Lobby size
@@ -4342,11 +4349,14 @@ MonoBehaviour:
   _createButton: {fileID: 1355683453}
   _backButton: {fileID: 306273319}
   _nameLabel: Lobby name
+  _modeLabel: Mode
   _visibilityLabel: Visibility
   _maxPlayersLabel: Max players
   _mapLabel: Map
   _roundLengthLabel: Round length
   _hideTimeLabel: Hide time
+  _classicLabel: Classic
+  _infectionLabel: Infection
   _publicLabel: Public
   _friendsOnlyLabel: Friends only
   _privateLabel: Private

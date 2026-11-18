@@ -42,6 +42,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private bool _isGhostPingReady;
         private float _ghostPingCooldownRemainingInSeconds;
         private float _ghostPingCooldownProgress;
+        private readonly List<NameTag> _nameTags = new();
 
         public event Action OnRunnerCountsChanged;
         public event Action OnBleedOutChanged;
@@ -54,6 +55,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public event Action OnStationMarkersChanged;
         public event Action OnLungeChanged;
         public event Action OnGhostChanged;
+        public event Action OnNameTagsChanged;
         // the seconds a station just took off the round; a one-off, so a HUD that starts later doesn't replay it
         public event Action<float> OnStationCompleted;
 
@@ -99,6 +101,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public float GhostPingCooldownRemainingInSeconds => _ghostPingCooldownRemainingInSeconds;
         // 1 right after a ping, 0 when ready
         public float GhostPingCooldownProgress => _ghostPingCooldownProgress;
+        // the other players' name tags this player can see right now
+        public IReadOnlyList<NameTag> NameTags => _nameTags;
 
         public void SetRunnerCounts(int up, int knocked, int eliminated, int catchers)
         {
@@ -213,6 +217,16 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             OnGhostChanged?.Invoke();
         }
 
+        // copies the tags, so the caller can reuse its list
+        public void SetNameTags(IReadOnlyList<NameTag> tags)
+        {
+            if (AreNameTagsEqual(tags)) return;
+
+            _nameTags.Clear();
+            for (int i = 0; i < tags.Count; i++) _nameTags.Add(tags[i]);
+            OnNameTagsChanged?.Invoke();
+        }
+
         // false when nothing changed, so no event is raised
         private static bool CopyPositionsIfChanged(List<Vector2> current, IReadOnlyList<Vector2> next)
         {
@@ -230,6 +244,18 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             for (int i = 0; i < next.Count; i++)
             {
                 if (current[i] != next[i]) return false;
+            }
+
+            return true;
+        }
+
+        private bool AreNameTagsEqual(IReadOnlyList<NameTag> tags)
+        {
+            if (_nameTags.Count != tags.Count) return false;
+
+            for (int i = 0; i < tags.Count; i++)
+            {
+                if (!_nameTags[i].Equals(tags[i])) return false;
             }
 
             return true;

@@ -26,6 +26,13 @@ namespace Project.Assets._Project._Scripts.Player
 
         public bool IsSpectating => _spectatorCamera != null && _spectatorCamera.IsWatching;
 
+        // Owner only: the player being watched right now
+        public bool TryGetTarget(out ulong clientId)
+        {
+            clientId = _targetId.GetValueOrDefault();
+            return IsSpectating && _targetId.HasValue;
+        }
+
         private void OnValidate() => this.ValidateRefs();
 
         public override void OnNetworkSpawn()

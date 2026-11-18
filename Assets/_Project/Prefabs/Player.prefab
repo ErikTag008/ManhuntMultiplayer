@@ -931,6 +931,7 @@ GameObject:
   - component: {fileID: 3464033196263984798}
   - component: {fileID: 7900401039691343269}
   - component: {fileID: 4859089908487619711}
+  - component: {fileID: 7077680969358838090}
   - component: {fileID: 5068892008710688985}
   - component: {fileID: 1196470119741336347}
   - component: {fileID: 5802237443212687060}
@@ -1439,6 +1440,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _team: {fileID: 2895491558510482950}
   _cameraFollower: {fileID: 3526512074580094625}
+  _lookRestDurationInSeconds: 0.15
 --- !u!114 &36421261748081134
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1521,6 +1523,30 @@ MonoBehaviour:
   _revealMarkerHeightInMeters: 2.2
   _revealMarkerEdgeMargin: 0.05
   _stationMarkerHeightInMeters: 2.5
+--- !u!114 &7077680969358838090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc615fd3af5070f418ee69c0b427e48d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerNameTagFeed
+  ShowTopMostFoldoutHeaderGroup: 1
+  _team: {fileID: 2895491558510482950}
+  _cameraBinder: {fileID: 36421261748081134}
+  _spectator: {fileID: 3464033196263984798}
+  _headClearanceInMeters: 0.45
+  _fallbackHeightInMeters: 2
+  _enemyRangeInMeters: 25
+  _enemyFadeDistanceInMeters: 5
+  _minCameraDistanceInMeters: 1
+  _sightBlockers:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!114 &5068892008710688985
 MonoBehaviour:
   m_ObjectHideFlags: 0

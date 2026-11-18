@@ -65,6 +65,8 @@ namespace Project.Assets._Project._Scripts.Player
         public Transform CameraTarget => _cameraTarget;
         public InputReader InputReader => _inputReader;
         public PlayerDropEffects DropEffects => _dropEffects;
+        // the current team's model; swapped when the team changes
+        public Transform Model => _team.Model;
         // Where the player faces; the model's yaw is synced to every instance
         public float HeadingInDegrees => _team.Model != null ? _team.Model.eulerAngles.y : transform.eulerAngles.y;
         // Owner side: movement runs on the owner, so features that change movement stats add their modifiers here
