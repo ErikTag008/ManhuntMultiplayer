@@ -4,6 +4,7 @@ using Project.Assets._Project._Scripts.Input;
 using Project.Assets._Project._Scripts.Player.Abilities;
 using Project.Assets._Project._Scripts.Player.Drops;
 using Project.Assets._Project._Scripts.Weapons;
+using Reflex.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -18,6 +19,8 @@ namespace Project.Assets._Project._Scripts.Player
     [RequireComponent(typeof(PlayerController))]
     public class PlayerCombat : NetworkBehaviour
     {
+        // injected by PlayerController.Awake together with the rest of the player; only the server uses it
+        [Inject] private readonly IPlayerRegistry _playerRegistry;
         [SerializeField, Self] private PlayerTeam _team;
         [SerializeField, Self] private InputReader _inputReader;
         [SerializeField, Self] private PlayerHideHold _hideHold;
@@ -329,7 +332,7 @@ namespace Project.Assets._Project._Scripts.Player
                 // a runner already down or just revived doesn't count as a catch
                 if (!targetLifeState.IsUp || targetLifeState.IsInvulnerable) continue;
 
-                targetLifeState.Knock();
+                if (targetLifeState.Knock()) _playerRegistry?.AddCatch(OwnerClientId);
                 hasCaught = true;
             }
 

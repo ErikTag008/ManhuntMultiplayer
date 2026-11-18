@@ -17,6 +17,7 @@ namespace Project.Assets._Project._Scripts.UI
         event Action OnRequestGameUIInitialization;
         event Action OnRequestGameStart;
         event Action<string, string> OnResultsShown;
+        event Action<string> OnRoundHighlightsShown;
 
         void RaiseHostStart();
         void RaiseClientStart();
@@ -31,5 +32,7 @@ namespace Project.Assets._Project._Scripts.UI
         void RequestLobbyUIInitialization();
         void RequestGameUIInitialization();
         void ShowResults(string title, string subtitle);
+        // one line per highlight; empty hides them
+        void ShowRoundHighlights(string highlights);
     }
 }

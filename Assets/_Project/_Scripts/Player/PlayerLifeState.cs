@@ -59,18 +59,20 @@ namespace Project.Assets._Project._Scripts.Player
             _state = _sessionDirectory.TryGetSession(OwnerClientId, out var session) ? session.LifeState : LifeState.Up;
         }
 
-        // Server only; players are spawned after GameSystems, so the registry is injected on the server
-        public void Knock()
+        // Server only; players are spawned after GameSystems, so the registry is injected on the server.
+        // True when the player went down, so the catcher can be credited.
+        public bool Knock()
         {
-            if (!IsServer || !IsUp || IsInvulnerable) return;
+            if (!IsServer || !IsUp || IsInvulnerable) return false;
             if (_playerRegistry == null)
             {
                 EUtils.Logger.LogError($"[PlayerLifeState] No player registry; can't knock player {OwnerClientId}.");
-                return;
+                return false;
             }
 
             _playerRegistry.SetLifeState(OwnerClientId, LifeState.Knocked);
             NotifyKnockedRpc();
+            return true;
         }
 
         // Server only: a finished rescue stands the player back up

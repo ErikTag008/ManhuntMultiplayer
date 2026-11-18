@@ -12,10 +12,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private FadePanel _panel;
         [SerializeField] private TMP_Text _titleText;
         [SerializeField] private TMP_Text _subtitleText;
+        [SerializeField] private TMP_Text _highlightsText;
 
         private void Start()
         {
             _uiManager.OnResultsShown += HandleResultsShown;
+            _uiManager.OnRoundHighlightsShown += HandleRoundHighlightsShown;
         }
 
         private void HandleResultsShown(string title, string subtitle)
@@ -25,9 +27,16 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _panel.Show();
         }
 
+        private void HandleRoundHighlightsShown(string highlights)
+        {
+            _highlightsText.text = highlights;
+            _highlightsText.gameObject.SetActive(!string.IsNullOrEmpty(highlights));
+        }
+
         private void OnDestroy()
         {
             _uiManager.OnResultsShown -= HandleResultsShown;
+            _uiManager.OnRoundHighlightsShown -= HandleRoundHighlightsShown;
         }
     }
 }

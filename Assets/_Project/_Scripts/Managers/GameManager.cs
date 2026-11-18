@@ -35,10 +35,18 @@ namespace Project.Assets._Project._Scripts.Managers
         [SerializeField] private string _playerCountFormat = "{0}/{1} players joined  ·  {2} ready";
         [SerializeField] private string _nextCatchersFormat = "Next catcher: {0}";
         [SerializeField] private string _nextCatchersSeparator = ", ";
+        [SerializeField] private string _mostCatchesFormat = "Most catches: {0} ({1})";
+        [SerializeField] private string _mostRescuesFormat = "Most rescues: {0} ({1})";
+        [SerializeField] private string _mostStationsFormat = "Most stations activated: {0} ({1})";
+        [SerializeField] private string _longestChaseFormat = "Longest chase: {0} ({1:0} s)";
+        [SerializeField] private string _highlightNamesSeparator = ", ";
 
         private readonly List<PlayerSession> _sessionBuffer = new();
         private readonly List<PlayerSession> _nextCatcherBuffer = new();
         private readonly List<string> _nextCatcherNameBuffer = new();
+        private readonly List<PlayerSession> _highlightLeaderBuffer = new();
+        private readonly List<string> _highlightNameBuffer = new();
+        private readonly List<string> _highlightLineBuffer = new();
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -152,7 +160,7 @@ namespace Project.Assets._Project._Scripts.Managers
             UnsubscribeFromServerChanges();
             _gameStateMachine.OnStateChanged += OnStateChanged;
             _gameStateMachine.OnLastRoundResultChanged += HandleLastRoundResultChanged;
-            _playerRegistry.OnSessionsChanged += ShowPlayerCount;
+            _playerRegistry.OnSessionsChanged += HandleSessionsChanged;
             _activeLobbyConfig.OnChanged += HandleLobbyConfigChanged;
         }
 
@@ -171,7 +179,7 @@ namespace Project.Assets._Project._Scripts.Managers
         {
             _gameStateMachine.OnStateChanged -= OnStateChanged;
             _gameStateMachine.OnLastRoundResultChanged -= HandleLastRoundResultChanged;
-            _playerRegistry.OnSessionsChanged -= ShowPlayerCount;
+            _playerRegistry.OnSessionsChanged -= HandleSessionsChanged;
             if (_activeLobbyConfig != null) _activeLobbyConfig.OnChanged -= HandleLobbyConfigChanged;
         }
 
@@ -184,6 +192,13 @@ namespace Project.Assets._Project._Scripts.Managers
         }
 
         private void HandleLobbyConfigChanged(LobbyConfig _) => ShowPlayerCount();
+
+        // the stats can arrive after the results state on a client, so the highlights follow them
+        private void HandleSessionsChanged()
+        {
+            ShowPlayerCount();
+            if (_gameStateMachine.CurrentState == GameState.Results && _gameStateMachine.LastRoundResult != RoundResult.None) ShowRoundHighlights();
+        }
 
         private void ShowPlayerCount()
         {
@@ -275,6 +290,28 @@ namespace Project.Assets._Project._Scripts.Managers
             var localTeam = GetPlayerTeam(NetworkManager.LocalClientId);
             var title = result == RoundResult.CatchersWin ? _catchersWinTitle : _runnersWinTitle;
             _uiManager.ShowResults(title, GetLocalResultSubtitle(localTeam, winningTeam));
+            ShowRoundHighlights();
+        }
+
+        private void ShowRoundHighlights()
+        {
+            _playerRegistry.CopySessionsTo(_sessionBuffer);
+            _highlightLineBuffer.Clear();
+            AddHighlight(_mostCatchesFormat, session => session.Catches);
+            AddHighlight(_mostRescuesFormat, session => session.Rescues);
+            AddHighlight(_mostStationsFormat, session => session.StationsCompleted);
+            AddHighlight(_longestChaseFormat, session => session.LongestChaseInSeconds);
+            _uiManager.ShowRoundHighlights(string.Join(Environment.NewLine, _highlightLineBuffer));
+        }
+
+        private void AddHighlight(string format, Func<PlayerSession, float> getValue)
+        {
+            float bestValue = RoundHighlights.CopyLeaders(_sessionBuffer, getValue, _highlightLeaderBuffer);
+            if (_highlightLeaderBuffer.Count == 0) return;
+
+            _highlightNameBuffer.Clear();
+            foreach (var session in _highlightLeaderBuffer) _highlightNameBuffer.Add(session.DisplayName.ToString());
+            _highlightLineBuffer.Add(string.Format(format, string.Join(_highlightNamesSeparator, _highlightNameBuffer), bestValue));
         }
 
         private string GetLocalResultSubtitle(Team localTeam, Team winningTeam)

@@ -16,6 +16,7 @@ namespace Project.Assets._Project._Scripts.Player.Stations
         [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
         [Inject] private readonly HuntPhase _huntPhase;
         [Inject] private readonly IRoundTimer _roundTimer;
+        [Inject] private readonly IPlayerRegistry _playerRegistry;
         [SerializeField, Self] private AudioSource _audioSource;
         // the station's look while unfinished; swapped for the completed look if one is set
         [SerializeField] private GameObject _model;
@@ -65,17 +66,34 @@ namespace Project.Assets._Project._Scripts.Player.Stations
             if (_progress.Value >= 1f) Complete();
         }
 
-        // Server only: a runner who is rescuing someone is busy with that instead
+        // Server only
         private bool IsAnyRunnerWorking()
         {
             foreach (var player in _spawnedPlayers.Players)
             {
-                if (player == null || player.Team != Team.Runner || !player.LifeState.IsUp) continue;
-                if (!player.TryGetComponent(out PlayerRescue rescue) || !rescue.IsInteractHeld || rescue.IsRescuing) continue;
-                if (IsInRange(player.transform.position)) return true;
+                if (IsWorking(player)) return true;
             }
 
             return false;
+        }
+
+        // a runner who is rescuing someone is busy with that instead
+        private bool IsWorking(PlayerController player)
+        {
+            if (player == null || player.Team != Team.Runner || !player.LifeState.IsUp) return false;
+            if (!player.TryGetComponent(out PlayerRescue rescue) || !rescue.IsInteractHeld || rescue.IsRescuing) return false;
+            return IsInRange(player.transform.position);
+        }
+
+        // Server only: every runner working the station when it finishes shares the credit
+        private void CreditWorkingRunners()
+        {
+            if (_playerRegistry == null) return;
+
+            foreach (var player in _spawnedPlayers.Players)
+            {
+                if (IsWorking(player)) _playerRegistry.AddStationCompleted(player.OwnerClientId);
+            }
         }
 
         // Server only
@@ -83,6 +101,7 @@ namespace Project.Assets._Project._Scripts.Player.Stations
         {
             _isBeingWorked.Value = false;
             _isCompleted.Value = true;
+            CreditWorkingRunners();
 
             float appliedCutInSeconds = 0f;
             _roundTimer?.TryCutRoundTime(_settings.TimeCutInSeconds, _settings.MinRemainingInSeconds, out appliedCutInSeconds);

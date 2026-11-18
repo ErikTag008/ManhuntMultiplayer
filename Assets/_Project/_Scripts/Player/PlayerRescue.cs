@@ -142,6 +142,7 @@ namespace Project.Assets._Project._Scripts.Player
             var target = _target;
             DetachTarget(false);
             target._lifeState.Revive();
+            _playerRegistry?.AddRescue(OwnerClientId);
         }
 
         private void SetProgress(float progress)

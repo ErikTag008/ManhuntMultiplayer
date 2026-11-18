@@ -20,6 +20,11 @@ namespace Project.Assets._Project._Scripts.Player
         public bool IsReady;
         // catcher rotation: the lowest order is picked first; given out by the server on join and after each catcher turn
         public int CatcherQueueOrder;
+        // round stats for the results highlights; the server resets them when teams are assigned
+        public int Catches;
+        public int Rescues;
+        public int StationsCompleted;
+        public float LongestChaseInSeconds;
 
         public readonly bool Equals(PlayerSession other) =>
             ClientId == other.ClientId &&
@@ -29,7 +34,11 @@ namespace Project.Assets._Project._Scripts.Player
             LifeState == other.LifeState &&
             AbilityId == other.AbilityId &&
             IsReady == other.IsReady &&
-            CatcherQueueOrder == other.CatcherQueueOrder;
+            CatcherQueueOrder == other.CatcherQueueOrder &&
+            Catches == other.Catches &&
+            Rescues == other.Rescues &&
+            StationsCompleted == other.StationsCompleted &&
+            LongestChaseInSeconds == other.LongestChaseInSeconds;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
@@ -41,6 +50,10 @@ namespace Project.Assets._Project._Scripts.Player
             serializer.SerializeValue(ref AbilityId);
             serializer.SerializeValue(ref IsReady);
             serializer.SerializeValue(ref CatcherQueueOrder);
+            serializer.SerializeValue(ref Catches);
+            serializer.SerializeValue(ref Rescues);
+            serializer.SerializeValue(ref StationsCompleted);
+            serializer.SerializeValue(ref LongestChaseInSeconds);
         }
     }
 }

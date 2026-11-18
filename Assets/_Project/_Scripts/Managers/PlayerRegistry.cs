@@ -138,6 +138,29 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
+        public void AddCatch(ulong clientId) => UpdateSession(clientId, (ref PlayerSession session) => session.Catches++);
+
+        public void AddRescue(ulong clientId) => UpdateSession(clientId, (ref PlayerSession session) => session.Rescues++);
+
+        public void AddStationCompleted(ulong clientId) => UpdateSession(clientId, (ref PlayerSession session) => session.StationsCompleted++);
+
+        public void RecordChase(ulong clientId, float durationInSeconds) => UpdateSession(clientId, (ref PlayerSession session) =>
+            session.LongestChaseInSeconds = Mathf.Max(session.LongestChaseInSeconds, durationInSeconds));
+
+        public void ResetRoundStats()
+        {
+            for (int i = 0; i < _sessions.Count; i++)
+            {
+                UpdateSession(_sessions[i].ClientId, (ref PlayerSession session) =>
+                {
+                    session.Catches = 0;
+                    session.Rescues = 0;
+                    session.StationsCompleted = 0;
+                    session.LongestChaseInSeconds = 0f;
+                });
+            }
+        }
+
         // nobody is left to rescue them, so their bleed-out ends here instead of running on through the results
         public void EliminateKnockedPlayers()
         {

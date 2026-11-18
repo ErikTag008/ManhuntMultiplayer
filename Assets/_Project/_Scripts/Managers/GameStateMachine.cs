@@ -38,6 +38,8 @@ namespace Project.Assets._Project._Scripts.Managers
         // Server only: read from the lobby config once per round, like the map and the timers
         private GameMode _roundMode;
         private GameSystemsRegistry _gameSystemsRegistry;
+        // Server only
+        private ChaseTracker _chaseTracker;
 
         public GameState CurrentState => _state.Value;
         public RoundResult LastRoundResult => _lastRoundResult.Value;
@@ -56,7 +58,11 @@ namespace Project.Assets._Project._Scripts.Managers
             _state.OnValueChanged += HandleStateChanged;
             _lastRoundResult.OnValueChanged += HandleLastRoundResultChanged;
             _countdownEndTime.OnValueChanged += StartCountdown;
-            if (IsServer) _playerRegistry.OnBledOut += HandleBledOut;
+            if (IsServer)
+            {
+                _playerRegistry.OnBledOut += HandleBledOut;
+                _chaseTracker = new ChaseTracker(_settings, _playerRegistry);
+            }
             // the spawn value doesn't raise OnValueChanged
             RefreshPhases();
         }
@@ -118,6 +124,7 @@ namespace Project.Assets._Project._Scripts.Managers
                 _roundMode = config.Mode;
                 _state.Value = GameState.AssigningTeams;
                 _lastRoundResult.Value = RoundResult.None;
+                _playerRegistry.ResetRoundStats();
                 _teamAssignmentService.AssignTeams();
 
                 _state.Value = GameState.LoadingGameplay;
@@ -132,6 +139,8 @@ namespace Project.Assets._Project._Scripts.Managers
                 _countdownEndTime.Value = NetworkManager.ServerTime.Time + config.RoundDurationInSeconds;
                 _state.Value = GameState.Playing;
                 var result = await PlayRound(token);
+                // before the result is set, so the highlights are in the sessions when the results show
+                _chaseTracker.EndAll();
 
                 _state.Value = GameState.DeterminingWinner;
                 // after the hunt ends, so runners put out here stay spectators instead of becoming ghosts
@@ -192,6 +201,7 @@ namespace Project.Assets._Project._Scripts.Managers
             await UniTask.WaitUntil(() =>
             {
                 bool isTimeUp = NetworkManager.ServerTime.Time >= _countdownEndTime.Value;
+                _chaseTracker.Tick(_playerRegistry.GetPlayers(), NetworkManager.ServerTime.Time);
                 _playerRegistry.CopySessionsTo(_sessionBuffer);
                 result = _winConditionEvaluator.Evaluate(_sessionBuffer, isTimeUp);
                 return result != RoundResult.None;

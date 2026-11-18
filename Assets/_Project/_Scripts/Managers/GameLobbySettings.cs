@@ -14,6 +14,12 @@ namespace Project.Assets._Project._Scripts.Managers
         [field: SerializeField] public float MaxWaitForPlayersTimeInSeconds { get; private set; } = 60f;
         [field: SerializeField] public float GameStartWaitTimeInSeconds { get; private set; } = 15f;
         [field: SerializeField] public float ResultsDurationInSeconds { get; private set; } = 15f;
+        // round stats: a chase is an up catcher close to an up runner with a clear line between their eyes
+        [field: SerializeField] public float ChaseRangeInMeters { get; private set; } = 15f;
+        [field: SerializeField] public float ChaseLostAfterSeconds { get; private set; } = 3f;
+        [field: SerializeField] public float MinChaseDurationInSeconds { get; private set; } = 3f;
+        [field: SerializeField] public float ChaseSightHeightInMeters { get; private set; } = 1.5f;
+        [field: SerializeField] public LayerMask ChaseSightBlockers { get; private set; } = ~0;
 
         // One catcher for every PlayersPerCatcher players (rounded up, so the second joins at 7), always leaving at least one runner
         public int GetCatcherCount(int playerCount)

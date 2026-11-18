@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Project.Assets._Project._Scripts.Player
@@ -25,6 +25,12 @@ namespace Project.Assets._Project._Scripts.Player
         // after a catcher turn, so everyone else goes first next time
         void MoveToBackOfCatcherQueue(ulong clientId);
         void ResetLifeStates();
+        void AddCatch(ulong clientId);
+        void AddRescue(ulong clientId);
+        void AddStationCompleted(ulong clientId);
+        // keeps the longest chase of the round
+        void RecordChase(ulong clientId, float durationInSeconds);
+        void ResetRoundStats();
         void ResetForLobby();
     }
 }

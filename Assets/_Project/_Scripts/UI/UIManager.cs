@@ -19,6 +19,7 @@ namespace Project.Assets._Project._Scripts.UI
         public event Action OnRequestGameUIInitialization;
         public event Action OnRequestGameStart;
         public event Action<string, string> OnResultsShown;
+        public event Action<string> OnRoundHighlightsShown;
 
         public void RaiseHostStart() => OnHostStart?.Invoke();
         public void RaiseClientStart() => OnClientStart?.Invoke();
@@ -33,5 +34,7 @@ namespace Project.Assets._Project._Scripts.UI
         public void RequestLobbyUIInitialization() => OnRequestLobbyUIInitialization?.Invoke(); 
         public void RequestGameUIInitialization() => OnRequestGameUIInitialization?.Invoke();
         public void ShowResults(string title, string subtitle) => OnResultsShown?.Invoke(title, subtitle);
+
+        public void ShowRoundHighlights(string highlights) => OnRoundHighlightsShown?.Invoke(highlights);
     }
 }
