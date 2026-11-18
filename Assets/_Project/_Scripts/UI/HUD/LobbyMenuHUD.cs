@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.UI.Shared;
 using Reflex.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using TMPro;
@@ -10,7 +11,8 @@ using UnityEngine.UI;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
-    // Lobby menu: ability pick, ready-up, invites and the join code, shown while the local player has the menu open
+    // Lobby menu: ability pick, ready-up, Customize, invites and the join code, shown while the local player has the menu
+    // open and the Customize screen doesn't cover it
     public class LobbyMenuHUD : MonoBehaviour
     {
         [Inject] private readonly LobbyMenuState _state;
@@ -20,6 +22,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private Button _readyButton;
         [SerializeField] private TMP_Text _readyButtonLabel;
         [SerializeField] private Image _readyButtonImage;
+        [SerializeField] private Button _customizeButton;
         // optional: shown only when the session can invite friends (Steam)
         [SerializeField] private Button _inviteFriendsButton;
         // optional: shown only when the session has a join code (Steam)
@@ -48,6 +51,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnChoiceChanged += HandleChoiceChanged;
             _abilityList.OnOptionClicked += _state.RequestAbilityPick;
             _readyButton.onClick.AddListener(_state.RequestReadyToggle);
+            _state.OnCustomizeOpenChanged += HandleCustomizeOpenChanged;
+            _customizeButton.onClick.AddListener(OpenCustomize);
             if (_inviteFriendsButton != null) _inviteFriendsButton.onClick.AddListener(_connectionService.OpenInviteDialog);
             if (_copyJoinCodeButton != null) _copyJoinCodeButton.onClick.AddListener(CopyJoinCode);
             RefreshInviteButton();
@@ -58,23 +63,31 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             HandleOpenChanged(_state.IsOpen);
         }
 
-        private void HandleOpenChanged(bool isOpen)
-        {
-            if (isOpen == _panel.IsShown) return;
+        private void HandleOpenChanged(bool _) => RefreshPanel(_abilityList.FocusSelected);
 
-            if (isOpen)
+        // back from Customize, focus returns to the button that opened it
+        private void HandleCustomizeOpenChanged(bool _) => RefreshPanel(_customizeButton.Select);
+
+        private void RefreshPanel(Action focus)
+        {
+            bool isShown = _state.IsOpen && !_state.IsCustomizeOpen;
+            if (isShown == _panel.IsShown) return;
+
+            if (isShown)
             {
                 RefreshInviteButton();
                 RefreshJoinCode();
                 _panel.Show();
                 // a gamepad has no cursor, so navigation needs a focused button to start from
-                _abilityList.FocusSelected();
+                focus();
             }
             else
             {
                 _panel.Hide();
             }
         }
+
+        private void OpenCustomize() => _state.ToggleCustomizeOpen(true);
 
         private void RefreshInviteButton()
         {
@@ -142,6 +155,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnChoiceChanged -= HandleChoiceChanged;
             _abilityList.OnOptionClicked -= _state.RequestAbilityPick;
             _readyButton.onClick.RemoveListener(_state.RequestReadyToggle);
+            _state.OnCustomizeOpenChanged -= HandleCustomizeOpenChanged;
+            _customizeButton.onClick.RemoveListener(OpenCustomize);
             if (_inviteFriendsButton != null) _inviteFriendsButton.onClick.RemoveListener(_connectionService.OpenInviteDialog);
             if (_copyJoinCodeButton != null) _copyJoinCodeButton.onClick.RemoveListener(CopyJoinCode);
             StopCopiedLabel();

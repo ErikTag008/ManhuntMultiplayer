@@ -10,11 +10,14 @@ namespace Project.Assets._Project._Scripts.UI.HUD
     {
         private readonly List<LobbyOption> _abilityOptions = new();
         private bool _isOpen;
+        private bool _isCustomizeOpen;
         private int _selectedAbilityId;
         private bool _isReady;
         private bool _canEditLobbySettings;
 
         public event Action<bool> OnOpenChanged;
+        // the Customize screen covers the lobby menu while it is open; the lobby menu itself stays open underneath
+        public event Action<bool> OnCustomizeOpenChanged;
         public event Action OnAbilityOptionsChanged;
         public event Action OnChoiceChanged;
         public event Action<int> OnAbilityPickRequested;
@@ -23,6 +26,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public event Action<LobbyConfig> OnLobbyConfigChangeRequested;
 
         public bool IsOpen => _isOpen;
+        public bool IsCustomizeOpen => _isCustomizeOpen;
         public IReadOnlyList<LobbyOption> AbilityOptions => _abilityOptions;
         public int SelectedAbilityId => _selectedAbilityId;
         public bool IsReady => _isReady;
@@ -34,7 +38,17 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             if (_isOpen == isOpen) return;
 
             _isOpen = isOpen;
+            // closing the lobby menu closes what covers it, so it opens again on the menu itself
+            if (!isOpen) ToggleCustomizeOpen(false);
             OnOpenChanged?.Invoke(isOpen);
+        }
+
+        public void ToggleCustomizeOpen(bool isOpen)
+        {
+            if (_isCustomizeOpen == isOpen || (isOpen && !_isOpen)) return;
+
+            _isCustomizeOpen = isOpen;
+            OnCustomizeOpenChanged?.Invoke(isOpen);
         }
 
         public void SetAbilityOptions(IEnumerable<LobbyOption> options)

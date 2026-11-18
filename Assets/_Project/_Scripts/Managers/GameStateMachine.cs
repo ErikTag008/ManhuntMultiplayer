@@ -31,6 +31,8 @@ namespace Project.Assets._Project._Scripts.Managers
         private readonly NetworkVariable<GameState> _state = new();
         private readonly NetworkVariable<double> _countdownEndTime = new();
         private readonly NetworkVariable<RoundResult> _lastRoundResult = new();
+        // counts the rounds of this session, so per-round work (the points award) can tell rounds apart
+        private readonly NetworkVariable<int> _roundNumber = new();
         private readonly List<PlayerSession> _sessionBuffer = new();
         private CancellationTokenSource _gameLoopCTS;
         private CancellationTokenSource _countdownCTS;
@@ -43,6 +45,7 @@ namespace Project.Assets._Project._Scripts.Managers
 
         public GameState CurrentState => _state.Value;
         public RoundResult LastRoundResult => _lastRoundResult.Value;
+        public int RoundNumber => _roundNumber.Value;
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -124,6 +127,7 @@ namespace Project.Assets._Project._Scripts.Managers
                 _roundMode = config.Mode;
                 _state.Value = GameState.AssigningTeams;
                 _lastRoundResult.Value = RoundResult.None;
+                _roundNumber.Value++;
                 _playerRegistry.ResetRoundStats();
                 _teamAssignmentService.AssignTeams();
 

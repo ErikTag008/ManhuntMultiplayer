@@ -294,6 +294,13 @@ namespace Project.Assets._Project._Scripts.Player
                 return;
             }
 
+            // the Customize screen steps back to the lobby menu first
+            if (_lobbyMenuState.IsCustomizeOpen)
+            {
+                _lobbyMenuState.ToggleCustomizeOpen(false);
+                return;
+            }
+
             // one menu at a time; the lobby menu opens again with its own key
             _lobbyMenuState.ToggleOpen(false);
             _pauseMenuState.ToggleOpen(true);

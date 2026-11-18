@@ -948,6 +948,7 @@ GameObject:
   - component: {fileID: 5170205904657880768}
   - component: {fileID: 3238097376751934692}
   - component: {fileID: 2209090428821468905}
+  - component: {fileID: 811559797858378869}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1876,6 +1877,22 @@ MonoBehaviour:
   _viewModelLayerName: FirstPersonView
   _positionOffset: {x: -0.08, y: 0.36, z: 0.5}
   _rotationOffsetInDegrees: {x: 0, y: 0, z: -15}
+--- !u!114 &811559797858378869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7eca7c7732979444ba42734b0e90a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.Cosmetics.PlayerCosmetics
+  ShowTopMostFoldoutHeaderGroup: 1
+  _team: {fileID: 2895491558510482950}
+  _combat: {fileID: 91084392635682791}
+  _viewModel: {fileID: 2209090428821468905}
 --- !u!1 &8770936375934030648
 GameObject:
   m_ObjectHideFlags: 0

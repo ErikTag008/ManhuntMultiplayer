@@ -18,6 +18,7 @@ namespace Project.Assets._Project._Scripts.UI
         event Action OnRequestGameStart;
         event Action<string, string> OnResultsShown;
         event Action<string> OnRoundHighlightsShown;
+        event Action<string> OnRoundPointsShown;
 
         void RaiseHostStart();
         void RaiseClientStart();
@@ -34,5 +35,7 @@ namespace Project.Assets._Project._Scripts.UI
         void ShowResults(string title, string subtitle);
         // one line per highlight; empty hides them
         void ShowRoundHighlights(string highlights);
+        // what the local player earned this round; empty hides it
+        void ShowRoundPoints(string points);
     }
 }

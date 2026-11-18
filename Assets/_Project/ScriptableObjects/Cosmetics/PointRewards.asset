@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c28fddc9c8414114eb074c8aca38f350, type: 3}
+  m_Name: PointRewards
+  m_EditorClassIdentifier: Project.Core::Project.Assets._Project._Scripts.Cosmetics.PointRewards
+  <PointsPerRound>k__BackingField: 10
+  <WinBonus>k__BackingField: 20
+  <PointsPerCatch>k__BackingField: 5
+  <PointsPerRescue>k__BackingField: 5
+  <PointsPerStation>k__BackingField: 5
+  <ChaseStepInSeconds>k__BackingField: 10
+  <PointsPerChaseStep>k__BackingField: 2
+  <MaxChasePoints>k__BackingField: 10

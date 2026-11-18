@@ -1,4 +1,5 @@
 using KBCore.Refs;
+using Project.Assets._Project._Scripts.Cosmetics;
 using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player;
 using Project.Assets._Project._Scripts.SceneFlow;
@@ -26,6 +27,8 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly IMapCatalog _mapCatalog;
         [Inject] private readonly IConnectionService _connectionService;
         [Inject] private readonly LobbyMenuState _lobbyMenuState;
+        [Inject] private readonly CosmeticProfileService _cosmeticProfile;
+        [Inject] private readonly PointRewards _pointRewards;
         [SerializeField, Self] private PlayerRegistry _playerRegistry;
         [SerializeField, Self] private GameStateMachine _gameStateMachine;
         [SerializeField] private string _catchersWinTitle = "Catchers win!";
@@ -40,6 +43,8 @@ namespace Project.Assets._Project._Scripts.Managers
         [SerializeField] private string _mostStationsFormat = "Most stations activated: {0} ({1})";
         [SerializeField] private string _longestChaseFormat = "Longest chase: {0} ({1:0} s)";
         [SerializeField] private string _highlightNamesSeparator = ", ";
+        // {0} total, {1} round, {2} win bonus, {3} catches, {4} rescues, {5} stations, {6} longest chase
+        [SerializeField] private string _roundPointsFormat = "+{0} points";
 
         private readonly List<PlayerSession> _sessionBuffer = new();
         private readonly List<PlayerSession> _nextCatcherBuffer = new();
@@ -47,6 +52,8 @@ namespace Project.Assets._Project._Scripts.Managers
         private readonly List<PlayerSession> _highlightLeaderBuffer = new();
         private readonly List<string> _highlightNameBuffer = new();
         private readonly List<string> _highlightLineBuffer = new();
+        // new for every session, because round numbers start over with a new host
+        private RoundPointsLedger _pointsLedger = new();
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -77,6 +84,7 @@ namespace Project.Assets._Project._Scripts.Managers
             EUtils.Logger.LogColorized($"[GameManager] Called OnNetworkSpawn for Client {NetworkManager.Singleton.LocalClientId}...", "yellow");
             EUtils.Logger.LogColorized($"[GameManager] IsHost = {IsHost}...", "yellow");
             EUtils.Logger.LogColorized($"[GameManager] IsClient = {IsClient}...", "yellow");
+            _pointsLedger = new();
             // project-scoped events outlive this object, so every one is dropped again in OnNetworkDespawn
             _uiManager.OnRequestLobbyUIInitialization += HandleLobbyUIInitialization;
             _uiManager.OnRequestGameUIInitialization += HandleGameUIInitialization;
@@ -193,11 +201,14 @@ namespace Project.Assets._Project._Scripts.Managers
 
         private void HandleLobbyConfigChanged(LobbyConfig _) => ShowPlayerCount();
 
-        // the stats can arrive after the results state on a client, so the highlights follow them
+        // the stats can arrive after the results state on a client, so the highlights and points follow them
         private void HandleSessionsChanged()
         {
             ShowPlayerCount();
-            if (_gameStateMachine.CurrentState == GameState.Results && _gameStateMachine.LastRoundResult != RoundResult.None) ShowRoundHighlights();
+            if (_gameStateMachine.CurrentState != GameState.Results || _gameStateMachine.LastRoundResult == RoundResult.None) return;
+
+            ShowRoundHighlights();
+            AwardRoundPoints();
         }
 
         private void ShowPlayerCount()
@@ -286,11 +297,40 @@ namespace Project.Assets._Project._Scripts.Managers
             var result = _gameStateMachine.LastRoundResult;
             if (result == RoundResult.None) return;
 
-            var winningTeam = result == RoundResult.CatchersWin ? Team.Catcher : Team.Runner;
             var localTeam = GetPlayerTeam(NetworkManager.LocalClientId);
             var title = result == RoundResult.CatchersWin ? _catchersWinTitle : _runnersWinTitle;
-            _uiManager.ShowResults(title, GetLocalResultSubtitle(localTeam, winningTeam));
+            _uiManager.ShowResults(title, GetLocalResultSubtitle(localTeam, GetWinningTeam(result)));
             ShowRoundHighlights();
+            AwardRoundPoints();
+        }
+
+        private static Team GetWinningTeam(RoundResult result) => result == RoundResult.CatchersWin ? Team.Catcher : Team.Runner;
+
+        // Every instance pays its own local player into the local save. Called again whenever the result or the stats
+        // arrive; the ledger pays only what this round still owes, so its total is paid once whatever the order.
+        private void AwardRoundPoints()
+        {
+            var result = _gameStateMachine.LastRoundResult;
+            if (result == RoundResult.None) return;
+
+            bool hasSession = _playerRegistry.TryGetSession(NetworkManager.LocalClientId, out var session);
+            bool hasPlayed = hasSession && session.Team != Team.None;
+            var points = PointsCalculator.Calculate(_pointRewards, hasPlayed, hasPlayed && session.Team == GetWinningTeam(result),
+                session.Catches, session.Rescues, session.StationsCompleted, session.LongestChaseInSeconds);
+
+            int owed = _pointsLedger.TakeOwed(_gameStateMachine.RoundNumber, points.Total);
+            if (owed > 0) _cosmeticProfile.AddPoints(owed);
+
+            if (!hasPlayed)
+            {
+                _uiManager.ShowRoundPoints(string.Empty);
+                return;
+            }
+
+            // stats that went back down (the next round's reset arriving first) don't change what is shown
+            if (points.Total != _pointsLedger.AwardedPoints) return;
+            _uiManager.ShowRoundPoints(string.Format(_roundPointsFormat, points.Total, points.Base, points.WinBonus,
+                points.Catches, points.Rescues, points.Stations, points.Chase));
         }
 
         private void ShowRoundHighlights()

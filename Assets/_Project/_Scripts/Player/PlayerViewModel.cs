@@ -67,6 +67,15 @@ namespace Project.Assets._Project._Scripts.Player
             if (isShown) SampleHandPose();
         }
 
+        // Owner only: the world weapon's look changed (a cosmetic), so the copy is made again from it
+        public void RebuildView()
+        {
+            if (!IsOwner) return;
+
+            DestroyView();
+            HandleWeaponChanged(_combat.CurrentWeapon);
+        }
+
         // the camera brain moves the camera late in the frame, so the view follows it just before it draws
         private void HandleBeginCameraRendering(ScriptableRenderContext context, Camera camera)
         {

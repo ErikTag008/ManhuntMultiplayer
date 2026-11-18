@@ -13,11 +13,15 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private TMP_Text _titleText;
         [SerializeField] private TMP_Text _subtitleText;
         [SerializeField] private TMP_Text _highlightsText;
+        [SerializeField] private TMP_Text _pointsText;
 
         private void Start()
         {
             _uiManager.OnResultsShown += HandleResultsShown;
             _uiManager.OnRoundHighlightsShown += HandleRoundHighlightsShown;
+            _uiManager.OnRoundPointsShown += HandleRoundPointsShown;
+            // hidden until the round flow says what this player earned
+            HandleRoundPointsShown(string.Empty);
         }
 
         private void HandleResultsShown(string title, string subtitle)
@@ -33,10 +37,17 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _highlightsText.gameObject.SetActive(!string.IsNullOrEmpty(highlights));
         }
 
+        private void HandleRoundPointsShown(string points)
+        {
+            _pointsText.text = points;
+            _pointsText.gameObject.SetActive(!string.IsNullOrEmpty(points));
+        }
+
         private void OnDestroy()
         {
             _uiManager.OnResultsShown -= HandleResultsShown;
             _uiManager.OnRoundHighlightsShown -= HandleRoundHighlightsShown;
+            _uiManager.OnRoundPointsShown -= HandleRoundPointsShown;
         }
     }
 }

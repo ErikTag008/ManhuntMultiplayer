@@ -1,8 +1,8 @@
 ﻿<Solution>
   <Project Path="Project.Player.csproj" />
   <Project Path="Project.Core.csproj" />
-  <Project Path="Project.Networking.csproj" />
   <Project Path="Project.Tests.EditMode.csproj" />
+  <Project Path="Project.Networking.csproj" />
   <Project Path="Project.CameraUtils.csproj" />
   <Project Path="DOTween.Modules.csproj" />
   <Project Path="Project.UI.csproj" />

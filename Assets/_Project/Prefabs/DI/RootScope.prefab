@@ -70,3 +70,5 @@ MonoBehaviour:
   _stationSettings: {fileID: 11400000, guid: cfeff4d3f6539444484e258955ac7803, type: 2}
   _ghostSettings: {fileID: 11400000, guid: 7d5f8fe7205523d4586f4c41002360c8, type: 2}
   _settingsData: {fileID: 11400000, guid: bf4d3b17d5273c64d9004f7323c12a32, type: 2}
+  _cosmeticCatalog: {fileID: 11400000, guid: 94c9e3918a509744db026dde81ce2d86, type: 2}
+  _pointRewards: {fileID: 11400000, guid: 13d13b29997c1c246bf60dfcb322d063, type: 2}

@@ -20,6 +20,7 @@ namespace Project.Assets._Project._Scripts.UI
         public event Action OnRequestGameStart;
         public event Action<string, string> OnResultsShown;
         public event Action<string> OnRoundHighlightsShown;
+        public event Action<string> OnRoundPointsShown;
 
         public void RaiseHostStart() => OnHostStart?.Invoke();
         public void RaiseClientStart() => OnClientStart?.Invoke();
@@ -36,5 +37,7 @@ namespace Project.Assets._Project._Scripts.UI
         public void ShowResults(string title, string subtitle) => OnResultsShown?.Invoke(title, subtitle);
 
         public void ShowRoundHighlights(string highlights) => OnRoundHighlightsShown?.Invoke(highlights);
+
+        public void ShowRoundPoints(string points) => OnRoundPointsShown?.Invoke(points);
     }
 }

@@ -26,8 +26,10 @@ namespace Project.Assets._Project._Scripts.UI.Shared
         public void Setup(int id, string label)
         {
             _id = id;
-            _label.text = label;
+            ChangeLabel(label);
         }
+
+        public void ChangeLabel(string label) => _label.text = label;
 
         public void ToggleSelected(bool isSelected) => _background.color = isSelected ? _selectedColor : _normalColor;
 

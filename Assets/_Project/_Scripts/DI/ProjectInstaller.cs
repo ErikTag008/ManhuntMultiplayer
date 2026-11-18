@@ -1,5 +1,6 @@
 using Alchemy.Inspector;
 using Project.Assets._Project._Scripts.CameraUtils;
+using Project.Assets._Project._Scripts.Cosmetics;
 using Project.Assets._Project._Scripts.Managers;
 using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player;
@@ -33,6 +34,8 @@ namespace Project.Assets._Project._Scripts.DI
         [SerializeField, AssetsOnly] private StationSettings _stationSettings;
         [SerializeField, AssetsOnly] private GhostSettings _ghostSettings;
         [SerializeField, AssetsOnly] private SettingsData _settingsData;
+        [SerializeField, AssetsOnly] private CosmeticCatalog _cosmeticCatalog;
+        [SerializeField, AssetsOnly] private PointRewards _pointRewards;
         public void InstallBindings(ContainerBuilder builder)
         {
 
@@ -57,6 +60,8 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(typeof(GameSettingsService), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(KeybindService), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(ControlSchemeState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            // Eager so the saved loadout is loaded before the local player spawns and sends it
+            builder.RegisterType(typeof(CosmeticProfileService), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PersistentObjectRegistry), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(TeamAssignmentService), new Type[] { typeof(ITeamAssignmentService) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             builder.RegisterType(typeof(WinConditionEvaluator), new Type[] { typeof(IWinConditionEvaluator) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
@@ -93,6 +98,8 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterValue(_stationSettings);
             builder.RegisterValue(_ghostSettings);
             builder.RegisterValue(_settingsData);
+            builder.RegisterValue(_cosmeticCatalog);
+            builder.RegisterValue(_pointRewards);
         }
     }
 }

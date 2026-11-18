@@ -36,6 +36,12 @@ namespace Project.Assets._Project._Scripts.UI.Shared
             foreach (var button in _buttons) button.ToggleSelected(button.Id == id);
         }
 
+        public void ChangeLabel(int id, string label)
+        {
+            var button = _buttons.Find(candidate => candidate.Id == id);
+            if (button != null) button.ChangeLabel(label);
+        }
+
         // focuses the selected option, or the first one, so a gamepad can navigate from it
         public void FocusSelected()
         {
@@ -49,6 +55,12 @@ namespace Project.Assets._Project._Scripts.UI.Shared
         public void AddSelectables(List<Selectable> row)
         {
             foreach (var button in _buttons) row.Add(button.Selectable);
+        }
+
+        // the options top to bottom, one navigation row each
+        public void AddSelectableRows(List<List<Selectable>> rows)
+        {
+            foreach (var button in _buttons) rows.Add(new List<Selectable> { button.Selectable });
         }
 
         public Selectable GetSelectedSelectable()

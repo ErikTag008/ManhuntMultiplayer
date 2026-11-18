@@ -16,10 +16,13 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField] private Transform _model;
 
         public event Action<PlayerStats> OnStatsChanged;
+        // raised just before OnModelChanged, so cosmetics are on the new model before other systems collect its renderers
+        public event Action<Transform> OnModelCreated;
         public event Action<Transform> OnModelChanged;
 
         private Team _team;
         private PlayerStats _currentStats;
+        private bool _isOwnModelShown;
 
         public Team Team => _team;
         public PlayerStats CurrentStats => _currentStats;
@@ -62,6 +65,8 @@ namespace Project.Assets._Project._Scripts.Player
 
             // the owner looks through the model's eyes, so it must not see its own body, but its shadow stays
             if (IsOwner) HideFromOwnCamera(_model);
+            _isOwnModelShown = false;
+            OnModelCreated?.Invoke(_model);
             OnModelChanged?.Invoke(_model);
         }
 
@@ -69,7 +74,16 @@ namespace Project.Assets._Project._Scripts.Player
         public void ToggleOwnModelShown(bool isShown)
         {
             if (!IsOwner || _model == null) return;
+
+            _isOwnModelShown = isShown;
             ChangeShadowCastingMode(_model, isShown ? ShadowCastingMode.On : ShadowCastingMode.ShadowsOnly);
+        }
+
+        // Owner only: a part added to the model later (an outfit) follows the own-model hiding like the body
+        public void MatchOwnModelVisibility(Transform part)
+        {
+            if (!IsOwner || part == null) return;
+            ChangeShadowCastingMode(part, _isOwnModelShown ? ShadowCastingMode.On : ShadowCastingMode.ShadowsOnly);
         }
 
         private static void HideFromOwnCamera(Transform model) => ChangeShadowCastingMode(model, ShadowCastingMode.ShadowsOnly);
