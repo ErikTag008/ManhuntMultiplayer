@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
-    // Lobby menu: ability pick, ready-up, Customize, invites and the join code, shown while the local player has the menu
+    // Lobby menu: ability pick, map vote, ready-up, Customize, invites and the join code, shown while the local player has the menu
     // open and the Customize screen doesn't cover it
     public class LobbyMenuHUD : MonoBehaviour
     {
@@ -19,6 +19,11 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [Inject] private readonly IConnectionService _connectionService;
         [SerializeField] private FadePanel _panel;
         [SerializeField] private OptionList _abilityList;
+        // hidden while there is only one map to vote for
+        [SerializeField] private GameObject _mapVotePanel;
+        [SerializeField] private OptionList _mapVoteList;
+        // {0} is the map name, {1} its vote count
+        [SerializeField] private string _mapVoteLabelFormat = "{0}  <size=75%>({1})</size>";
         [SerializeField] private Button _readyButton;
         [SerializeField] private TMP_Text _readyButtonLabel;
         [SerializeField] private Image _readyButtonImage;
@@ -50,6 +55,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnAbilityOptionsChanged += HandleAbilityOptionsChanged;
             _state.OnChoiceChanged += HandleChoiceChanged;
             _abilityList.OnOptionClicked += _state.RequestAbilityPick;
+            _state.OnMapOptionsChanged += HandleMapOptionsChanged;
+            _state.OnMapVotesChanged += HandleMapVotesChanged;
+            _mapVoteList.OnOptionClicked += _state.RequestMapVote;
             _readyButton.onClick.AddListener(_state.RequestReadyToggle);
             _state.OnCustomizeOpenChanged += HandleCustomizeOpenChanged;
             _customizeButton.onClick.AddListener(OpenCustomize);
@@ -60,6 +68,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             // values set before this scene's UI started
             HandleAbilityOptionsChanged();
             HandleChoiceChanged();
+            HandleMapOptionsChanged();
             HandleOpenChanged(_state.IsOpen);
         }
 
@@ -141,6 +150,35 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _abilityList.Build(_optionBuffer);
         }
 
+        private void HandleMapOptionsChanged()
+        {
+            _optionBuffer.Clear();
+            for (int i = 0; i < _state.MapOptions.Count; i++)
+            {
+                var option = _state.MapOptions[i];
+                _optionBuffer.Add((option.Id, FormatMapLabel(option.Label, VoteCountAt(i))));
+            }
+
+            _mapVoteList.Build(_optionBuffer);
+            _mapVotePanel.SetActive(_state.MapOptions.Count > 1);
+            HandleMapVotesChanged();
+        }
+
+        private void HandleMapVotesChanged()
+        {
+            for (int i = 0; i < _state.MapOptions.Count; i++)
+            {
+                var option = _state.MapOptions[i];
+                _mapVoteList.ChangeLabel(option.Id, FormatMapLabel(option.Label, VoteCountAt(i)));
+            }
+
+            _mapVoteList.Select(_state.MapVote);
+        }
+
+        private int VoteCountAt(int index) => index < _state.MapVoteCounts.Count ? _state.MapVoteCounts[index] : 0;
+
+        private string FormatMapLabel(string mapName, int voteCount) => string.Format(_mapVoteLabelFormat, mapName, voteCount);
+
         private void HandleChoiceChanged()
         {
             _abilityList.Select(_state.SelectedAbilityId);
@@ -154,6 +192,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnAbilityOptionsChanged -= HandleAbilityOptionsChanged;
             _state.OnChoiceChanged -= HandleChoiceChanged;
             _abilityList.OnOptionClicked -= _state.RequestAbilityPick;
+            _state.OnMapOptionsChanged -= HandleMapOptionsChanged;
+            _state.OnMapVotesChanged -= HandleMapVotesChanged;
+            _mapVoteList.OnOptionClicked -= _state.RequestMapVote;
             _readyButton.onClick.RemoveListener(_state.RequestReadyToggle);
             _state.OnCustomizeOpenChanged -= HandleCustomizeOpenChanged;
             _customizeButton.onClick.RemoveListener(OpenCustomize);

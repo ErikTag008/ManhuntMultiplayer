@@ -22,6 +22,8 @@ namespace Project.Assets._Project._Scripts.Player
         void ReportBledOut(ulong clientId);
         void SetAbility(ulong clientId, int abilityId);
         void SetReady(ulong clientId, bool isReady);
+        // a GameScenes map index, or PlayerSession.NoMapVote to clear the vote
+        void SetMapVote(ulong clientId, int mapIndex);
         // after a catcher turn, so everyone else goes first next time
         void MoveToBackOfCatcherQueue(ulong clientId);
         void ResetLifeStates();

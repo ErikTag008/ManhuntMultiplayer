@@ -34,6 +34,8 @@ namespace Project.Assets._Project._Scripts.Managers
         // counts the rounds of this session, so per-round work (the points award) can tell rounds apart
         private readonly NetworkVariable<int> _roundNumber = new();
         private readonly List<PlayerSession> _sessionBuffer = new();
+        private readonly List<int> _tiedMapBuffer = new();
+        private readonly Func<int, int> _pickRandomIndex = count => UnityEngine.Random.Range(0, count);
         private CancellationTokenSource _gameLoopCTS;
         private CancellationTokenSource _countdownCTS;
         private bool _gameStartRequested;
@@ -131,8 +133,13 @@ namespace Project.Assets._Project._Scripts.Managers
                 _playerRegistry.ResetRoundStats();
                 _teamAssignmentService.AssignTeams();
 
+                // the vote closes with the countdown; no votes keeps the host's map
+                _playerRegistry.CopySessionsTo(_sessionBuffer);
+                int mapIndex = MapVoteTally.PickMap(_sessionBuffer, _gameScenes.MapCount, config.MapIndex, _pickRandomIndex, _tiedMapBuffer);
+                EUtils.Logger.Log($"[GameStateMachine] Map picked: {_gameScenes.GetMapDisplayName(mapIndex)} (index {mapIndex}, host map {config.MapIndex})");
+
                 _state.Value = GameState.LoadingGameplay;
-                await _networkCoordinator.LoadNetworkScene(_gameScenes.GetMap(config.MapIndex).SceneName, token);
+                await _networkCoordinator.LoadNetworkScene(_gameScenes.GetMap(mapIndex).SceneName, token);
 
                 _playerRegistry.ResetLifeStates();
                 _countdownEndTime.Value = NetworkManager.ServerTime.Time + config.HideDurationInSeconds;

@@ -8,12 +8,17 @@ namespace Project.Assets._Project._Scripts.UI.HUD
     // it lives in the UI assembly because UI can't reference Player. Values are kept so a menu that starts later can catch up.
     public class LobbyMenuState
     {
+        public const int NoMapVote = -1;
+
         private readonly List<LobbyOption> _abilityOptions = new();
+        private readonly List<LobbyOption> _mapOptions = new();
+        private readonly List<int> _mapVoteCounts = new();
         private bool _isOpen;
         private bool _isCustomizeOpen;
         private int _selectedAbilityId;
         private bool _isReady;
         private bool _canEditLobbySettings;
+        private int _mapVote = NoMapVote;
 
         public event Action<bool> OnOpenChanged;
         // the Customize screen covers the lobby menu while it is open; the lobby menu itself stays open underneath
@@ -24,6 +29,10 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public event Action OnReadyToggleRequested;
         public event Action<bool> OnCanEditLobbySettingsChanged;
         public event Action<LobbyConfig> OnLobbyConfigChangeRequested;
+        public event Action OnMapOptionsChanged;
+        public event Action OnMapVotesChanged;
+        // the map index voted for, or NoMapVote to take the vote back
+        public event Action<int> OnMapVoteRequested;
 
         public bool IsOpen => _isOpen;
         public bool IsCustomizeOpen => _isCustomizeOpen;
@@ -32,6 +41,10 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public bool IsReady => _isReady;
         // only the host, and only before the countdown starts
         public bool CanEditLobbySettings => _canEditLobbySettings;
+        public IReadOnlyList<LobbyOption> MapOptions => _mapOptions;
+        // votes per map, in MapOptions order
+        public IReadOnlyList<int> MapVoteCounts => _mapVoteCounts;
+        public int MapVote => _mapVote;
 
         public void ToggleOpen(bool isOpen)
         {
@@ -67,7 +80,25 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             OnChoiceChanged?.Invoke();
         }
 
+        public void SetMapOptions(IEnumerable<LobbyOption> options)
+        {
+            _mapOptions.Clear();
+            _mapOptions.AddRange(options);
+            OnMapOptionsChanged?.Invoke();
+        }
+
+        public void SetMapVotes(IEnumerable<int> voteCounts, int mapVote)
+        {
+            _mapVoteCounts.Clear();
+            _mapVoteCounts.AddRange(voteCounts);
+            _mapVote = mapVote;
+            OnMapVotesChanged?.Invoke();
+        }
+
         public void RequestAbilityPick(int abilityId) => OnAbilityPickRequested?.Invoke(abilityId);
+
+        // voting for the map already voted for takes the vote back
+        public void RequestMapVote(int mapIndex) => OnMapVoteRequested?.Invoke(mapIndex == _mapVote ? NoMapVote : mapIndex);
 
         public void RequestReadyToggle() => OnReadyToggleRequested?.Invoke();
 

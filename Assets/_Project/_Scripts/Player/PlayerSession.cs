@@ -8,6 +8,7 @@ namespace Project.Assets._Project._Scripts.Player
     public struct PlayerSession : INetworkSerializable, IEquatable<PlayerSession>
     {
         public const int NoAbility = -1;
+        public const int NoMapVote = -1;
 
         public ulong ClientId;
         // 0 until Steam is integrated
@@ -18,6 +19,8 @@ namespace Project.Assets._Project._Scripts.Player
         // set by the lobby ability pick and ready-up (P1)
         public int AbilityId;
         public bool IsReady;
+        // the lobby map vote, a GameScenes map index; kept between rounds like the ability pick
+        public int MapVote;
         // catcher rotation: the lowest order is picked first; given out by the server on join and after each catcher turn
         public int CatcherQueueOrder;
         // round stats for the results highlights; the server resets them when teams are assigned
@@ -34,6 +37,7 @@ namespace Project.Assets._Project._Scripts.Player
             LifeState == other.LifeState &&
             AbilityId == other.AbilityId &&
             IsReady == other.IsReady &&
+            MapVote == other.MapVote &&
             CatcherQueueOrder == other.CatcherQueueOrder &&
             Catches == other.Catches &&
             Rescues == other.Rescues &&
@@ -49,6 +53,7 @@ namespace Project.Assets._Project._Scripts.Player
             serializer.SerializeValue(ref LifeState);
             serializer.SerializeValue(ref AbilityId);
             serializer.SerializeValue(ref IsReady);
+            serializer.SerializeValue(ref MapVote);
             serializer.SerializeValue(ref CatcherQueueOrder);
             serializer.SerializeValue(ref Catches);
             serializer.SerializeValue(ref Rescues);

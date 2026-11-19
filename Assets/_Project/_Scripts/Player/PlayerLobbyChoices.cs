@@ -1,5 +1,6 @@
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.Input;
+using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player.Abilities;
 using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Attributes;
@@ -9,8 +10,8 @@ using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player
 {
-    // Owner: in the lobby, opens the menu, fills it with the abilities and this player's pick, and sends picks and ready toggles.
-    // Server: accepts them only while the player has no team yet, which is only the case in the lobby.
+    // Owner: in the lobby, opens the menu, fills it with the abilities, the maps and their votes and this player's picks, and sends
+    // picks, map votes and ready toggles. Server: accepts them only while the player has no team yet, which is only the case in the lobby.
     [RequireComponent(typeof(PlayerTeam), typeof(InputReader))]
     public class PlayerLobbyChoices : NetworkBehaviour
     {
@@ -18,10 +19,13 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly AbilityCatalog _catalog;
         [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
         [Inject] private readonly IPlayerRegistry _playerRegistry;
+        [Inject] private readonly IMapCatalog _mapCatalog;
         [SerializeField, Self] private PlayerTeam _team;
         [SerializeField, Self] private InputReader _inputReader;
 
         private readonly List<LobbyOption> _optionBuffer = new();
+        private readonly List<PlayerSession> _sessionBuffer = new();
+        private readonly List<int> _voteCountBuffer = new();
         private bool _isInLobby;
 
         private void OnValidate() => this.ValidateRefs();
@@ -32,7 +36,9 @@ namespace Project.Assets._Project._Scripts.Player
 
             _lobbyMenuState.OnAbilityPickRequested += HandleAbilityPickRequested;
             _lobbyMenuState.OnReadyToggleRequested += HandleReadyToggleRequested;
+            _lobbyMenuState.OnMapVoteRequested += HandleMapVoteRequested;
             _sessionDirectory.OnSessionChanged += HandleSessionChanged;
+            _sessionDirectory.OnSessionRemoved += HandleSessionRemoved;
             _inputReader.OnToggleMenu += HandleToggleMenu;
         }
 
@@ -49,7 +55,16 @@ namespace Project.Assets._Project._Scripts.Player
             }
 
             _lobbyMenuState.SetAbilityOptions(_optionBuffer);
+
+            _optionBuffer.Clear();
+            for (int mapIndex = 0; mapIndex < _mapCatalog.MapCount; mapIndex++)
+            {
+                _optionBuffer.Add(new LobbyOption(mapIndex, _mapCatalog.GetMapDisplayName(mapIndex)));
+            }
+
+            _lobbyMenuState.SetMapOptions(_optionBuffer);
             RefreshChoice();
+            RefreshMapVotes();
             _lobbyMenuState.ToggleOpen(true);
         }
 
@@ -75,9 +90,18 @@ namespace Project.Assets._Project._Scripts.Player
             SetReadyServerRpc(!isReady);
         }
 
+        private void HandleMapVoteRequested(int mapIndex) => VoteMapServerRpc(mapIndex);
+
         private void HandleSessionChanged(PlayerSession session)
         {
             if (session.ClientId == OwnerClientId) RefreshChoice();
+            if (_isInLobby) RefreshMapVotes();
+        }
+
+        // a player who leaves takes their vote with them
+        private void HandleSessionRemoved(ulong _)
+        {
+            if (_isInLobby) RefreshMapVotes();
         }
 
         // no pick yet shows the default the player will get
@@ -88,11 +112,36 @@ namespace Project.Assets._Project._Scripts.Player
             _lobbyMenuState.SetChoice(ability != null ? ability.Id : PlayerSession.NoAbility, hasSession && session.IsReady);
         }
 
+        private void RefreshMapVotes()
+        {
+            _sessionBuffer.Clear();
+            _sessionBuffer.AddRange(_sessionDirectory.Sessions);
+            _voteCountBuffer.Clear();
+            for (int mapIndex = 0; mapIndex < _mapCatalog.MapCount; mapIndex++)
+            {
+                _voteCountBuffer.Add(MapVoteTally.CountVotes(_sessionBuffer, mapIndex));
+            }
+
+            bool hasSession = _sessionDirectory.TryGetSession(OwnerClientId, out var session);
+            int mapVote = hasSession && session.MapVote != PlayerSession.NoMapVote ? session.MapVote : LobbyMenuState.NoMapVote;
+            _lobbyMenuState.SetMapVotes(_voteCountBuffer, mapVote);
+        }
+
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
         private void PickAbilityServerRpc(int abilityId)
         {
             if (_playerRegistry == null || _team.Team != Team.None || !_catalog.TryGet(abilityId, out _)) return;
             _playerRegistry.SetAbility(OwnerClientId, abilityId);
+        }
+
+        // any index outside the catalog takes the vote back
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
+        private void VoteMapServerRpc(int mapIndex)
+        {
+            if (_playerRegistry == null || _team.Team != Team.None) return;
+
+            bool isValidMap = mapIndex >= 0 && mapIndex < _mapCatalog.MapCount;
+            _playerRegistry.SetMapVote(OwnerClientId, isValidMap ? mapIndex : PlayerSession.NoMapVote);
         }
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
@@ -108,7 +157,9 @@ namespace Project.Assets._Project._Scripts.Player
 
             _lobbyMenuState.OnAbilityPickRequested -= HandleAbilityPickRequested;
             _lobbyMenuState.OnReadyToggleRequested -= HandleReadyToggleRequested;
+            _lobbyMenuState.OnMapVoteRequested -= HandleMapVoteRequested;
             _sessionDirectory.OnSessionChanged -= HandleSessionChanged;
+            _sessionDirectory.OnSessionRemoved -= HandleSessionRemoved;
             _inputReader.OnToggleMenu -= HandleToggleMenu;
             ExitLobby();
         }

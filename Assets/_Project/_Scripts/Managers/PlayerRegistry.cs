@@ -72,6 +72,7 @@ namespace Project.Assets._Project._Scripts.Managers
                 Team = Team.None,
                 LifeState = LifeState.Up,
                 AbilityId = PlayerSession.NoAbility,
+                MapVote = PlayerSession.NoMapVote,
                 CatcherQueueOrder = TakeNextCatcherQueueOrder()
             });
             EUtils.Logger.Log($"[PlayerRegistry] Registered player {player.OwnerClientId}. Total: {_sessions.Count}");
@@ -122,6 +123,8 @@ namespace Project.Assets._Project._Scripts.Managers
 
         public void SetReady(ulong clientId, bool isReady) => UpdateSession(clientId, (ref PlayerSession session) => session.IsReady = isReady);
 
+        public void SetMapVote(ulong clientId, int mapIndex) => UpdateSession(clientId, (ref PlayerSession session) => session.MapVote = mapIndex);
+
         public void MoveToBackOfCatcherQueue(ulong clientId)
         {
             if (!IsServer || IndexOf(clientId) < 0) return;
@@ -171,7 +174,7 @@ namespace Project.Assets._Project._Scripts.Managers
         }
 
         // Teams are picked each round, so the lobby is neutral: default model, no weapon, everyone up and not ready.
-        // The ability pick is kept between rounds.
+        // The ability pick and map vote are kept between rounds.
         public void ResetForLobby()
         {
             for (int i = 0; i < _sessions.Count; i++)
