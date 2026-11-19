@@ -70,6 +70,13 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
+        // for maps that bring their own spawns (bundle maps); catchers use the waiting room, runners the game room
+        public void SetSpawns(Transform[] catcherSpawns, Transform[] runnerSpawns)
+        {
+            _waitingRoomSpawns = catcherSpawns;
+            _gameRoomSpawns = runnerSpawns;
+        }
+
         public void SendToCatcherSpawn(PlayerController player)
         {
             if (_waitingRoomSpawns.Length == 0)

@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 1276794458824371617}
   - component: {fileID: 5497104063243791242}
   - component: {fileID: 8188318079639113506}
+  - component: {fileID: 727139405806009587}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -85,6 +86,14 @@ MonoBehaviour:
   _localWinSubtitle: You won
   _localLossSubtitle: You lost
   _playerCountFormat: "{0}/{1} players joined  \xB7  {2} ready"
+  _nextCatchersFormat: 'Next catcher: {0}'
+  _nextCatchersSeparator: ', '
+  _mostCatchesFormat: 'Most catches: {0} ({1})'
+  _mostRescuesFormat: 'Most rescues: {0} ({1})'
+  _mostStationsFormat: 'Most stations activated: {0} ({1})'
+  _longestChaseFormat: 'Longest chase: {0} ({1:0} s)'
+  _highlightNamesSeparator: ', '
+  _roundPointsFormat: +{0} points
 --- !u!114 &2195926799005246414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -155,3 +164,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Project.Managers::Project.Assets._Project._Scripts.Managers.LobbyAdvertiser
   ShowTopMostFoldoutHeaderGroup: 1
   _gameStateMachine: {fileID: 2195926799005246414}
+--- !u!114 &727139405806009587
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7613318948758467133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e9230f6b7ad2cc46ba0554ce3d360df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Managers::Project.Assets._Project._Scripts.Managers.MapListSync
+  ShowTopMostFoldoutHeaderGroup: 1

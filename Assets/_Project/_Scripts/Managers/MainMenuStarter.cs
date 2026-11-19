@@ -2,6 +2,7 @@ using Alchemy.Inspector;
 using Cysharp.Threading.Tasks;
 using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.SceneFlow;
+using Project.Assets._Project._Scripts.SceneFlow.Maps;
 using Project.Assets._Project._Scripts.UI;
 using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Attributes;
@@ -24,10 +25,14 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly ActiveLobbyConfig _activeLobbyConfig;
         [Inject] private readonly SessionEndHandler _sessionEndHandler;
         [Inject] private readonly SteamPlatform _steamPlatform;
+        [Inject] private readonly SessionMapCatalog _mapCatalog;
         [SerializeField, AssetsOnly] private NetworkObject _gameSystemsPrefab;
         [SerializeField] private string _hostingStatus = "Creating lobby...";
         // {0} is the address
         [SerializeField] private string _joiningStatusFormat = "Joining {0}...";
+
+        // before the host menu builds its map list in Start, so maps exported since the last visit show up
+        private void Awake() => _mapCatalog.RefreshLocalListings();
 
         private void Start()
         {

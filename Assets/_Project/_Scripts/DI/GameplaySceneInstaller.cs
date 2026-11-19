@@ -4,16 +4,17 @@ using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.UI;
 using Reflex.Attributes;
 using Reflex.Core;
+using System;
 using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.DI
 {
-    public class GameplaySceneInstaller : ValidatedMonoBehaviour, IInstaller, ISceneContext
+    public class GameplaySceneInstaller : ValidatedMonoBehaviour, IInstaller, ISceneContext, IMapBoundsReceiver
     {
         [SerializeField] private Camera _gameplayCamera;
         [SerializeField, Scene] private FPCameraInstaller _fpcameraInstaller;
         [SerializeField, Scene] private SpectatorCamera _spectatorCamera;
-        // optional: without it ghosts can fly anywhere
+        // optional: without it ghosts can fly anywhere; a bundle map sets its own once it's placed
         [SerializeField, Scene(Flag.Optional)] private MapBounds _mapBounds;
 
         private ActiveCameraProvider _activeCameraProvider;
@@ -44,6 +45,13 @@ namespace Project.Assets._Project._Scripts.DI
         {
             builder.RegisterValue(_gameplayCamera);
             builder.RegisterValue(_fpcameraInstaller);
+            builder.RegisterValue(this, new Type[] { typeof(IMapBoundsReceiver) });
+        }
+
+        public void SetMapBounds(MapBounds mapBounds)
+        {
+            _mapBounds = mapBounds;
+            _sceneContextProvider?.NotifyMapBoundsChanged(this);
         }
 
         private void OnDestroy()

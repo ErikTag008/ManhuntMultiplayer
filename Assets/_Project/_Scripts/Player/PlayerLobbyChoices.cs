@@ -1,7 +1,7 @@
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.Input;
-using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player.Abilities;
+using Project.Assets._Project._Scripts.SceneFlow.Maps;
 using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Attributes;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly AbilityCatalog _catalog;
         [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
         [Inject] private readonly IPlayerRegistry _playerRegistry;
-        [Inject] private readonly IMapCatalog _mapCatalog;
+        [Inject] private readonly SessionMapCatalog _mapCatalog;
         [SerializeField, Self] private PlayerTeam _team;
         [SerializeField, Self] private InputReader _inputReader;
 
@@ -40,6 +40,7 @@ namespace Project.Assets._Project._Scripts.Player
             _sessionDirectory.OnSessionChanged += HandleSessionChanged;
             _sessionDirectory.OnSessionRemoved += HandleSessionRemoved;
             _inputReader.OnToggleMenu += HandleToggleMenu;
+            _mapCatalog.OnChanged += HandleMapCatalogChanged;
         }
 
         // Owner only
@@ -55,14 +56,7 @@ namespace Project.Assets._Project._Scripts.Player
             }
 
             _lobbyMenuState.SetAbilityOptions(_optionBuffer);
-
-            _optionBuffer.Clear();
-            for (int mapIndex = 0; mapIndex < _mapCatalog.MapCount; mapIndex++)
-            {
-                _optionBuffer.Add(new LobbyOption(mapIndex, _mapCatalog.GetMapDisplayName(mapIndex)));
-            }
-
-            _lobbyMenuState.SetMapOptions(_optionBuffer);
+            RefreshMapOptions();
             RefreshChoice();
             RefreshMapVotes();
             _lobbyMenuState.ToggleOpen(true);
@@ -98,6 +92,15 @@ namespace Project.Assets._Project._Scripts.Player
             if (_isInLobby) RefreshMapVotes();
         }
 
+        // a client gets the server's map list (bundle maps included) after it may already be in the lobby
+        private void HandleMapCatalogChanged()
+        {
+            if (!_isInLobby) return;
+
+            RefreshMapOptions();
+            RefreshMapVotes();
+        }
+
         // a player who leaves takes their vote with them
         private void HandleSessionRemoved(ulong _)
         {
@@ -110,6 +113,17 @@ namespace Project.Assets._Project._Scripts.Player
             bool hasSession = _sessionDirectory.TryGetSession(OwnerClientId, out var session);
             var ability = _catalog.Resolve(hasSession ? session.AbilityId : PlayerSession.NoAbility);
             _lobbyMenuState.SetChoice(ability != null ? ability.Id : PlayerSession.NoAbility, hasSession && session.IsReady);
+        }
+
+        private void RefreshMapOptions()
+        {
+            _optionBuffer.Clear();
+            for (int mapIndex = 0; mapIndex < _mapCatalog.MapCount; mapIndex++)
+            {
+                _optionBuffer.Add(new LobbyOption(mapIndex, _mapCatalog.GetMapDisplayName(mapIndex)));
+            }
+
+            _lobbyMenuState.SetMapOptions(_optionBuffer);
         }
 
         private void RefreshMapVotes()
@@ -161,6 +175,7 @@ namespace Project.Assets._Project._Scripts.Player
             _sessionDirectory.OnSessionChanged -= HandleSessionChanged;
             _sessionDirectory.OnSessionRemoved -= HandleSessionRemoved;
             _inputReader.OnToggleMenu -= HandleToggleMenu;
+            _mapCatalog.OnChanged -= HandleMapCatalogChanged;
             ExitLobby();
         }
     }

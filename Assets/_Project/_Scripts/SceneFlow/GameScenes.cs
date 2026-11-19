@@ -1,5 +1,6 @@
 using Assets._Project._Scripts.SceneReference;
 using Project.Assets._Project._Scripts.Networking;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,9 +14,15 @@ namespace Project.Assets._Project._Scripts.SceneFlow
         [field: SerializeField] public MapDefinition DefaultMap { get; private set; }
         // The maps a host can pick, by LobbyConfig.MapIndex; empty means DefaultMap is the only one
         [field: SerializeField] public List<MapDefinition> Maps { get; private set; } = new();
+        // the generic scene every bundle map is loaded into
+        [field: SerializeField, SceneReference] public string BundleMapScene { get; private set; }
 
         public string LobbySceneName => System.IO.Path.GetFileNameWithoutExtension(LobbyScene);
         public string MainMenuSceneName => System.IO.Path.GetFileNameWithoutExtension(MainMenuScene);
+        public string BundleMapSceneName => System.IO.Path.GetFileNameWithoutExtension(BundleMapScene);
+
+        // the built-in list is fixed while the game runs
+        public event Action OnChanged { add { } remove { } }
 
         public int MapCount => Maps.Count > 0 ? Maps.Count : DefaultMap != null ? 1 : 0;
 

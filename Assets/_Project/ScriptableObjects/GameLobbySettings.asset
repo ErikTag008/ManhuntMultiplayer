@@ -19,3 +19,10 @@ MonoBehaviour:
   <MaxWaitForPlayersTimeInSeconds>k__BackingField: 5
   <GameStartWaitTimeInSeconds>k__BackingField: 10
   <ResultsDurationInSeconds>k__BackingField: 10
+  <ChaseRangeInMeters>k__BackingField: 15
+  <ChaseLostAfterSeconds>k__BackingField: 3
+  <MinChaseDurationInSeconds>k__BackingField: 3
+  <ChaseSightHeightInMeters>k__BackingField: 1.5
+  <ChaseSightBlockers>k__BackingField:
+    serializedVersion: 2
+    m_Bits: 4294967295

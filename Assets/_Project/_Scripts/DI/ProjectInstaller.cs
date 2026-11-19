@@ -9,6 +9,7 @@ using Project.Assets._Project._Scripts.Player.Drops;
 using Project.Assets._Project._Scripts.Player.Emotes;
 using Project.Assets._Project._Scripts.Player.Stations;
 using Project.Assets._Project._Scripts.SceneFlow;
+using Project.Assets._Project._Scripts.SceneFlow.Maps;
 using Project.Assets._Project._Scripts.Settings;
 using Project.Assets._Project._Scripts.UI;
 using Project.Assets._Project._Scripts.UI.HUD;
@@ -26,6 +27,7 @@ namespace Project.Assets._Project._Scripts.DI
         [SerializeField, AssetsOnly] private RunnerStats _runnerStats;
         [SerializeField, AssetsOnly] private GameLobbySettings _gameLobbySettings;
         [SerializeField, AssetsOnly] private GameScenes _gameScenes;
+        [SerializeField, AssetsOnly] private MapLibrarySettings _mapLibrarySettings;
         [SerializeField, AssetsOnly] private ConnectionSettings _connectionSettings;
         [SerializeField, AssetsOnly] private LobbyConfigData _lobbyConfigData;
         [SerializeField, AssetsOnly] private AbilityCatalog _abilityCatalog;
@@ -80,6 +82,9 @@ namespace Project.Assets._Project._Scripts.DI
             // Eager so it listens for disconnects from the first session on
             builder.RegisterType(typeof(SessionEndHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PauseMenuLeaveHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(LocalMapLibrary), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
+            // built-in maps plus local bundle maps; a connected client mirrors the server's list
+            builder.RegisterType(typeof(SessionMapCatalog), new Type[] { typeof(SessionMapCatalog), typeof(IMapCatalog) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
 
             // Network-spawned systems register themselves in GameSystemsRegistry; transient so each resolve sees the live instance
             builder.RegisterFactory(p => p.Resolve<GameSystemsRegistry>().PlayerRegistry, new Type[] { typeof(IPlayerRegistry) }, Reflex.Enums.Lifetime.Transient, Reflex.Enums.Resolution.Lazy);
@@ -89,7 +94,8 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterFactory(p => _catcherStats, new Type[] { typeof(CatcherStats)},Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterFactory(p => _runnerStats, new Type[] { typeof(RunnerStats)},Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterValue(_gameLobbySettings);
-            builder.RegisterValue(_gameScenes, new Type[] { typeof(GameScenes), typeof(IMapCatalog) });
+            builder.RegisterValue(_gameScenes);
+            builder.RegisterValue(_mapLibrarySettings);
             builder.RegisterValue(_connectionSettings);
             builder.RegisterValue(_lobbyConfigData);
             builder.RegisterValue(_abilityCatalog);

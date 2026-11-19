@@ -4,6 +4,7 @@
   <Project Path="Project.Tests.EditMode.csproj" />
   <Project Path="Project.Networking.csproj" />
   <Project Path="Project.CameraUtils.csproj" />
+  <Project Path="Project.SceneFlow.csproj" />
   <Project Path="DOTween.Modules.csproj" />
   <Project Path="Project.UI.csproj" />
   <Project Path="Project.Managers.csproj" />
@@ -12,7 +13,6 @@
   <Project Path="Project.DI.csproj" />
   <Project Path="Project.DevTools.csproj" />
   <Project Path="Project.Weapons.csproj" />
-  <Project Path="Project.SceneFlow.csproj" />
   <Project Path="Project.Editor.csproj" />
   <Project Path="SceneReference.Editor.csproj" />
 </Solution>

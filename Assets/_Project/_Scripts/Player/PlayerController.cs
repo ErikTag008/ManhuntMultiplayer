@@ -106,6 +106,7 @@ namespace Project.Assets._Project._Scripts.Player
             _emote.OnThirdPersonChanged += HandleLookBlockerChanged;
             _pauseMenuState.ChangeDoesLeavingEndSession(IsHost);
             _settings.OnChanged += HandleSettingsChanged;
+            _sceneContextProvider.OnMapBoundsChanged += HandleMapBoundsChanged;
             _inputReader.OnPause += HandlePausePressed;
             _inputReader.OnWalkHeldChanged += HandleWalkHeldChanged;
             _inputReader.OnCrouchHeldChanged += HandleCrouchHeldChanged;
@@ -182,6 +183,9 @@ namespace Project.Assets._Project._Scripts.Player
             UnbindLobbyInput();
             _lobbyChoices.ExitLobby();
         }
+
+        // Owner only: a bundle map places its MapBounds after the scene was initialized
+        private void HandleMapBoundsChanged(ISceneContext sceneContext) => _ghost.ChangeMapBounds(sceneContext.MapBounds);
 
         private void CreateMovementIfNeeded()
         {
@@ -355,6 +359,7 @@ namespace Project.Assets._Project._Scripts.Player
             _emoteWheelState.OnOpenChanged -= HandleLookBlockerChanged;
             _emote.OnThirdPersonChanged -= HandleLookBlockerChanged;
             _settings.OnChanged -= HandleSettingsChanged;
+            _sceneContextProvider.OnMapBoundsChanged -= HandleMapBoundsChanged;
             _inputReader.OnPause -= HandlePausePressed;
             _inputReader.OnWalkHeldChanged -= HandleWalkHeldChanged;
             _inputReader.OnCrouchHeldChanged -= HandleCrouchHeldChanged;

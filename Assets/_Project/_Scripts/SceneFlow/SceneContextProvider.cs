@@ -1,9 +1,14 @@
+using System;
+
 namespace Project.Assets._Project._Scripts.SceneFlow
 {
     // Project-scoped holder of the current scene's context, filled by scene installers
     public class SceneContextProvider
     {
         private ISceneContext _current;
+
+        // Only for the current context; bundle maps bring their MapBounds after the scene loaded
+        public event Action<ISceneContext> OnMapBoundsChanged;
 
         public void Register(ISceneContext sceneContext) => _current = sceneContext;
 
@@ -17,6 +22,11 @@ namespace Project.Assets._Project._Scripts.SceneFlow
         {
             sceneContext = _current != null && _current.SceneType == sceneType ? _current : null;
             return sceneContext != null;
+        }
+
+        public void NotifyMapBoundsChanged(ISceneContext sceneContext)
+        {
+            if (_current == sceneContext) OnMapBoundsChanged?.Invoke(sceneContext);
         }
     }
 }

@@ -1,7 +1,9 @@
 using Cysharp.Threading.Tasks;
 using KBCore.Refs;
+using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Player;
 using Project.Assets._Project._Scripts.SceneFlow;
+using Project.Assets._Project._Scripts.SceneFlow.Maps;
 using Project.Assets._Project._Scripts.UI;
 using Reflex.Attributes;
 using System;
@@ -19,6 +21,7 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly IWinConditionEvaluator _winConditionEvaluator;
         [Inject] private readonly GameLobbySettings _settings;
         [Inject] private readonly GameScenes _gameScenes;
+        [Inject] private readonly SessionMapCatalog _mapCatalog;
         [Inject] private readonly HidePhase _hidePhase;
         [Inject] private readonly HuntPhase _huntPhase;
         [SerializeField, Self] private PlayerRegistry _playerRegistry;
@@ -135,11 +138,19 @@ namespace Project.Assets._Project._Scripts.Managers
 
                 // the vote closes with the countdown; no votes keeps the host's map
                 _playerRegistry.CopySessionsTo(_sessionBuffer);
-                int mapIndex = MapVoteTally.PickMap(_sessionBuffer, _gameScenes.MapCount, config.MapIndex, _pickRandomIndex, _tiedMapBuffer);
-                EUtils.Logger.Log($"[GameStateMachine] Map picked: {_gameScenes.GetMapDisplayName(mapIndex)} (index {mapIndex}, host map {config.MapIndex})");
+                int mapIndex = MapVoteTally.PickMap(_sessionBuffer, _mapCatalog.MapCount, config.MapIndex, _pickRandomIndex, _tiedMapBuffer);
+                var map = _mapCatalog.GetListing(mapIndex);
+                // the bundle map scene's loader reads it when it spawns
+                _mapCatalog.SelectMap(map);
+                EUtils.Logger.Log($"[GameStateMachine] Map picked: {map.DisplayName} (index {mapIndex}, host map {config.MapIndex})");
 
                 _state.Value = GameState.LoadingGameplay;
-                await _networkCoordinator.LoadNetworkScene(_gameScenes.GetMap(mapIndex).SceneName, token);
+                await _networkCoordinator.LoadNetworkScene(GetSceneName(map), token);
+                if (!await WaitForMapLoad(map, token))
+                {
+                    EUtils.Logger.LogError($"[GameStateMachine] {map.DisplayName} couldn't be loaded; back to the lobby.");
+                    continue;
+                }
 
                 _playerRegistry.ResetLifeStates();
                 _countdownEndTime.Value = NetworkManager.ServerTime.Time + config.HideDurationInSeconds;
@@ -164,6 +175,19 @@ namespace Project.Assets._Project._Scripts.Managers
                 // the next iteration loads the lobby again
                 await UniTask.WaitForSeconds(_settings.ResultsDurationInSeconds, cancellationToken: token);
             }
+        }
+
+        private string GetSceneName(MapListing map) => map.IsBundle ? _gameScenes.BundleMapSceneName : _gameScenes.GetMap(map.BuiltInIndex).SceneName;
+
+        // a built-in map is ready with its scene; a bundle map's scene registers a gate that waits for every instance
+        private async UniTask<bool> WaitForMapLoad(MapListing map, CancellationToken token)
+        {
+            var mapLoadGate = _gameSystemsRegistry.MapLoadGate;
+            if (mapLoadGate != null) return await mapLoadGate.WaitUntilReady(token);
+            if (!map.IsBundle) return true;
+
+            EUtils.Logger.LogError("[GameStateMachine] The bundle map scene has no IMapLoadGate (BundleMapLoader)!");
+            return false;
         }
 
         private async UniTask WaitForEnoughPlayers(CancellationToken token)

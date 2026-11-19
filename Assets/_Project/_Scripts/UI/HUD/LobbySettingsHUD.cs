@@ -60,6 +60,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             Build();
             _activeLobbyConfig.OnChanged += HandleConfigChanged;
+            _mapCatalog.OnChanged += HandleMapCatalogChanged;
             _state.OnCanEditLobbySettingsChanged += HandleCanEditChanged;
             _state.OnOpenChanged += HandleOpenChanged;
             _state.OnChoiceChanged += MarkNavigationDirty;
@@ -80,8 +81,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             foreach (var mode in _modeOptions) _labelBuffer.Add(GetModeLabel(mode));
             _modeRow = CreateChoiceRow(_modeLabel);
 
-            _labelBuffer.Clear();
-            for (int i = 0; i < _mapCatalog.MapCount; i++) _labelBuffer.Add(_mapCatalog.GetMapDisplayName(i));
+            FillMapLabels();
             _mapRow = CreateChoiceRow(_mapLabel);
 
             _labelBuffer.Clear();
@@ -94,6 +94,20 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _labelBuffer.Clear();
             foreach (var visibility in _visibilityOptions) _labelBuffer.Add(GetVisibilityLabel(visibility));
             _visibilityRow = CreateChoiceRow(_visibilityLabel);
+        }
+
+        private void FillMapLabels()
+        {
+            _labelBuffer.Clear();
+            for (int i = 0; i < _mapCatalog.MapCount; i++) _labelBuffer.Add(_mapCatalog.GetMapDisplayName(i));
+        }
+
+        // a client may get the host's map list after this menu was built
+        private void HandleMapCatalogChanged()
+        {
+            FillMapLabels();
+            _mapRow.Setup(_mapLabel, _labelBuffer);
+            _mapRow.SetIndexWithoutNotify(_activeLobbyConfig.Config.MapIndex);
         }
 
         private ChoiceRow CreateChoiceRow(string label)
@@ -259,6 +273,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private void OnDestroy()
         {
             _activeLobbyConfig.OnChanged -= HandleConfigChanged;
+            _mapCatalog.OnChanged -= HandleMapCatalogChanged;
             _state.OnCanEditLobbySettingsChanged -= HandleCanEditChanged;
             _state.OnOpenChanged -= HandleOpenChanged;
             _state.OnChoiceChanged -= MarkNavigationDirty;
