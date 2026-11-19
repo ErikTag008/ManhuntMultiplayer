@@ -55,6 +55,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private ChoiceRow _hideTimeRow;
         private ChoiceRow _visibilityRow;
         private bool _isNavigationDirty;
+        private int _navigationDirtyFrame;
 
         private void Start()
         {
@@ -65,6 +66,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnOpenChanged += HandleOpenChanged;
             _state.OnChoiceChanged += MarkNavigationDirty;
             _state.OnAbilityOptionsChanged += MarkNavigationDirty;
+            _state.OnMapOptionsChanged += MarkNavigationDirty;
             _uiManager.OnStartGameButtonVisibilityChanged += HandleStartGameButtonChanged;
             _uiManager.OnStartGameButtonAvailabilityChanged += HandleStartGameButtonChanged;
             ShowConfig(_activeLobbyConfig.Config);
@@ -190,14 +192,19 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             if (isOpen) MarkNavigationDirty();
         }
 
-        private void MarkNavigationDirty() => _isNavigationDirty = true;
+        private void MarkNavigationDirty()
+        {
+            _isNavigationDirty = true;
+            _navigationDirtyFrame = Time.frameCount;
+        }
 
         private void HandleStartGameButtonChanged(bool _) => MarkNavigationDirty();
 
-        // after every handler of the frame ran, so the ability list has already rebuilt or reselected its buttons
+        // a frame after the change: rebuilt option lists have destroyed their old buttons and laid out the new ones by then,
+        // so the links (and the map vote found above the bottom buttons) never point at a button that is going away
         private void LateUpdate()
         {
-            if (!_isNavigationDirty) return;
+            if (!_isNavigationDirty || Time.frameCount == _navigationDirtyFrame) return;
 
             _isNavigationDirty = false;
             LinkNavigation();
@@ -206,6 +213,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private void LinkNavigation()
         {
             _navigationRows.Clear();
+            // the neighbours above the bottom buttons are found by position, so every rebuilt list must be laid out first
+            Canvas.ForceUpdateCanvases();
             LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)_container);
             EUtils.UI.AddNavigationRows(_container, _navigationRows);
             EUtils.UI.LinkNavigation(_navigationRows);
@@ -239,8 +248,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
                     mode = Navigation.Mode.Explicit,
                     selectOnLeft = i > 0 ? _shownBelowNeighbours[i - 1] : leftTarget,
                     selectOnRight = i < _shownBelowNeighbours.Count - 1 ? _shownBelowNeighbours[i + 1] : null,
-                    // a guest has no arrows, so up leads back to the ability list
-                    selectOnUp = lastRow != null ? FindNearest(lastRow, neighbour) : leftTarget
+                    selectOnUp = FindAbove(neighbour, leftTarget, lastRow)
                 };
             }
 
@@ -252,6 +260,16 @@ namespace Project.Assets._Project._Scripts.UI.HUD
                 navigation.selectOnDown = FindNearest(_shownBelowNeighbours, selectable);
                 selectable.navigation = navigation;
             }
+        }
+
+        // whatever sits right above (the map vote over the middle buttons, the last row's arrows over ready up);
+        // with nothing found, the last row, or the ability list for a guest, who has no arrows
+        private static Selectable FindAbove(Selectable from, Selectable leftTarget, List<Selectable> lastRow)
+        {
+            var above = from.FindSelectable(Vector3.up);
+            if (above != null) return above;
+
+            return lastRow != null ? FindNearest(lastRow, from) : leftTarget;
         }
 
         private static Selectable FindNearest(List<Selectable> candidates, Selectable from)
@@ -278,6 +296,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _state.OnOpenChanged -= HandleOpenChanged;
             _state.OnChoiceChanged -= MarkNavigationDirty;
             _state.OnAbilityOptionsChanged -= MarkNavigationDirty;
+            _state.OnMapOptionsChanged -= MarkNavigationDirty;
             _uiManager.OnStartGameButtonVisibilityChanged -= HandleStartGameButtonChanged;
             _uiManager.OnStartGameButtonAvailabilityChanged -= HandleStartGameButtonChanged;
             if (_modeRow != null) _modeRow.OnIndexChanged -= HandleRowChanged;

@@ -206,12 +206,19 @@ namespace Project.Assets._Project._Scripts
             }
 
             // Each active child of the container is one row; rows without a usable selectable are skipped.
+            // A child scroll view adds the rows of its content instead, so a long list can scroll.
             // Checks interactable, not IsInteractable, so a menu can be wired while its panel is still hidden.
             public static void AddNavigationRows(Transform container, List<List<Selectable>> rows)
             {
                 foreach (Transform child in container)
                 {
                     if (!child.gameObject.activeInHierarchy) continue;
+
+                    if (child.TryGetComponent(out ScrollRect scrollRect))
+                    {
+                        if (scrollRect.content != null) AddNavigationRows(scrollRect.content, rows);
+                        continue;
+                    }
 
                     var row = new List<Selectable>();
                     foreach (var selectable in child.GetComponentsInChildren<Selectable>())
