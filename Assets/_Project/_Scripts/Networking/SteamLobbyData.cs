@@ -6,6 +6,8 @@ namespace Project.Assets._Project._Scripts.Networking
         public const string HostSteamIdKey = "host_steam_id";
         public const string NameKey = "name";
         public const string MapIndexKey = "map_index";
+        // the host resolves the name, since a browser's own map list can have other bundle maps at that index
+        public const string MapNameKey = "map_name";
         public const string ModeKey = "mode";
         public const string VersionKey = "version";
         public const string InProgressKey = "in_progress";

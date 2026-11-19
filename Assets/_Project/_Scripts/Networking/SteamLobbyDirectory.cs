@@ -3,7 +3,6 @@ using Steamworks;
 using Steamworks.Data;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 using UnityEngine;
 
@@ -16,26 +15,25 @@ namespace Project.Assets._Project._Scripts.Networking
     {
         private readonly ConnectionSettings _settings;
         private readonly SteamPlatform _steamPlatform;
-        private readonly IMapCatalog _mapCatalog;
         private readonly List<Lobby> _friendLobbies = new();
         private readonly HashSet<ulong> _foundLobbyIds = new();
 
-        public SteamLobbyDirectory(ConnectionSettings settings, SteamPlatform steamPlatform, IMapCatalog mapCatalog)
+        public SteamLobbyDirectory(ConnectionSettings settings, SteamPlatform steamPlatform)
         {
             _settings = settings;
             _steamPlatform = steamPlatform;
-            _mapCatalog = mapCatalog;
         }
 
         public bool HasSearchDistance => true;
 
-        // the lobby's name, map, size and visibility are written by SteamConnectionService as they change
+        // the lobby's name, size and visibility are written by SteamConnectionService as they change
         public void Publish(LobbyListing listing)
         {
             var lobby = _steamPlatform.CurrentLobby;
             if (!_steamPlatform.IsReady || !lobby.HasValue || lobby.Value.Owner.Id.Value != _steamPlatform.LocalSteamId) return;
 
             SetDataIfChanged(lobby.Value, SteamLobbyData.InProgressKey, listing.IsInProgress ? SteamLobbyData.TrueValue : SteamLobbyData.FalseValue);
+            SetDataIfChanged(lobby.Value, SteamLobbyData.MapNameKey, listing.MapName ?? string.Empty);
             // only known once Steam has measured its relays, which can take a few seconds after start
             var pingLocation = SteamNetworkingUtils.LocalPingLocation;
             if (pingLocation.HasValue) SetDataIfChanged(lobby.Value, SteamLobbyData.PingLocationKey, pingLocation.Value.ToString());
@@ -136,7 +134,7 @@ namespace Project.Assets._Project._Scripts.Networking
                 JoinTarget = id,
                 Name = lobby.GetData(SteamLobbyData.NameKey),
                 HostName = lobby.GetData(SteamLobbyData.HostNameKey),
-                MapName = GetMapName(lobby),
+                MapName = lobby.GetData(SteamLobbyData.MapNameKey),
                 PlayerCount = lobby.MemberCount,
                 MaxPlayers = lobby.MaxMembers,
                 IsInProgress = lobby.GetData(SteamLobbyData.InProgressKey) == SteamLobbyData.TrueValue,
@@ -145,11 +143,6 @@ namespace Project.Assets._Project._Scripts.Networking
                 PingInMilliseconds = EstimatePing(lobby)
             });
         }
-
-        private string GetMapName(Lobby lobby) =>
-            int.TryParse(lobby.GetData(SteamLobbyData.MapIndexKey), NumberStyles.None, CultureInfo.InvariantCulture, out int mapIndex)
-                ? _mapCatalog.GetMapDisplayName(mapIndex)
-                : string.Empty;
 
         private static int EstimatePing(Lobby lobby)
         {

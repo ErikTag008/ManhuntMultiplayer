@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.Networking;
+using Project.Assets._Project._Scripts.SceneFlow.Maps;
 using Reflex.Attributes;
 using System.Threading;
 using Unity.Netcode;
@@ -15,7 +16,7 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly ILobbyDirectory _lobbyDirectory;
         [Inject] private readonly IConnectionService _connectionService;
         [Inject] private readonly ActiveLobbyConfig _activeLobbyConfig;
-        [Inject] private readonly IMapCatalog _mapCatalog;
+        [Inject] private readonly SessionMapCatalog _mapCatalog;
         [Inject] private readonly ConnectionSettings _connectionSettings;
         [SerializeField, Self] private GameStateMachine _gameStateMachine;
 
@@ -35,12 +36,11 @@ namespace Project.Assets._Project._Scripts.Managers
             StartAdvertising();
         }
 
-        // browsers see a round start or end right away instead of on the next heartbeat
+        // browsers see a round start or end, and the voted map once it's picked, right away instead of on the next heartbeat
         private void HandleStateChanged(GameState previous, GameState current)
         {
-            bool isInProgress = RoundProgress.IsInProgress(current);
-            _connectionService.ToggleJoinsOpen(!isInProgress);
-            if (_isAdvertising && isInProgress != RoundProgress.IsInProgress(previous)) RefreshAdvert();
+            _connectionService.ToggleJoinsOpen(!RoundProgress.IsInProgress(current));
+            if (_isAdvertising) RefreshAdvert();
         }
 
         private void StartAdvertising()
@@ -84,16 +84,25 @@ namespace Project.Assets._Project._Scripts.Managers
 
             _listing.Name = config.Name.ToString();
             _listing.HostName = SystemInfo.deviceName;
-            _listing.MapName = _mapCatalog.GetMapDisplayName(config.MapIndex);
+            bool isInProgress = RoundProgress.IsInProgress(_gameStateMachine.CurrentState);
+            _listing.MapName = GetAdvertisedMapName(config, isInProgress);
             _listing.PlayerCount = NetworkManager.ConnectedClientsIds.Count;
             _listing.MaxPlayers = config.MaxPlayers;
-            _listing.IsInProgress = RoundProgress.IsInProgress(_gameStateMachine.CurrentState);
+            _listing.IsInProgress = isInProgress;
             _listing.Visibility = config.Visibility;
             _listing.Region = _connectionSettings.LocalRegionLabel;
             _listing.PingInMilliseconds = LobbyListing.UnknownPing;
             _listing.Address = _connectionSettings.Address;
             _listing.Port = _connectionSettings.Port;
             _lobbyDirectory.Publish(_listing);
+        }
+
+        // in the lobby the vote is still open, so the host's map stands; during a round it's the map being played.
+        // Assigning teams comes just before the vote's pick, so there the selection may be empty or last round's until loading starts
+        private string GetAdvertisedMapName(LobbyConfig config, bool isInProgress)
+        {
+            var playedMapName = _mapCatalog.SelectedMap.DisplayName.ToString();
+            return isInProgress && !string.IsNullOrEmpty(playedMapName) ? playedMapName : _mapCatalog.GetMapDisplayName(config.MapIndex);
         }
 
         public override void OnNetworkDespawn()
