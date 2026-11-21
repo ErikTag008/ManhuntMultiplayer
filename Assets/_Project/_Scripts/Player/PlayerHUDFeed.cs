@@ -59,6 +59,7 @@ namespace Project.Assets._Project._Scripts.Player
             _sessionDirectory.OnSessionRemoved += HandleSessionRemoved;
             _lifeState.OnLifeStateChanged += HandleLifeStateChanged;
             _stations.OnStationCompleted += HandleStationCompleted;
+            _cameraBinder.OnCameraUpdated += RefreshScreenMarkers;
             RefreshRunnerCounts();
         }
 
@@ -70,11 +71,18 @@ namespace Project.Assets._Project._Scripts.Player
             RefreshRescue();
             RefreshAbility();
             RefreshDropEffect();
-            RefreshRevealMarkers();
             RefreshStationCounts();
-            RefreshStationMarkers();
             RefreshLunge();
             RefreshGhost();
+            // no camera means no update event, so clear here
+            if (_cameraBinder.Camera == null) RefreshScreenMarkers();
+        }
+
+        // markers are placed once the camera has moved for the frame, so they don't trail it
+        private void RefreshScreenMarkers()
+        {
+            RefreshRevealMarkers();
+            RefreshStationMarkers();
         }
 
         private void HandleSessionChanged(PlayerSession _) => RefreshRunnerCounts();
@@ -275,6 +283,7 @@ namespace Project.Assets._Project._Scripts.Player
             _sessionDirectory.OnSessionRemoved -= HandleSessionRemoved;
             _lifeState.OnLifeStateChanged -= HandleLifeStateChanged;
             _stations.OnStationCompleted -= HandleStationCompleted;
+            _cameraBinder.OnCameraUpdated -= RefreshScreenMarkers;
             _hudState.SetBleedOut(false, 0f, 0f, false);
             _hudState.SetRescue(false, 0f);
             _hudState.SetAbility(false, null, null, 0f, 0f);

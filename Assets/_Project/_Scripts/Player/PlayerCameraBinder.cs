@@ -9,6 +9,8 @@ namespace Project.Assets._Project._Scripts.Player
     public class PlayerCameraBinder : MonoBehaviour
     {
         public event Action OnCameraRotationChanged;
+        // the bound camera has its final pose for this frame, so screen projections made now match what renders
+        public event Action OnCameraUpdated;
 
         private FPCameraInstaller _fpCameraInstaller;
         private Camera _camera;
@@ -19,7 +21,6 @@ namespace Project.Assets._Project._Scripts.Player
         {
             Unbind();
 
-            _camera = sceneContext.GameplayCamera;
             _fpCameraInstaller = sceneContext.FPCameraInstaller;
             if (_fpCameraInstaller == null)
             {
@@ -27,8 +28,11 @@ namespace Project.Assets._Project._Scripts.Player
                 return;
             }
 
+            // only a camera that reports its updates is exposed, so screen markers never wait on one that stays silent
+            _camera = sceneContext.GameplayCamera;
             _fpCameraInstaller.BindCameraToPlayer(target);
             _fpCameraInstaller.OnCameraRotationChanged += HandleCameraRotationChanged;
+            _fpCameraInstaller.OnOutputCameraUpdated += HandleOutputCameraUpdated;
         }
 
         public void ToggleLook(bool isEnabled)
@@ -39,12 +43,22 @@ namespace Project.Assets._Project._Scripts.Player
         // the previous scene's rig may already be destroyed; `is not null` skips Unity's fake-null so the plain C# event still drops us
         public void Unbind()
         {
-            if (_fpCameraInstaller is not null) _fpCameraInstaller.OnCameraRotationChanged -= HandleCameraRotationChanged;
+            if (_fpCameraInstaller is not null)
+            {
+                _fpCameraInstaller.OnCameraRotationChanged -= HandleCameraRotationChanged;
+                _fpCameraInstaller.OnOutputCameraUpdated -= HandleOutputCameraUpdated;
+            }
+
             _fpCameraInstaller = null;
             _camera = null;
         }
 
         private void HandleCameraRotationChanged() => OnCameraRotationChanged?.Invoke();
+
+        private void HandleOutputCameraUpdated(Camera camera)
+        {
+            if (camera == _camera) OnCameraUpdated?.Invoke();
+        }
 
         private void OnDestroy() => Unbind();
     }

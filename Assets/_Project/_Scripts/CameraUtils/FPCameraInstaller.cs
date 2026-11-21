@@ -17,6 +17,8 @@ namespace Project.Assets._Project._Scripts.CameraUtils
         [SerializeField, Self] private CinemachineInputAxisController _cinemachineInputAxisController;
         [SerializeField, Self] private CinemachinePanTilt _cinemachinePanTilt;
         public event Action OnCameraRotationChanged;
+        // the brain has placed its output camera for this frame, whichever virtual camera drives it
+        public event Action<Camera> OnOutputCameraUpdated;
 
         // the owner's PlayerInput enables its actions; Cinemachine enabling Look itself would undo the pause menu turning it off
         private void Awake() => _cinemachineInputAxisController.AutoEnableInputs = false;
@@ -33,6 +35,7 @@ namespace Project.Assets._Project._Scripts.CameraUtils
 
         private void OnCameraUpdate(CinemachineBrain brain)
         {
+            OnOutputCameraUpdated?.Invoke(brain.OutputCamera);
             if (brain.ActiveVirtualCamera != _camera as ICinemachineCamera)
                 return;
             OnCameraRotationChanged?.Invoke();

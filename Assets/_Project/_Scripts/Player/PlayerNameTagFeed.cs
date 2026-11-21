@@ -49,14 +49,16 @@ namespace Project.Assets._Project._Scripts.Player
 
             _sessionDirectory.OnSessionChanged += HandleSessionChanged;
             _sessionDirectory.OnSessionRemoved += HandleSessionRemoved;
+            _cameraBinder.OnCameraUpdated += RefreshNameTags;
             foreach (var session in _sessionDirectory.Sessions) HandleSessionChanged(session);
         }
 
+        // tags are placed once the camera has moved for the frame; without a camera no update arrives, so they are cleared here
         private void Update()
         {
             if (!IsSpawned || !IsOwner) return;
 
-            RefreshNameTags();
+            if (_cameraBinder.Camera == null) RefreshNameTags();
         }
 
         private void HandleSessionChanged(PlayerSession session)
@@ -182,6 +184,7 @@ namespace Project.Assets._Project._Scripts.Player
 
             _sessionDirectory.OnSessionChanged -= HandleSessionChanged;
             _sessionDirectory.OnSessionRemoved -= HandleSessionRemoved;
+            _cameraBinder.OnCameraUpdated -= RefreshNameTags;
             _nameTags.Clear();
             _hudState.SetNameTags(_nameTags);
         }
