@@ -42,7 +42,7 @@ namespace Project.Assets._Project.Tests.EditMode
         public void BuildLocalListings_BuiltInsKeepTheirIndicesThenBundles()
         {
             var gameScenes = CreateGameScenes("Default", "Farm", "Yard");
-            var bundleMaps = new List<LocalMapEntry> { new("dock", "Dock", "dock.mapbundle", "abcd", 1) };
+            var bundleMaps = new List<LocalMapEntry> { new("dock", "Dock", "dock.mapbundle", "abcd", 1, null) };
 
             SessionMapCatalog.BuildLocalListings(gameScenes, bundleMaps, _listings);
 

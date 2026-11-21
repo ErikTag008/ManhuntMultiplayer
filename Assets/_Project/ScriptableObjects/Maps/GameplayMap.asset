@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Project.SceneFlow::Project.Assets._Project._Scripts.SceneFlow.MapDefinition
   <DisplayName>k__BackingField: Gameplay Map
   <Scene>k__BackingField: Assets/_Project/Scenes/3_GameplayScene.unity
+  <Preview>k__BackingField: {fileID: 2800000, guid: ac9e29693e6f2c0409578275b24dc7d4, type: 3}

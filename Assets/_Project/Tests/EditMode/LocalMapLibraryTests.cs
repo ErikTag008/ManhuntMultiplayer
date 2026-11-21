@@ -123,13 +123,57 @@ namespace Project.Assets._Project.Tests.EditMode
             Assert.AreEqual(0, new LocalMapLibrary(_settings).Maps.Count);
         }
 
-        private void WriteMap(string id, string bundleFileName)
+        [Test]
+        public void Rescan_PreviewNextToTheMap_Found()
         {
-            File.WriteAllText(Path.Combine(_folderPath, bundleFileName), "abc");
-            File.WriteAllText(Path.Combine(_folderPath, _settings.GetInfoFileName(id)), ToJson(id, id, MapSdk.Version, bundleFileName));
+            WriteMap("yard", "yard.mapbundle", "yard.preview.png");
+            File.WriteAllText(Path.Combine(_folderPath, "yard.preview.png"), "png");
+
+            var library = new LocalMapLibrary(_settings);
+
+            Assert.AreEqual(Path.Combine(_folderPath, "yard.preview.png"), library.Maps[0].PreviewPath);
         }
 
-        private static string ToJson(string id, string displayName, int sdkVersion, string bundleFileName) =>
-            JsonUtility.ToJson(new MapBundleInfo { Id = id, DisplayName = displayName, SdkVersion = sdkVersion, BundleFileName = bundleFileName });
+        [TestCase(null)]
+        [TestCase("missing.png")]
+        [TestCase("yard.preview.gif")]
+        [TestCase("../yard.preview.png")]
+        public void Rescan_NoOrUnusablePreview_MapStillListedWithoutOne(string previewFileName)
+        {
+            WriteMap("yard", "yard.mapbundle", previewFileName);
+            File.WriteAllText(Path.Combine(_folderPath, "yard.preview.gif"), "gif");
+
+            var library = new LocalMapLibrary(_settings);
+
+            Assert.AreEqual(1, library.Maps.Count);
+            Assert.IsNull(library.Maps[0].PreviewPath);
+        }
+
+        [Test]
+        public void Rescan_PreviewTooLarge_MapStillListedWithoutOne()
+        {
+            WriteMap("yard", "yard.mapbundle", "yard.preview.png");
+            File.WriteAllBytes(Path.Combine(_folderPath, "yard.preview.png"), new byte[_settings.MaxPreviewSizeInBytes + 1]);
+
+            var library = new LocalMapLibrary(_settings);
+
+            Assert.IsNull(library.Maps[0].PreviewPath);
+        }
+
+        private void WriteMap(string id, string bundleFileName, string previewFileName = null)
+        {
+            File.WriteAllText(Path.Combine(_folderPath, bundleFileName), "abc");
+            File.WriteAllText(Path.Combine(_folderPath, _settings.GetInfoFileName(id)), ToJson(id, id, MapSdk.Version, bundleFileName, previewFileName));
+        }
+
+        private static string ToJson(string id, string displayName, int sdkVersion, string bundleFileName, string previewFileName = null) =>
+            JsonUtility.ToJson(new MapBundleInfo
+            {
+                Id = id,
+                DisplayName = displayName,
+                SdkVersion = sdkVersion,
+                BundleFileName = bundleFileName,
+                PreviewFileName = previewFileName
+            });
     }
 }

@@ -1,6 +1,8 @@
 using Project.Assets._Project._Scripts.Networking;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.SceneFlow.Maps
 {
@@ -10,11 +12,15 @@ namespace Project.Assets._Project._Scripts.SceneFlow.Maps
     {
         // GameScenes falls back to DefaultMap for any index outside its list
         private const int FallbackBuiltInIndex = -1;
+        // LoadImage resizes the texture to the image
+        private const int UnloadedTextureSize = 1;
 
         private readonly GameScenes _gameScenes;
         private readonly LocalMapLibrary _mapLibrary;
         private readonly List<MapListing> _localListings = new();
         private readonly List<MapListing> _remoteListings = new();
+        // bundle map previews by file path, loaded on first use; null marks a file that failed to load
+        private readonly Dictionary<string, Texture2D> _bundlePreviews = new();
         private bool _isMirroringRemote;
         // Server only
         private MapListing _selectedMap;
@@ -36,6 +42,16 @@ namespace Project.Assets._Project._Scripts.SceneFlow.Maps
 
         public string GetMapDisplayName(int index) => GetListing(index).DisplayName.ToString();
 
+        // null when the map has no preview, or it's a bundle map this machine doesn't have the same file of
+        public Texture2D GetMapPreview(int index)
+        {
+            var listing = GetListing(index);
+            if (!listing.IsBundle) return _gameScenes.GetMapPreview(listing.BuiltInIndex);
+            if (!_mapLibrary.TryFind(listing.Id.ToString(), listing.ContentHash.ToString(), out var entry) || entry.PreviewPath == null) return null;
+
+            return GetBundlePreview(entry.PreviewPath);
+        }
+
         // out-of-range indices fall back to DefaultMap, like GameScenes.GetMap
         public MapListing GetListing(int index)
         {
@@ -49,6 +65,8 @@ namespace Project.Assets._Project._Scripts.SceneFlow.Maps
         public void RefreshLocalListings()
         {
             _mapLibrary.Rescan();
+            // a preview file may have changed with its map
+            ClearBundlePreviews();
             BuildLocalListings(_gameScenes, _mapLibrary.Maps, _localListings);
             if (!_isMirroringRemote) OnChanged?.Invoke();
         }
@@ -71,6 +89,52 @@ namespace Project.Assets._Project._Scripts.SceneFlow.Maps
         }
 
         public void SelectMap(MapListing listing) => _selectedMap = listing;
+
+        private Texture2D GetBundlePreview(string previewPath)
+        {
+            if (_bundlePreviews.TryGetValue(previewPath, out var preview)) return preview;
+
+            preview = LoadPreview(previewPath);
+            _bundlePreviews[previewPath] = preview;
+            return preview;
+        }
+
+        private static Texture2D LoadPreview(string previewPath)
+        {
+            byte[] bytes;
+            try
+            {
+                bytes = File.ReadAllBytes(previewPath);
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+                EUtils.Logger.LogWarning($"[SessionMapCatalog] Can't read the map preview {previewPath}: {e.Message}");
+                return null;
+            }
+
+            // clamped, so a cropped edge never filters in pixels from the opposite side
+            var preview = new Texture2D(UnloadedTextureSize, UnloadedTextureSize)
+            {
+                name = Path.GetFileName(previewPath),
+                wrapMode = TextureWrapMode.Clamp
+            };
+            // the CPU copy isn't needed once it's on the GPU
+            if (preview.LoadImage(bytes, true)) return preview;
+
+            EUtils.Logger.LogWarning($"[SessionMapCatalog] The map preview {previewPath} isn't a readable image.");
+            UnityEngine.Object.Destroy(preview);
+            return null;
+        }
+
+        private void ClearBundlePreviews()
+        {
+            foreach (var preview in _bundlePreviews.Values)
+            {
+                if (preview != null) UnityEngine.Object.Destroy(preview);
+            }
+
+            _bundlePreviews.Clear();
+        }
 
         public static void BuildLocalListings(GameScenes gameScenes, IReadOnlyList<LocalMapEntry> bundleMaps, List<MapListing> results)
         {

@@ -161,6 +161,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             }
 
             _mapVoteList.Build(_optionBuffer);
+            foreach (var option in _state.MapOptions) _mapVoteList.ChangePreview(option.Id, option.Preview);
             _mapVotePanel.SetActive(_state.MapOptions.Count > 1);
             HandleMapVotesChanged();
         }

@@ -48,6 +48,12 @@ namespace Project.Assets._Project._Scripts.UI.Shared
             if (button != null) button.ChangeDetail(detail);
         }
 
+        public void ChangePreview(int id, Texture preview)
+        {
+            var button = _buttons.Find(candidate => candidate.Id == id);
+            if (button != null) button.ChangePreview(preview);
+        }
+
         // focuses the selected option, or the first one, so a gamepad can navigate from it
         public void FocusSelected()
         {

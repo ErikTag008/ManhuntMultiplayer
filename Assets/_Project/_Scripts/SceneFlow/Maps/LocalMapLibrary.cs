@@ -166,7 +166,7 @@ namespace Project.Assets._Project._Scripts.SceneFlow.Maps
             try
             {
                 string contentHash = GetContentHash(bundleFile);
-                entry = new LocalMapEntry(info.Id, info.DisplayName, bundlePath, contentHash, bundleFile.Length);
+                entry = new LocalMapEntry(info.Id, info.DisplayName, bundlePath, contentHash, bundleFile.Length, GetPreviewPath(folderPath, info));
                 return true;
             }
             catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
@@ -174,6 +174,32 @@ namespace Project.Assets._Project._Scripts.SceneFlow.Maps
                 reason = $"its bundle can't be read ({e.Message}).";
                 return false;
             }
+        }
+
+        // a broken preview doesn't make the map unplayable; it only shows without one
+        private string GetPreviewPath(string folderPath, MapBundleInfo info)
+        {
+            string fileName = info.PreviewFileName;
+            if (string.IsNullOrWhiteSpace(fileName)) return null;
+
+            string problem = GetPreviewProblem(folderPath, fileName);
+            if (problem == null) return Path.Combine(folderPath, fileName);
+
+            EUtils.Logger.LogWarning($"[LocalMapLibrary] {info.Id} shows without a preview: {problem}");
+            return null;
+        }
+
+        // null when the preview file can be used
+        private string GetPreviewProblem(string folderPath, string fileName)
+        {
+            if (Path.GetFileName(fileName) != fileName) return $"the preview file name \"{fileName}\" isn't a plain file name.";
+            if (!_settings.IsPreviewExtension(Path.GetExtension(fileName))) return $"{fileName} isn't a PNG or JPG image.";
+
+            var previewFile = new FileInfo(Path.Combine(folderPath, fileName));
+            if (!previewFile.Exists) return $"{fileName} is missing.";
+            if (previewFile.Length > _settings.MaxPreviewSizeInBytes) return $"{fileName} is larger than {_settings.MaxPreviewSizeInKilobytes} KB.";
+
+            return null;
         }
 
         private string GetContentHash(FileInfo bundleFile)

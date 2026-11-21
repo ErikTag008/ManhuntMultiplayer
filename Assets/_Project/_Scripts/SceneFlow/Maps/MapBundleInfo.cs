@@ -11,5 +11,7 @@ namespace Project.Assets._Project._Scripts.SceneFlow.Maps
         public int SdkVersion;
         // a file name in the same folder as the sidecar, never a path
         public string BundleFileName;
+        // optional, like BundleFileName a plain file name next to the sidecar; also the Workshop item's preview image
+        public string PreviewFileName;
     }
 }

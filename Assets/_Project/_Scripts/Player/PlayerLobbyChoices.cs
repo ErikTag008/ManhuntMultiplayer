@@ -120,7 +120,7 @@ namespace Project.Assets._Project._Scripts.Player
             _optionBuffer.Clear();
             for (int mapIndex = 0; mapIndex < _mapCatalog.MapCount; mapIndex++)
             {
-                _optionBuffer.Add(new LobbyOption(mapIndex, _mapCatalog.GetMapDisplayName(mapIndex)));
+                _optionBuffer.Add(new LobbyOption(mapIndex, _mapCatalog.GetMapDisplayName(mapIndex), _mapCatalog.GetMapPreview(mapIndex)));
             }
 
             _lobbyMenuState.SetMapOptions(_optionBuffer);

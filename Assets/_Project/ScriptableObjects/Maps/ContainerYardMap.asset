@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Project.SceneFlow::Project.Assets._Project._Scripts.SceneFlow.MapDefinition
   <DisplayName>k__BackingField: Container Yard
   <Scene>k__BackingField: Assets/_Project/Scenes/4_ContainerYardScene.unity
+  <Preview>k__BackingField: {fileID: 2800000, guid: 5e2f9ce894be9664aa6503e2caf77733, type: 3}

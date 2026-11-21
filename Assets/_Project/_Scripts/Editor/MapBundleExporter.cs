@@ -33,6 +33,14 @@ namespace Project.Assets._Project._Scripts.Editor
 
             StampSdkVersion(map.GetComponent<MapRoot>());
             var errors = new List<string>();
+            bool hasPreview = MapPreviewCapture.TryFindBundlePreview(map, settings, out string previewSourcePath);
+            if (hasPreview && new FileInfo(previewSourcePath).Length > settings.MaxPreviewSizeInBytes)
+            {
+                errors.Add($"Its preview {Path.GetFileName(previewSourcePath)} is larger than {settings.MaxPreviewSizeInKilobytes} KB.");
+                ShowErrors(map.name, errors);
+                return;
+            }
+
             if (!MapValidator.Validate(map, settings, MapValidator.NoBundleSize, errors))
             {
                 ShowErrors(map.name, errors);
@@ -53,17 +61,24 @@ namespace Project.Assets._Project._Scripts.Editor
             Directory.CreateDirectory(libraryFolder);
             string bundleFileName = settings.GetBundleFileName(mapRoot.Id);
             File.Copy(builtBundlePath, Path.Combine(libraryFolder, bundleFileName), true);
+            string previewFileName = CopyPreview(mapRoot.Id, hasPreview ? previewSourcePath : null, settings);
 
             var info = new MapBundleInfo
             {
                 Id = mapRoot.Id,
                 DisplayName = mapRoot.DisplayName,
                 SdkVersion = mapRoot.SdkVersion,
-                BundleFileName = bundleFileName
+                BundleFileName = bundleFileName,
+                PreviewFileName = previewFileName
             };
             string infoPath = Path.Combine(libraryFolder, settings.GetInfoFileName(mapRoot.Id));
             File.WriteAllText(infoPath, JsonUtility.ToJson(info, true));
             Debug.Log($"[{nameof(MapBundleExporter)}] Exported {mapRoot.DisplayName} ({bundleSizeInBytes} bytes) to {libraryFolder}", map);
+            if (!hasPreview)
+            {
+                Debug.LogWarning($"[{nameof(MapBundleExporter)}] {map.name} has no {map.name}{MapPreviewCapture.PreviewNameSuffix} image next to it, " +
+                    $"so the map vote shows it without a preview. Use {MapPreviewCapture.CapturePath} or save a PNG/JPG under that name.", map);
+            }
         }
 
         [MenuItem(ExportPath, true)]
@@ -131,6 +146,23 @@ namespace Project.Assets._Project._Scripts.Editor
 
             EditorUtility.DisplayDialog(DialogTitle, $"Building the bundle for {map.name} failed; see the Console.", DialogOk);
             return false;
+        }
+
+        // copies the preview next to the bundle, replacing an older one in any format; returns its file name, or null without one
+        private static string CopyPreview(string mapId, string previewSourcePath, MapLibrarySettings settings)
+        {
+            string libraryFolder = settings.FolderPath;
+            foreach (var extension in settings.PreviewExtensions)
+            {
+                string oldPreviewPath = Path.Combine(libraryFolder, settings.GetPreviewFileName(mapId, extension));
+                if (File.Exists(oldPreviewPath)) File.Delete(oldPreviewPath);
+            }
+
+            if (previewSourcePath == null) return null;
+
+            string previewFileName = settings.GetPreviewFileName(mapId, Path.GetExtension(previewSourcePath));
+            File.Copy(previewSourcePath, Path.Combine(libraryFolder, previewFileName), true);
+            return previewFileName;
         }
 
         private static void ShowErrors(string mapName, List<string> errors)

@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace Project.Assets._Project._Scripts.UI.Shared
 {
     // One choice in an OptionList: a button with a label that tints itself when selected,
-    // plus an optional detail text (e.g. a count badge) that hides itself while empty
+    // plus an optional detail text (e.g. a count badge) that hides itself while empty, and an optional preview picture
     public class OptionButton : MonoBehaviour
     {
         [SerializeField] private Button _button;
@@ -15,6 +15,9 @@ namespace Project.Assets._Project._Scripts.UI.Shared
         // optional; the object shown or hidden with the detail, e.g. a badge around the text
         [SerializeField] private TMP_Text _detailText;
         [SerializeField] private GameObject _detailRoot;
+        // optional; the placeholder is shown instead of the picture when there is none
+        [SerializeField] private CoverImage _preview;
+        [SerializeField] private GameObject _noPreviewPlaceholder;
         [SerializeField] private Color _normalColor = new(0.15f, 0.15f, 0.2f, 0.87f);
         [SerializeField] private Color _selectedColor = new(0.2f, 0.6f, 0.3f, 1f);
 
@@ -42,6 +45,15 @@ namespace Project.Assets._Project._Scripts.UI.Shared
             _detailText.text = detail;
             var detailRoot = _detailRoot != null ? _detailRoot : _detailText.gameObject;
             detailRoot.SetActive(!string.IsNullOrEmpty(detail));
+        }
+
+        public void ChangePreview(Texture preview)
+        {
+            if (_preview == null) return;
+
+            _preview.ChangeTexture(preview);
+            _preview.gameObject.SetActive(preview != null);
+            if (_noPreviewPlaceholder != null) _noPreviewPlaceholder.SetActive(preview == null);
         }
 
         public void ToggleSelected(bool isSelected) => _background.color = isSelected ? _selectedColor : _normalColor;

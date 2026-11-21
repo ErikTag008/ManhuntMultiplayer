@@ -40,5 +40,12 @@ namespace Project.Assets._Project._Scripts.SceneFlow
 
             return string.IsNullOrEmpty(map.DisplayName) ? map.SceneName : map.DisplayName;
         }
+
+        // null when the map has no preview
+        public Texture2D GetMapPreview(int index)
+        {
+            var map = GetMap(index);
+            return map != null ? map.Preview : null;
+        }
     }
 }

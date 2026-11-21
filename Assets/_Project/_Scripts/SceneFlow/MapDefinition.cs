@@ -9,6 +9,8 @@ namespace Project.Assets._Project._Scripts.SceneFlow
     {
         [field: SerializeField] public string DisplayName { get; private set; }
         [field: SerializeField, SceneReference] public string Scene { get; private set; }
+        // optional; shown on the map vote, ideally 16:9 (Tools/Maps/Capture Map Preview From Scene View makes one)
+        [field: SerializeField] public Texture2D Preview { get; private set; }
 
         public string SceneName => System.IO.Path.GetFileNameWithoutExtension(Scene);
     }

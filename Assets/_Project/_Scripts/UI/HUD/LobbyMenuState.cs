@@ -1,6 +1,7 @@
 using Project.Assets._Project._Scripts.Networking;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
@@ -121,11 +122,14 @@ namespace Project.Assets._Project._Scripts.UI.HUD
     {
         public readonly int Id;
         public readonly string Label;
+        // optional picture of the option, e.g. a map preview
+        public readonly Texture Preview;
 
-        public LobbyOption(int id, string label)
+        public LobbyOption(int id, string label, Texture preview = null)
         {
             Id = id;
             Label = label;
+            Preview = preview;
         }
     }
 }
