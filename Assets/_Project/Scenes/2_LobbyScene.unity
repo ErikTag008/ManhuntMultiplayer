@@ -4345,7 +4345,8 @@ MonoBehaviour:
   _abilityList: {fileID: 160802490}
   _mapVotePanel: {fileID: 1050587781}
   _mapVoteList: {fileID: 2030433833}
-  _mapVoteLabelFormat: '{0}  <size=75%>({1})</size>'
+  _singleVoteFormat: '{0} vote'
+  _multipleVotesFormat: '{0} votes'
   _readyButton: {fileID: 568009824}
   _readyButtonLabel: {fileID: 1918537829}
   _readyButtonImage: {fileID: 568009825}
@@ -6443,7 +6444,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80ffae67318b4934a9f7f7bd6a6f9d96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Project.UI::Project.Assets._Project._Scripts.UI.Shared.OptionList
-  _buttonPrefab: {fileID: 1082876764057092525, guid: 3ef5e6356ca0806439d34342ddd6b7d4, type: 3}
+  _buttonPrefab: {fileID: 327325853158678144, guid: a7734d63dbfd8bd4c9624230eba57314, type: 3}
   _container: {fileID: 2030433831}
 --- !u!114 &2030433834
 MonoBehaviour:
@@ -6465,10 +6466,10 @@ MonoBehaviour:
   m_ChildAlignment: 1
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 324, y: 64}
+  m_CellSize: {x: 660, y: 64}
   m_Spacing: {x: 12, y: 10}
   m_Constraint: 1
-  m_ConstraintCount: 2
+  m_ConstraintCount: 1
 --- !u!1 &2052557588
 GameObject:
   m_ObjectHideFlags: 0

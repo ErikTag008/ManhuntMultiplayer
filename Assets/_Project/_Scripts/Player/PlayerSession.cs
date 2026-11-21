@@ -19,7 +19,7 @@ namespace Project.Assets._Project._Scripts.Player
         // set by the lobby ability pick and ready-up (P1)
         public int AbilityId;
         public bool IsReady;
-        // the lobby map vote, a GameScenes map index; kept between rounds like the ability pick
+        // the lobby map vote, a GameScenes map index; cleared each time the lobby opens again
         public int MapVote;
         // catcher rotation: the lowest order is picked first; given out by the server on join and after each catcher turn
         public int CatcherQueueOrder;

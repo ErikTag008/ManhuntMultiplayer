@@ -22,8 +22,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         // hidden while there is only one map to vote for
         [SerializeField] private GameObject _mapVotePanel;
         [SerializeField] private OptionList _mapVoteList;
-        // {0} is the map name, {1} its vote count
-        [SerializeField] private string _mapVoteLabelFormat = "{0}  <size=75%>({1})</size>";
+        // {0} is the vote count; no votes shows no badge
+        [SerializeField] private string _singleVoteFormat = "{0} vote";
+        [SerializeField] private string _multipleVotesFormat = "{0} votes";
         [SerializeField] private Button _readyButton;
         [SerializeField] private TMP_Text _readyButtonLabel;
         [SerializeField] private Image _readyButtonImage;
@@ -156,7 +157,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             for (int i = 0; i < _state.MapOptions.Count; i++)
             {
                 var option = _state.MapOptions[i];
-                _optionBuffer.Add((option.Id, FormatMapLabel(option.Label, VoteCountAt(i))));
+                _optionBuffer.Add((option.Id, option.Label));
             }
 
             _mapVoteList.Build(_optionBuffer);
@@ -169,7 +170,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             for (int i = 0; i < _state.MapOptions.Count; i++)
             {
                 var option = _state.MapOptions[i];
-                _mapVoteList.ChangeLabel(option.Id, FormatMapLabel(option.Label, VoteCountAt(i)));
+                _mapVoteList.ChangeDetail(option.Id, FormatVoteCount(VoteCountAt(i)));
             }
 
             _mapVoteList.Select(_state.MapVote);
@@ -177,7 +178,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
         private int VoteCountAt(int index) => index < _state.MapVoteCounts.Count ? _state.MapVoteCounts[index] : 0;
 
-        private string FormatMapLabel(string mapName, int voteCount) => string.Format(_mapVoteLabelFormat, mapName, voteCount);
+        private string FormatVoteCount(int voteCount) => voteCount switch
+        {
+            0 => string.Empty,
+            1 => string.Format(_singleVoteFormat, voteCount),
+            _ => string.Format(_multipleVotesFormat, voteCount)
+        };
 
         private void HandleChoiceChanged()
         {
