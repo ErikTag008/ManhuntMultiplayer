@@ -1850,7 +1850,7 @@ MonoBehaviour:
   - {fileID: 2060408821}
   - {fileID: 172481793}
   _modeLabel: Mode
-  _mapLabel: Map
+  _mapLabel: Default map
   _maxPlayersLabel: Max players
   _roundLengthLabel: Round length
   _hideTimeLabel: Hide time
@@ -3125,7 +3125,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Most votes wins, ties are random
+  m_text: Most votes wins, ties are random. No votes plays the default map
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f7453d73bf1bd714c9bdf98c50803cd0, type: 2}
   m_sharedMaterial: {fileID: -7711249710816352086, guid: f7453d73bf1bd714c9bdf98c50803cd0, type: 2}

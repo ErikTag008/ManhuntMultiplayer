@@ -12,6 +12,7 @@ namespace Project.Assets._Project._Scripts.Player
 {
     // Owner: in the lobby, opens the menu, fills it with the abilities, the maps and their votes and this player's picks, and sends
     // picks, map votes and ready toggles. Server: accepts them only while the player has no team yet, which is only the case in the lobby.
+    // The owner also reports which of the session's maps it has no copy of, so the server never picks one that would drop it.
     [RequireComponent(typeof(PlayerTeam), typeof(InputReader))]
     public class PlayerLobbyChoices : NetworkBehaviour
     {
@@ -20,12 +21,17 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
         [Inject] private readonly IPlayerRegistry _playerRegistry;
         [Inject] private readonly SessionMapCatalog _mapCatalog;
+        [Inject] private readonly MapAvailability _mapAvailability;
         [SerializeField, Self] private PlayerTeam _team;
         [SerializeField, Self] private InputReader _inputReader;
+        // {0} is the map's name
+        [SerializeField] private string _notInstalledMapFormat = "{0} (not installed)";
+        [SerializeField] private string _notEveryoneHasMapFormat = "{0} (not everyone has it)";
 
         private readonly List<LobbyOption> _optionBuffer = new();
         private readonly List<PlayerSession> _sessionBuffer = new();
         private readonly List<int> _voteCountBuffer = new();
+        private readonly List<int> _missingMapBuffer = new();
         private bool _isInLobby;
 
         private void OnValidate() => this.ValidateRefs();
@@ -41,6 +47,8 @@ namespace Project.Assets._Project._Scripts.Player
             _sessionDirectory.OnSessionRemoved += HandleSessionRemoved;
             _inputReader.OnToggleMenu += HandleToggleMenu;
             _mapCatalog.OnChanged += HandleMapCatalogChanged;
+            if (IsServer) _mapAvailability.OnChanged += HandleMapAvailabilityChanged;
+            ReportMissingMaps();
         }
 
         // Owner only
@@ -95,16 +103,40 @@ namespace Project.Assets._Project._Scripts.Player
         // a client gets the server's map list (bundle maps included) after it may already be in the lobby
         private void HandleMapCatalogChanged()
         {
+            ReportMissingMaps();
             if (!_isInLobby) return;
 
             RefreshMapOptions();
             RefreshMapVotes();
         }
 
-        // a player who leaves takes their vote with them
+        // the host sees which maps a client can't play
+        private void HandleMapAvailabilityChanged()
+        {
+            if (_isInLobby) RefreshMapOptions();
+        }
+
+        // a player who leaves takes their vote with them, and may have been the one missing a map
         private void HandleSessionRemoved(ulong _)
         {
-            if (_isInLobby) RefreshMapVotes();
+            if (!_isInLobby) return;
+
+            if (IsServer) RefreshMapOptions();
+            RefreshMapVotes();
+        }
+
+        // a client only knows the session's maps once it mirrors the server's list
+        private void ReportMissingMaps()
+        {
+            if (!IsServer && !_mapCatalog.IsMirroringRemote) return;
+
+            _missingMapBuffer.Clear();
+            for (int mapIndex = 0; mapIndex < _mapCatalog.MapCount; mapIndex++)
+            {
+                if (!_mapCatalog.HasLocalCopy(mapIndex)) _missingMapBuffer.Add(mapIndex);
+            }
+
+            ReportMissingMapsServerRpc(_missingMapBuffer.ToArray());
         }
 
         // no pick yet shows the default the player will get
@@ -120,10 +152,22 @@ namespace Project.Assets._Project._Scripts.Player
             _optionBuffer.Clear();
             for (int mapIndex = 0; mapIndex < _mapCatalog.MapCount; mapIndex++)
             {
-                _optionBuffer.Add(new LobbyOption(mapIndex, _mapCatalog.GetMapDisplayName(mapIndex), _mapCatalog.GetMapPreview(mapIndex)));
+                _optionBuffer.Add(new LobbyOption(mapIndex, GetMapLabel(mapIndex), _mapCatalog.GetMapPreview(mapIndex)));
             }
 
             _lobbyMenuState.SetMapOptions(_optionBuffer);
+        }
+
+        private string GetMapLabel(int mapIndex)
+        {
+            string displayName = _mapCatalog.GetMapDisplayName(mapIndex);
+            if (!_mapCatalog.HasLocalCopy(mapIndex)) return string.Format(_notInstalledMapFormat, displayName);
+            if (IsServer && !_mapAvailability.IsPlayableByAll(mapIndex, NetworkManager.ConnectedClientsIds))
+            {
+                return string.Format(_notEveryoneHasMapFormat, displayName);
+            }
+
+            return displayName;
         }
 
         private void RefreshMapVotes()
@@ -148,15 +192,19 @@ namespace Project.Assets._Project._Scripts.Player
             _playerRegistry.SetAbility(OwnerClientId, abilityId);
         }
 
-        // any index outside the catalog takes the vote back
+        // any index outside the catalog, or a map someone is missing, takes the vote back
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
         private void VoteMapServerRpc(int mapIndex)
         {
             if (_playerRegistry == null || _team.Team != Team.None) return;
 
-            bool isValidMap = mapIndex >= 0 && mapIndex < _mapCatalog.MapCount;
+            bool isValidMap = mapIndex >= 0 && mapIndex < _mapCatalog.MapCount
+                && _mapAvailability.IsPlayableByAll(mapIndex, NetworkManager.ConnectedClientsIds);
             _playerRegistry.SetMapVote(OwnerClientId, isValidMap ? mapIndex : PlayerSession.NoMapVote);
         }
+
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
+        private void ReportMissingMapsServerRpc(int[] mapIndices) => _mapAvailability.SetMissingMaps(OwnerClientId, mapIndices);
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
         private void SetReadyServerRpc(bool isReady)
@@ -167,6 +215,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         public override void OnNetworkDespawn()
         {
+            if (IsServer) _mapAvailability.RemoveClient(OwnerClientId);
             if (!IsOwner) return;
 
             _lobbyMenuState.OnAbilityPickRequested -= HandleAbilityPickRequested;
@@ -176,6 +225,7 @@ namespace Project.Assets._Project._Scripts.Player
             _sessionDirectory.OnSessionRemoved -= HandleSessionRemoved;
             _inputReader.OnToggleMenu -= HandleToggleMenu;
             _mapCatalog.OnChanged -= HandleMapCatalogChanged;
+            if (IsServer) _mapAvailability.OnChanged -= HandleMapAvailabilityChanged;
             ExitLobby();
         }
     }

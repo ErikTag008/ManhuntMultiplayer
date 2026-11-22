@@ -23,7 +23,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private string _modeLabel = "Mode";
         [SerializeField] private string _visibilityLabel = "Visibility";
         [SerializeField] private string _maxPlayersLabel = "Max players";
-        [SerializeField] private string _mapLabel = "Map";
+        [SerializeField] private string _mapLabel = "Default map";
         [SerializeField] private string _roundLengthLabel = "Round length";
         [SerializeField] private string _hideTimeLabel = "Hide time";
         [SerializeField] private string _classicLabel = "Classic";

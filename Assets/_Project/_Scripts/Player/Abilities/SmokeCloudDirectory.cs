@@ -15,6 +15,16 @@ namespace Project.Assets._Project._Scripts.Player.Abilities
 
         public void Remove(SmokeCloud cloud) => _clouds.Remove(cloud);
 
+        public bool BlocksSightAny(Vector3 from, Vector3 to)
+        {
+            for (int i = 0; i < _clouds.Count; i++)
+            {
+                if (_clouds[i].BlocksSight(from, to)) return true;
+            }
+
+            return false;
+        }
+
         public bool IsInsideAny(Vector3 position)
         {
             for (int i = 0; i < _clouds.Count; i++)

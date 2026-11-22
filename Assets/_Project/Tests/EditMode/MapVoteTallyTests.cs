@@ -14,7 +14,10 @@ namespace Project.Assets._Project.Tests.EditMode
         private static PlayerSession Session(ulong clientId, int mapVote) => new() { ClientId = clientId, MapVote = mapVote };
 
         private int Pick(List<PlayerSession> sessions, int pickedTieSlot = 0) =>
-            MapVoteTally.PickMap(sessions, MapCount, HostMapIndex, _ => pickedTieSlot, _tiedMapBuffer);
+            MapVoteTally.PickMap(sessions, MapCount, HostMapIndex, _ => true, _ => pickedTieSlot, _tiedMapBuffer);
+
+        private int PickWithout(List<PlayerSession> sessions, int unplayableMapIndex) =>
+            MapVoteTally.PickMap(sessions, MapCount, HostMapIndex, mapIndex => mapIndex != unplayableMapIndex, _ => 0, _tiedMapBuffer);
 
         [Test]
         public void MostVotes_Wins()
@@ -57,6 +60,34 @@ namespace Project.Assets._Project.Tests.EditMode
         {
             var sessions = new List<PlayerSession> { Session(0, 0), Session(1, 1) };
             Assert.AreEqual(1, Pick(sessions, MapCount));
+        }
+
+        [Test]
+        public void UnplayableMapVotes_AreIgnored()
+        {
+            var sessions = new List<PlayerSession> { Session(0, 1), Session(1, 1), Session(2, 0) };
+            Assert.AreEqual(0, PickWithout(sessions, 1));
+        }
+
+        [Test]
+        public void OnlyUnplayableVotes_KeepHostMap()
+        {
+            var sessions = new List<PlayerSession> { Session(0, 1), Session(1, 1) };
+            Assert.AreEqual(HostMapIndex, PickWithout(sessions, 1));
+        }
+
+        [Test]
+        public void UnplayableHostMap_FallsBackToFirstPlayableMap()
+        {
+            var sessions = new List<PlayerSession> { Session(0, PlayerSession.NoMapVote) };
+            Assert.AreEqual(0, PickWithout(sessions, HostMapIndex));
+        }
+
+        [Test]
+        public void NothingPlayable_KeepsHostMap()
+        {
+            var sessions = new List<PlayerSession> { Session(0, 0) };
+            Assert.AreEqual(HostMapIndex, MapVoteTally.PickMap(sessions, MapCount, HostMapIndex, _ => false, _ => 0, _tiedMapBuffer));
         }
     }
 }

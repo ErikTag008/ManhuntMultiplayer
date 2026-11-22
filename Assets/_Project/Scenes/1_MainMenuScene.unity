@@ -4225,7 +4225,7 @@ MonoBehaviour:
   _modeLabel: Mode
   _visibilityLabel: Visibility
   _maxPlayersLabel: Max players
-  _mapLabel: Map
+  _mapLabel: Default map
   _roundLengthLabel: Round length
   _hideTimeLabel: Hide time
   _classicLabel: Classic

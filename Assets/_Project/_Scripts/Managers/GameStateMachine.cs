@@ -22,6 +22,7 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly GameLobbySettings _settings;
         [Inject] private readonly GameScenes _gameScenes;
         [Inject] private readonly SessionMapCatalog _mapCatalog;
+        [Inject] private readonly MapAvailability _mapAvailability;
         [Inject] private readonly HidePhase _hidePhase;
         [Inject] private readonly HuntPhase _huntPhase;
         [SerializeField, Self] private PlayerRegistry _playerRegistry;
@@ -138,10 +139,14 @@ namespace Project.Assets._Project._Scripts.Managers
                 _playerRegistry.ResetRoundStats();
                 _teamAssignmentService.AssignTeams();
 
-                // the vote closes with the countdown; no votes keeps the host's map
+                // the vote closes with the countdown; no votes keeps the host's map, and a map someone is missing is never picked
                 _playerRegistry.CopySessionsTo(_sessionBuffer);
                 _isPracticeRound = !HasCatcher(_sessionBuffer);
-                int mapIndex = MapVoteTally.PickMap(_sessionBuffer, _mapCatalog.MapCount, config.MapIndex, _pickRandomIndex, _tiedMapBuffer);
+                int mapIndex = MapVoteTally.PickMap(_sessionBuffer, _mapCatalog.MapCount, config.MapIndex, IsMapPlayable, _pickRandomIndex, _tiedMapBuffer);
+                if (!IsMapPlayable(config.MapIndex))
+                {
+                    EUtils.Logger.LogWarning($"[GameStateMachine] Not every player has the host map {_mapCatalog.GetMapDisplayName(config.MapIndex)}; it can't be picked.");
+                }
                 var map = _mapCatalog.GetListing(mapIndex);
                 // the bundle map scene's loader reads it when it spawns
                 _mapCatalog.SelectMap(map);
@@ -179,6 +184,8 @@ namespace Project.Assets._Project._Scripts.Managers
                 await UniTask.WaitForSeconds(_settings.ResultsDurationInSeconds, cancellationToken: token);
             }
         }
+
+        private bool IsMapPlayable(int mapIndex) => _mapAvailability.IsPlayableByAll(mapIndex, NetworkManager.ConnectedClientsIds);
 
         private string GetSceneName(MapListing map) => map.IsBundle ? _gameScenes.BundleMapSceneName : _gameScenes.GetMap(map.BuiltInIndex).SceneName;
 

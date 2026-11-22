@@ -85,6 +85,8 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(typeof(LocalMapLibrary), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             // built-in maps plus local bundle maps; a connected client mirrors the server's list
             builder.RegisterType(typeof(SessionMapCatalog), new Type[] { typeof(SessionMapCatalog), typeof(IMapCatalog) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
+            // server only: which maps every connected client has, so a pick never drops a client
+            builder.RegisterType(typeof(MapAvailability), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
 
             // Network-spawned systems register themselves in GameSystemsRegistry; transient so each resolve sees the live instance
             builder.RegisterFactory(p => p.Resolve<GameSystemsRegistry>().PlayerRegistry, new Type[] { typeof(IPlayerRegistry) }, Reflex.Enums.Lifetime.Transient, Reflex.Enums.Resolution.Lazy);

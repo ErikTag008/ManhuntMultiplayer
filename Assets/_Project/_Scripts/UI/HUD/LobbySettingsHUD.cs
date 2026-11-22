@@ -26,7 +26,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         // shown one, and they link to each other left to right
         [SerializeField] private List<Selectable> _belowNeighbours = new();
         [SerializeField] private string _modeLabel = "Mode";
-        [SerializeField] private string _mapLabel = "Map";
+        [SerializeField] private string _mapLabel = "Default map";
         [SerializeField] private string _maxPlayersLabel = "Max players";
         [SerializeField] private string _roundLengthLabel = "Round length";
         [SerializeField] private string _hideTimeLabel = "Hide time";

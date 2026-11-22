@@ -52,6 +52,13 @@ namespace Project.Assets._Project._Scripts.SceneFlow.Maps
             return GetBundlePreview(entry.PreviewPath);
         }
 
+        // built-in maps ship with the game; a bundle map needs the same file in this machine's library
+        public bool HasLocalCopy(int index)
+        {
+            var listing = GetListing(index);
+            return !listing.IsBundle || _mapLibrary.TryFind(listing.Id.ToString(), listing.ContentHash.ToString(), out _);
+        }
+
         // out-of-range indices fall back to DefaultMap, like GameScenes.GetMap
         public MapListing GetListing(int index)
         {
