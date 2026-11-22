@@ -31,6 +31,11 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private Button _customizeButton;
         // optional: shown only when the session can invite friends (Steam)
         [SerializeField] private Button _inviteFriendsButton;
+        [SerializeField] private TMP_Text _inviteFriendsButtonLabel;
+        [SerializeField] private string _inviteFriendsLabel = "Invite friends";
+        // shown on the button for a moment when the invite dialog can't open (e.g. the Steam overlay isn't hooked)
+        [SerializeField] private string _inviteUnavailableLabel = "Overlay unavailable\n<size=60%>share the join code</size>";
+        [SerializeField, Min(0f)] private float _inviteUnavailableLabelDurationInSeconds = 3f;
         // optional: shown only when the session has a join code (Steam)
         [SerializeField] private GameObject _joinCodeGroup;
         [SerializeField] private TMP_Text _joinCodeText;
@@ -49,6 +54,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
         private readonly List<(int id, string label)> _optionBuffer = new();
         private CancellationTokenSource _copiedLabelCTS;
+        private CancellationTokenSource _inviteUnavailableLabelCTS;
 
         private void Start()
         {
@@ -62,7 +68,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _readyButton.onClick.AddListener(_state.RequestReadyToggle);
             _state.OnCustomizeOpenChanged += HandleCustomizeOpenChanged;
             _customizeButton.onClick.AddListener(OpenCustomize);
-            if (_inviteFriendsButton != null) _inviteFriendsButton.onClick.AddListener(_connectionService.OpenInviteDialog);
+            if (_inviteFriendsButton != null) _inviteFriendsButton.onClick.AddListener(InviteFriends);
             if (_copyJoinCodeButton != null) _copyJoinCodeButton.onClick.AddListener(CopyJoinCode);
             RefreshInviteButton();
             RefreshJoinCode();
@@ -103,6 +109,32 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             if (_inviteFriendsButton == null) return;
             _inviteFriendsButton.gameObject.SetActive(_connectionService.CanInviteFriends);
+            StopInviteUnavailableLabel();
+            if (_inviteFriendsButtonLabel != null) _inviteFriendsButtonLabel.text = _inviteFriendsLabel;
+        }
+
+        private void InviteFriends()
+        {
+            if (_connectionService.TryOpenInviteDialog() || _inviteFriendsButtonLabel == null) return;
+
+            StopInviteUnavailableLabel();
+            _inviteUnavailableLabelCTS = new();
+            ShowInviteUnavailableLabel(_inviteUnavailableLabelCTS.Token).Forget();
+        }
+
+        // the menu runs in real time
+        private async UniTaskVoid ShowInviteUnavailableLabel(CancellationToken token)
+        {
+            _inviteFriendsButtonLabel.text = _inviteUnavailableLabel;
+            await UniTask.WaitForSeconds(_inviteUnavailableLabelDurationInSeconds, ignoreTimeScale: true, cancellationToken: token);
+            _inviteFriendsButtonLabel.text = _inviteFriendsLabel;
+        }
+
+        private void StopInviteUnavailableLabel()
+        {
+            _inviteUnavailableLabelCTS?.Cancel();
+            _inviteUnavailableLabelCTS?.Dispose();
+            _inviteUnavailableLabelCTS = null;
         }
 
         private void RefreshJoinCode()
@@ -205,9 +237,10 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _readyButton.onClick.RemoveListener(_state.RequestReadyToggle);
             _state.OnCustomizeOpenChanged -= HandleCustomizeOpenChanged;
             _customizeButton.onClick.RemoveListener(OpenCustomize);
-            if (_inviteFriendsButton != null) _inviteFriendsButton.onClick.RemoveListener(_connectionService.OpenInviteDialog);
+            if (_inviteFriendsButton != null) _inviteFriendsButton.onClick.RemoveListener(InviteFriends);
             if (_copyJoinCodeButton != null) _copyJoinCodeButton.onClick.RemoveListener(CopyJoinCode);
             StopCopiedLabel();
+            StopInviteUnavailableLabel();
         }
     }
 }

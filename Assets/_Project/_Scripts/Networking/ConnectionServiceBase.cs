@@ -69,7 +69,7 @@ namespace Project.Assets._Project._Scripts.Networking
 
         public bool TryGetPlayerName(ulong clientId, out string name) => _playerNames.TryGetValue(clientId, out name);
 
-        public virtual void OpenInviteDialog() { }
+        public virtual bool TryOpenInviteDialog() => false;
 
         protected void ClearFailure() => _lastFailureReason = null;
 

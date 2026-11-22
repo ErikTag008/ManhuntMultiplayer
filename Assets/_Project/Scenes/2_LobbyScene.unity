@@ -480,9 +480,9 @@ MonoBehaviour:
   m_fontSize: 38
   m_fontSizeBase: 38
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_fontSizeMax: 38
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -4687,6 +4687,12 @@ MonoBehaviour:
   _readyButtonImage: {fileID: 568009825}
   _customizeButton: {fileID: 172481793}
   _inviteFriendsButton: {fileID: 643912925}
+  _inviteFriendsButtonLabel: {fileID: 41264271}
+  _inviteFriendsLabel: Invite friends
+  _inviteUnavailableLabel: 'Overlay unavailable
+
+    <size=60%>share the join code</size>'
+  _inviteUnavailableLabelDurationInSeconds: 3
   _joinCodeGroup: {fileID: 627013022}
   _joinCodeText: {fileID: 1365083979}
   _copyJoinCodeButton: {fileID: 1505022845}

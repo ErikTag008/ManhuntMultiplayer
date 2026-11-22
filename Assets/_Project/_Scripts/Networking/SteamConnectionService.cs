@@ -125,10 +125,12 @@ namespace Project.Assets._Project._Scripts.Networking
             ApplyLobbyVisibility(lobby.Value, config.Visibility);
         }
 
-        public override void OpenInviteDialog()
+        public override bool TryOpenInviteDialog()
         {
-            if (!CanInviteFriends) return;
+            if (!CanInviteFriends || !SteamUtils.IsOverlayEnabled) return false;
+
             SteamFriends.OpenGameInviteOverlay(_steamPlatform.CurrentLobby.Value.Id);
+            return true;
         }
 
         // Clients leave the lobby too once the host is gone, so a later invite doesn't find them still inside

@@ -30,7 +30,8 @@ namespace Project.Assets._Project._Scripts.Networking
         void Leave();
         // Host only: the name a client connected with; false when it sent none (local sessions)
         bool TryGetPlayerName(ulong clientId, out string name);
-        // Opens the platform's invite dialog for this session; does nothing when CanInviteFriends is false
-        void OpenInviteDialog();
+        // Opens the platform's invite dialog for this session; false when CanInviteFriends is false or the dialog can't open
+        // (Steam: the overlay isn't hooked)
+        bool TryOpenInviteDialog();
     }
 }

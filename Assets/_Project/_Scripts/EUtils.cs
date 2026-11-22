@@ -383,6 +383,7 @@ namespace Project.Assets._Project._Scripts
             }
         }
 
+        // the Editor and development builds log, so Player.log shows Steam, lobby and connection errors; release builds stay quiet
         public static class Logger
         {
             public static string Colorize(string text, string colorHexOrName)
@@ -392,44 +393,38 @@ namespace Project.Assets._Project._Scripts
 
             public static void Log(string text)
             {
-#if(UNITY_EDITOR)
+                if (!Debug.isDebugBuild) return;
                 Debug.Log(text);
-#endif
             }
 
             public static void LogWarning(string text)
             {
-#if(UNITY_EDITOR)
+                if (!Debug.isDebugBuild) return;
                 Debug.LogWarning(text);
-#endif
             }
 
             public static void LogError(string text)
             {
-#if(UNITY_EDITOR)
+                if (!Debug.isDebugBuild) return;
                 Debug.LogError(text);
-#endif
             }
 
             public static void LogColorized(string text, string colorHexOrName)
             {
-#if(UNITY_EDITOR)
+                if (!Debug.isDebugBuild) return;
                 Debug.Log(Colorize(text, colorHexOrName));
-#endif
             }
 
             public static void LogWarningColorized(string text, string colorHexOrName)
             {
-#if(UNITY_EDITOR)
+                if (!Debug.isDebugBuild) return;
                 Debug.LogWarning(Colorize(text, colorHexOrName));
-#endif
             }
 
             public static void LogErrorColorized(string text, string colorHexOrName)
             {
-#if(UNITY_EDITOR)
+                if (!Debug.isDebugBuild) return;
                 Debug.LogError(Colorize(text, colorHexOrName));
-#endif
             }
 
         }
