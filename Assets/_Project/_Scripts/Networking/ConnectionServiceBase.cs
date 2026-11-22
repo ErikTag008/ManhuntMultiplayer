@@ -40,6 +40,7 @@ namespace Project.Assets._Project._Scripts.Networking
         public int TakenSlotCount => _approvingNetworkManager != null ? CountTakenSlots() : 0;
         public virtual bool CanInviteFriends => false;
         public virtual string JoinCode => null;
+        public virtual bool IsHiddenFromFriends => false;
         protected bool IsHosting => _approvingNetworkManager != null;
         private string LogPrefix => $"[{GetType().Name}]";
 

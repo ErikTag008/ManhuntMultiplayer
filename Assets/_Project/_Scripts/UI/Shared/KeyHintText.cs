@@ -17,11 +17,23 @@ namespace Project.Assets._Project._Scripts.UI.Shared
         // {0} is the key
         [SerializeField] private string _format = "{0}";
 
+        private bool _hasStarted;
+
         private void Start()
         {
+            _hasStarted = true;
             _settings.OnChanged += HandleSettingsChanged;
             _controlScheme.OnChanged += HandleControlSchemeChanged;
             Refresh();
+        }
+
+        // e.g. the lobby hint flips between "walk around" and "open lobby menu"; before Start it only stores the format
+        public void ChangeFormat(string format)
+        {
+            if (_format == format) return;
+
+            _format = format;
+            if (_hasStarted) Refresh();
         }
 
         private void HandleSettingsChanged(SettingsCategory category)

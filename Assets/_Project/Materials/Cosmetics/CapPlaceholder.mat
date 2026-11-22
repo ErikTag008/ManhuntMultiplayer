@@ -159,7 +159,7 @@ Material:
     - _MiddleTint: {r: 0.82, g: 0.82, b: 0.88, a: 1}
     - _RimColor: {r: 0.25, g: 0.25, b: 0.25, a: 1}
     - _RimThresholds: {r: 0.7, g: 0.72, b: 0, a: 0}
-    - _ShadowThresholds: {r: 0.1, g: 0.13, b: 0, a: 0}
+    - _ShadowThresholds: {r: 0.3, g: 0.7, b: 0, a: 0}
     - _ShadowTint: {r: 0.55, g: 0.55, b: 0.66, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SpecularColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}

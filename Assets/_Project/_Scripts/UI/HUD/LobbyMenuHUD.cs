@@ -46,6 +46,13 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private string _copyLabel = "Copy";
         [SerializeField] private string _copiedLabel = "Copied!";
         [SerializeField, Min(0f)] private float _copiedLabelDurationInSeconds = 1.5f;
+        // optional: shown with the join code when the platform status hides the game from friends (Steam Invisible)
+        [SerializeField] private GameObject _hiddenFromFriendsHint;
+        // stays on screen outside the panel, so walking players know how to get the menu back; hidden under Customize,
+        // which has its own hint. {0} is the key
+        [SerializeField] private KeyHintText _menuToggleHint;
+        [SerializeField] private string _walkAroundHintFormat = "{0}: walk around";
+        [SerializeField] private string _openMenuHintFormat = "{0}: open lobby menu";
         // the label says what clicking does; the colour says where you stand
         [SerializeField] private string _readyUpLabel = "Ready up";
         [SerializeField] private string _cancelReadyLabel = "You're ready\n<size=60%>click to cancel</size>";
@@ -87,6 +94,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private void RefreshPanel(Action focus)
         {
             bool isShown = _state.IsOpen && !_state.IsCustomizeOpen;
+            RefreshMenuToggleHint(isShown);
             if (isShown == _panel.IsShown) return;
 
             if (isShown)
@@ -101,6 +109,14 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             {
                 _panel.Hide();
             }
+        }
+
+        private void RefreshMenuToggleHint(bool isPanelShown)
+        {
+            if (_menuToggleHint == null) return;
+
+            _menuToggleHint.gameObject.SetActive(!_state.IsCustomizeOpen);
+            _menuToggleHint.ChangeFormat(isPanelShown ? _walkAroundHintFormat : _openMenuHintFormat);
         }
 
         private void OpenCustomize() => _state.ToggleCustomizeOpen(true);
@@ -142,8 +158,11 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             if (_joinCodeGroup == null || _joinCodeText == null || _copyJoinCodeButtonLabel == null) return;
 
             var joinCode = _connectionService.JoinCode;
-            _joinCodeGroup.SetActive(!string.IsNullOrEmpty(joinCode));
-            if (string.IsNullOrEmpty(joinCode)) return;
+            bool hasJoinCode = !string.IsNullOrEmpty(joinCode);
+            _joinCodeGroup.SetActive(hasJoinCode);
+            // read when the menu opens; a status change while it's open shows next time
+            if (_hiddenFromFriendsHint != null) _hiddenFromFriendsHint.SetActive(hasJoinCode && _connectionService.IsHiddenFromFriends);
+            if (!hasJoinCode) return;
 
             _joinCodeText.text = string.Format(_joinCodeFormat, joinCode);
             StopCopiedLabel();

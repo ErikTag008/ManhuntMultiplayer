@@ -60,16 +60,18 @@ namespace Project.Assets._Project._Scripts.UI.Shared
             return selected.transform as RectTransform;
         }
 
-        // the frame's anchors and pivot sit at its parent's centre, so the corners map straight to a position and size
+        // the frame's anchors and pivot sit at its parent's centre, so the corners map straight to a position and size;
+        // edge lengths instead of a corner box, and the target's rotation, keep the outline hugging a tilted (jiggling) button
         private void FollowTarget(RectTransform target)
         {
             target.GetWorldCorners(_corners);
-            Vector2 bottomLeft = _frameParent.InverseTransformPoint(_corners[0]);
-            Vector2 topRight = _frameParent.InverseTransformPoint(_corners[2]);
-            Vector3 position = (bottomLeft + topRight) * 0.5f;
-            var size = topRight - bottomLeft + Vector2.one * (_padding * 2f);
+            Vector3 position = (Vector2)_frameParent.InverseTransformPoint((_corners[0] + _corners[2]) * 0.5f);
+            float width = _frameParent.InverseTransformVector(_corners[3] - _corners[0]).magnitude;
+            float height = _frameParent.InverseTransformVector(_corners[1] - _corners[0]).magnitude;
+            var size = new Vector2(width, height) + Vector2.one * (_padding * 2f);
             if (_frame.localPosition != position) _frame.localPosition = position;
             if (_frame.sizeDelta != size) _frame.sizeDelta = size;
+            if (_frame.rotation != target.rotation) _frame.rotation = target.rotation;
         }
 
         // matches the fade of the panels around the target, so the outline doesn't pop in before its panel

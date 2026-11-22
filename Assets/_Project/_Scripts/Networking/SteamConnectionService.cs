@@ -21,6 +21,7 @@ namespace Project.Assets._Project._Scripts.Networking
 
         public override bool CanInviteFriends => _steamPlatform.IsReady && _steamPlatform.CurrentLobby.HasValue && IsConnected;
         public override string JoinCode => CanInviteFriends ? SteamLobbyId.FormatCode(_steamPlatform.CurrentLobby.Value.Id.Value) : null;
+        public override bool IsHiddenFromFriends => _steamPlatform.IsReady && SteamClient.State == FriendState.Invisible;
 
         public override async UniTask<bool> Host(LobbyConfig config, CancellationToken token)
         {
