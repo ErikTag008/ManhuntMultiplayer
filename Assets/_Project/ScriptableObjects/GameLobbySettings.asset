@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 283f674daebb1394aabd730001ffa7a5, type: 3}
   m_Name: GameLobbySettings
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.Managers.GameLobbySettings
-  <MinRequiredPlayers>k__BackingField: 3
+  <MinRequiredPlayers>k__BackingField: 1
   <MaxConnectedPlayers>k__BackingField: 10
   <MaxCatcherPlayers>k__BackingField: 2
   <PlayersPerCatcher>k__BackingField: 6

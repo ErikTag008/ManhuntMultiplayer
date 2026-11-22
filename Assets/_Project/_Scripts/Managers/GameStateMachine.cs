@@ -44,6 +44,8 @@ namespace Project.Assets._Project._Scripts.Managers
         private bool _gameStartRequested;
         // Server only: read from the lobby config once per round, like the map and the timers
         private GameMode _roundMode;
+        // Server only: nobody was made a catcher (a lone player), so the round is practice
+        private bool _isPracticeRound;
         private GameSystemsRegistry _gameSystemsRegistry;
         // Server only
         private ChaseTracker _chaseTracker;
@@ -138,6 +140,7 @@ namespace Project.Assets._Project._Scripts.Managers
 
                 // the vote closes with the countdown; no votes keeps the host's map
                 _playerRegistry.CopySessionsTo(_sessionBuffer);
+                _isPracticeRound = !HasCatcher(_sessionBuffer);
                 int mapIndex = MapVoteTally.PickMap(_sessionBuffer, _mapCatalog.MapCount, config.MapIndex, _pickRandomIndex, _tiedMapBuffer);
                 var map = _mapCatalog.GetListing(mapIndex);
                 // the bundle map scene's loader reads it when it spawns
@@ -238,11 +241,20 @@ namespace Project.Assets._Project._Scripts.Managers
                 bool isTimeUp = NetworkManager.ServerTime.Time >= _countdownEndTime.Value;
                 _chaseTracker.Tick(_playerRegistry.GetPlayers(), NetworkManager.ServerTime.Time);
                 _playerRegistry.CopySessionsTo(_sessionBuffer);
-                result = _winConditionEvaluator.Evaluate(_sessionBuffer, isTimeUp);
+                result = _winConditionEvaluator.Evaluate(_sessionBuffer, isTimeUp, _isPracticeRound);
                 return result != RoundResult.None;
             }, cancellationToken: token);
 
             return result;
+        }
+
+        private static bool HasCatcher(IReadOnlyList<PlayerSession> sessions)
+        {
+            foreach (var session in sessions)
+            {
+                if (session.Team == Team.Catcher) return true;
+            }
+            return false;
         }
 
         // Infection turns a runner who bleeds out during the hunt into a catcher back at the catcher spawns;

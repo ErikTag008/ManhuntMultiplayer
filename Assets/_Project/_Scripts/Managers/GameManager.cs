@@ -33,6 +33,7 @@ namespace Project.Assets._Project._Scripts.Managers
         [SerializeField, Self] private GameStateMachine _gameStateMachine;
         [SerializeField] private string _catchersWinTitle = "Catchers win!";
         [SerializeField] private string _runnersWinTitle = "Runners win!";
+        [SerializeField] private string _practiceOverTitle = "Practice over";
         [SerializeField] private string _localWinSubtitle = "You won";
         [SerializeField] private string _localLossSubtitle = "You lost";
         [SerializeField] private string _playerCountFormat = "{0}/{1} players joined  ·  {2} ready";
@@ -298,13 +299,25 @@ namespace Project.Assets._Project._Scripts.Managers
             if (result == RoundResult.None) return;
 
             var localTeam = GetPlayerTeam(NetworkManager.LocalClientId);
-            var title = result == RoundResult.CatchersWin ? _catchersWinTitle : _runnersWinTitle;
-            _uiManager.ShowResults(title, GetLocalResultSubtitle(localTeam, GetWinningTeam(result)));
+            _uiManager.ShowResults(GetResultTitle(result), GetLocalResultSubtitle(localTeam, GetWinningTeam(result)));
             ShowRoundHighlights();
             AwardRoundPoints();
         }
 
-        private static Team GetWinningTeam(RoundResult result) => result == RoundResult.CatchersWin ? Team.Catcher : Team.Runner;
+        private string GetResultTitle(RoundResult result) => result switch
+        {
+            RoundResult.CatchersWin => _catchersWinTitle,
+            RoundResult.RunnersWin => _runnersWinTitle,
+            _ => _practiceOverTitle
+        };
+
+        // a practice round has no winning team
+        private static Team GetWinningTeam(RoundResult result) => result switch
+        {
+            RoundResult.CatchersWin => Team.Catcher,
+            RoundResult.RunnersWin => Team.Runner,
+            _ => Team.None
+        };
 
         // Every instance pays its own local player into the local save. Called again whenever the result or the stats
         // arrive; the ledger pays only what this round still owes, so its total is paid once whatever the order.
@@ -314,7 +327,8 @@ namespace Project.Assets._Project._Scripts.Managers
             if (result == RoundResult.None) return;
 
             bool hasSession = _playerRegistry.TryGetSession(NetworkManager.LocalClientId, out var session);
-            bool hasPlayed = hasSession && session.Team != Team.None;
+            // practice pays nothing, so a lone player can't farm points
+            bool hasPlayed = hasSession && session.Team != Team.None && result != RoundResult.PracticeOver;
             var points = PointsCalculator.Calculate(_pointRewards, hasPlayed, hasPlayed && session.Team == GetWinningTeam(result),
                 session.Catches, session.Rescues, session.StationsCompleted, session.LongestChaseInSeconds);
 
@@ -356,7 +370,7 @@ namespace Project.Assets._Project._Scripts.Managers
 
         private string GetLocalResultSubtitle(Team localTeam, Team winningTeam)
         {
-            if (localTeam == Team.None) return string.Empty;
+            if (localTeam == Team.None || winningTeam == Team.None) return string.Empty;
             return localTeam == winningTeam ? _localWinSubtitle : _localLossSubtitle;
         }
 

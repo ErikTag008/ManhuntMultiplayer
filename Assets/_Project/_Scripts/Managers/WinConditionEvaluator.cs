@@ -6,10 +6,13 @@ namespace Project.Assets._Project._Scripts.Managers
     // Manhunt rules: catchers win once no runner is standing (knocked runners have nobody left to rescue them),
     // runners win if at least one is standing when time runs out, or if every catcher has left.
     // Holds for every GameMode: an infected runner is already a catcher in the sessions.
+    // A practice round (no catchers when it started) skips these rules and just runs out the clock.
     public class WinConditionEvaluator : IWinConditionEvaluator
     {
-        public RoundResult Evaluate(IReadOnlyList<PlayerSession> sessions, bool isTimeUp)
+        public RoundResult Evaluate(IReadOnlyList<PlayerSession> sessions, bool isTimeUp, bool isPracticeRound)
         {
+            if (isPracticeRound) return isTimeUp ? RoundResult.PracticeOver : RoundResult.None;
+
             int catcherCount = 0;
             int standingRunnerCount = 0;
 

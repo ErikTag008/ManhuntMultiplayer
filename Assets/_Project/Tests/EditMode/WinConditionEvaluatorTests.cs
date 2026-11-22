@@ -22,7 +22,7 @@ namespace Project.Assets._Project.Tests.EditMode
                 Session(2, Team.Runner, LifeState.Knocked)
             };
 
-            Assert.AreEqual(RoundResult.None, _evaluator.Evaluate(sessions, false));
+            Assert.AreEqual(RoundResult.None, _evaluator.Evaluate(sessions, false, false));
         }
 
         // Infection: everyone who bled out is now an Up catcher, so the last standing runner falling ends the round
@@ -36,7 +36,7 @@ namespace Project.Assets._Project.Tests.EditMode
                 Session(2, Team.Runner, LifeState.Knocked)
             };
 
-            Assert.AreEqual(RoundResult.CatchersWin, _evaluator.Evaluate(sessions, false));
+            Assert.AreEqual(RoundResult.CatchersWin, _evaluator.Evaluate(sessions, false, false));
         }
 
         [Test]
@@ -48,7 +48,7 @@ namespace Project.Assets._Project.Tests.EditMode
                 Session(1, Team.Runner, LifeState.Up)
             };
 
-            Assert.AreEqual(RoundResult.RunnersWin, _evaluator.Evaluate(sessions, true));
+            Assert.AreEqual(RoundResult.RunnersWin, _evaluator.Evaluate(sessions, true, false));
         }
 
         [Test]
@@ -61,7 +61,7 @@ namespace Project.Assets._Project.Tests.EditMode
                 Session(2, Team.Runner, LifeState.Eliminated)
             };
 
-            Assert.AreEqual(RoundResult.CatchersWin, _evaluator.Evaluate(sessions, false));
+            Assert.AreEqual(RoundResult.CatchersWin, _evaluator.Evaluate(sessions, false, false));
         }
 
         [Test]
@@ -73,7 +73,7 @@ namespace Project.Assets._Project.Tests.EditMode
                 Session(1, Team.Runner, LifeState.Knocked)
             };
 
-            Assert.AreEqual(RoundResult.CatchersWin, _evaluator.Evaluate(sessions, true));
+            Assert.AreEqual(RoundResult.CatchersWin, _evaluator.Evaluate(sessions, true, false));
         }
 
         [Test]
@@ -81,7 +81,7 @@ namespace Project.Assets._Project.Tests.EditMode
         {
             var sessions = new List<PlayerSession> { Session(0, Team.Catcher, LifeState.Up) };
 
-            Assert.AreEqual(RoundResult.CatchersWin, _evaluator.Evaluate(sessions, false));
+            Assert.AreEqual(RoundResult.CatchersWin, _evaluator.Evaluate(sessions, false, false));
         }
 
         [Test]
@@ -89,7 +89,7 @@ namespace Project.Assets._Project.Tests.EditMode
         {
             var sessions = new List<PlayerSession> { Session(1, Team.Runner, LifeState.Up) };
 
-            Assert.AreEqual(RoundResult.RunnersWin, _evaluator.Evaluate(sessions, false));
+            Assert.AreEqual(RoundResult.RunnersWin, _evaluator.Evaluate(sessions, false, false));
         }
 
         [Test]
@@ -102,7 +102,24 @@ namespace Project.Assets._Project.Tests.EditMode
                 Session(2, Team.None, LifeState.Knocked)
             };
 
-            Assert.AreEqual(RoundResult.None, _evaluator.Evaluate(sessions, false));
+            Assert.AreEqual(RoundResult.None, _evaluator.Evaluate(sessions, false, false));
+        }
+
+        // a lone runner with no catchers would otherwise win the moment the hunt starts
+        [Test]
+        public void PracticeRound_BeforeTimeUp_RoundContinues()
+        {
+            var sessions = new List<PlayerSession> { Session(0, Team.Runner, LifeState.Up) };
+
+            Assert.AreEqual(RoundResult.None, _evaluator.Evaluate(sessions, false, true));
+        }
+
+        [Test]
+        public void PracticeRound_WhenTimeUp_PracticeOver()
+        {
+            var sessions = new List<PlayerSession> { Session(0, Team.Runner, LifeState.Up) };
+
+            Assert.AreEqual(RoundResult.PracticeOver, _evaluator.Evaluate(sessions, true, true));
         }
     }
 }
