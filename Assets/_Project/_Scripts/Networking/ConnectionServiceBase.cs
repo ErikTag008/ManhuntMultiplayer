@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Unity.Netcode;
+using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Networking
 {
@@ -75,6 +76,8 @@ namespace Project.Assets._Project._Scripts.Networking
         public virtual void GetInvitableFriends(List<InvitableFriend> results) => results.Clear();
 
         public virtual bool TryInviteFriend(ulong friendId) => false;
+
+        public virtual UniTask<Texture2D> LoadFriendAvatar(ulong friendId, CancellationToken token) => UniTask.FromResult<Texture2D>(null);
 
         protected void ClearFailure() => _lastFailureReason = null;
 

@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Networking
 {
@@ -41,5 +42,7 @@ namespace Project.Assets._Project._Scripts.Networking
         void GetInvitableFriends(List<InvitableFriend> results);
         // Sends an invite to this session without the platform overlay; false when it couldn't be sent
         bool TryInviteFriend(ulong friendId);
+        // The friend's platform profile picture as a new texture the caller owns; null when there is none (FriendAvatarCache keeps them)
+        UniTask<Texture2D> LoadFriendAvatar(ulong friendId, CancellationToken token);
     }
 }

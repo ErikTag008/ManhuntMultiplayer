@@ -56,6 +56,7 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(typeof(GameHUDState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(LobbyMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PauseMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(IncomingInviteState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(EmoteWheelState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(SettingsMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             // Eager so saved settings and key bindings are loaded before the first player or camera reads them
@@ -73,6 +74,7 @@ namespace Project.Assets._Project._Scripts.DI
             bool isSteamMode = _connectionSettings.ResolvedMode == ConnectionMode.Steam;
             var connectionServiceType = isSteamMode ? typeof(SteamConnectionService) : typeof(LocalConnectionService);
             builder.RegisterType(connectionServiceType, new Type[] { typeof(IConnectionService) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
+            builder.RegisterType(typeof(FriendAvatarCache), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             var lobbyDirectoryType = isSteamMode ? typeof(SteamLobbyDirectory) : typeof(LocalLobbyDirectory);
             builder.RegisterType(lobbyDirectoryType, new Type[] { typeof(ILobbyDirectory) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             var voiceChatType = isSteamMode ? typeof(SteamVoiceChat) : typeof(DisabledVoiceChat);
@@ -82,6 +84,8 @@ namespace Project.Assets._Project._Scripts.DI
             // Eager so it listens for disconnects from the first session on
             builder.RegisterType(typeof(SessionEndHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PauseMenuLeaveHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            // Eager so invites that arrive in the main menu are already caught
+            builder.RegisterType(typeof(LobbyInviteHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(LocalMapLibrary), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             // built-in maps plus local bundle maps; a connected client mirrors the server's list
             builder.RegisterType(typeof(SessionMapCatalog), new Type[] { typeof(SessionMapCatalog), typeof(IMapCatalog) }, Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);

@@ -2563,7 +2563,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4843470cb14ad2a4d9026aeaa888f335, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Project.DevTools::Project.Assets._Project._Scripts.DevTools.DevAutoConnect
-  _isAutoConnectEnabled: 1
+  _isAutoConnectEnabled: 0
   _clientJoinDelayInSeconds: 2
 --- !u!114 &891489952
 MonoBehaviour:

@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using Steamworks;
 using Steamworks.Data;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -13,6 +14,9 @@ namespace Project.Assets._Project._Scripts.Networking
     // Friends join through the overlay invite or "Join Game", which SteamPlatform reports.
     public class SteamConnectionService : ConnectionServiceBase
     {
+        // Steam avatars are RGBA, one byte per channel
+        private const int SteamAvatarBytesPerPixel = 4;
+
         private readonly SteamPlatform _steamPlatform;
 
         public SteamConnectionService(ConnectionSettings settings, SteamPlatform steamPlatform) : base(settings)
@@ -152,6 +156,36 @@ namespace Project.Assets._Project._Scripts.Networking
 
         // a Steam chat invite: accepting it reaches SteamPlatform as a lobby join request, the same as an overlay invite
         public override bool TryInviteFriend(ulong friendId) => CanInviteFriends && _steamPlatform.CurrentLobby.Value.InviteFriend(friendId);
+
+        public override async UniTask<Texture2D> LoadFriendAvatar(ulong friendId, CancellationToken token)
+        {
+            if (!_steamPlatform.IsReady) return null;
+
+            var image = await SteamFriends.GetMediumAvatarAsync(friendId).AsUniTask();
+            // textures are made on the main thread only
+            await UniTask.SwitchToMainThread(token);
+            return image.HasValue ? CreateAvatarTexture(image.Value) : null;
+        }
+
+        // Steam images are RGBA rows from the top; Unity textures start at the bottom row
+        private static Texture2D CreateAvatarTexture(Steamworks.Data.Image image)
+        {
+            int width = (int)image.Width;
+            int height = (int)image.Height;
+            int rowLength = width * SteamAvatarBytesPerPixel;
+            if (width <= 0 || height <= 0 || image.Data == null || image.Data.Length < rowLength * height) return null;
+
+            var flipped = new byte[rowLength * height];
+            for (int row = 0; row < height; row++)
+            {
+                Buffer.BlockCopy(image.Data, row * rowLength, flipped, (height - 1 - row) * rowLength, rowLength);
+            }
+
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            texture.LoadRawTextureData(flipped);
+            texture.Apply(false, true);
+            return texture;
+        }
 
         // Clients leave the lobby too once the host is gone, so a later invite doesn't find them still inside
         protected override void HandleSessionEnded() => LeaveLobby();

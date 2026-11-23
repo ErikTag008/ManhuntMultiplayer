@@ -14,6 +14,8 @@ namespace Project.Assets._Project._Scripts.Networking
 
         // the friend's lobby id when they asked to join through the overlay or friends list
         public event Action<ulong> OnLobbyJoinRequested;
+        // a friend invited this player to their lobby while the game runs (not the one they're already in)
+        public event Action<LobbyInvite> OnLobbyInviteReceived;
 
         private CancellationTokenSource _callbacksCTS;
         private bool _isReady;
@@ -41,7 +43,19 @@ namespace Project.Assets._Project._Scripts.Networking
 
         public void SetCurrentLobby(Lobby? lobby) => _currentLobby = lobby;
 
-        // The lobby from the "+connect_lobby" launch argument, handed out once
+        // An accepted in-game invite: the main menu joins it now if it's listening, or takes it once it loads after leaving a session
+        public void RequestLobbyJoin(ulong lobbyId)
+        {
+            if (OnLobbyJoinRequested != null)
+            {
+                OnLobbyJoinRequested.Invoke(lobbyId);
+                return;
+            }
+
+            _pendingLobbyId = lobbyId;
+        }
+
+        // The lobby from the "+connect_lobby" launch argument or an invite accepted in a session, handed out once
         public bool TryTakePendingLobbyId(out ulong lobbyId)
         {
             lobbyId = _pendingLobbyId;
@@ -68,6 +82,7 @@ namespace Project.Assets._Project._Scripts.Networking
             _localName = SteamClient.Name;
             SteamNetworkingUtils.InitRelayNetworkAccess();
             SteamFriends.OnGameLobbyJoinRequested += HandleGameLobbyJoinRequested;
+            SteamMatchmaking.OnLobbyInvite += HandleLobbyInvite;
             if (SteamLobbyId.TryFindInLaunchArgs(Environment.GetCommandLineArgs(), out var launchLobbyId)) _pendingLobbyId = launchLobbyId;
 
             _callbacksCTS = new();
@@ -105,6 +120,13 @@ namespace Project.Assets._Project._Scripts.Networking
             OnLobbyJoinRequested.Invoke(lobby.Id.Value);
         }
 
+        private void HandleLobbyInvite(Friend friend, Lobby lobby)
+        {
+            if (_currentLobby.HasValue && _currentLobby.Value.Id == lobby.Id) return;
+
+            OnLobbyInviteReceived?.Invoke(new LobbyInvite(lobby.Id.Value, friend.Id.Value, friend.Name));
+        }
+
         private void Shutdown()
         {
             if (!_isReady) return;
@@ -115,6 +137,7 @@ namespace Project.Assets._Project._Scripts.Networking
             _callbacksCTS?.Dispose();
             _callbacksCTS = null;
             SteamFriends.OnGameLobbyJoinRequested -= HandleGameLobbyJoinRequested;
+            SteamMatchmaking.OnLobbyInvite -= HandleLobbyInvite;
             SteamClient.Shutdown();
             EUtils.Logger.Log("[SteamPlatform] Steam shut down.");
         }

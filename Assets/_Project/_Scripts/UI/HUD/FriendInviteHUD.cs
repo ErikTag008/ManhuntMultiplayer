@@ -12,11 +12,12 @@ using UnityEngine.UI;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
-    // In-game invite list over the lobby menu: online friends with an Invite button each, refreshed while open.
+    // In-game invite list over the lobby menu: online friends with their avatar and an Invite button each, refreshed while open.
     // Sends invites without the platform overlay, which doesn't hook when the game isn't started by Steam.
     public class FriendInviteHUD : MonoBehaviour
     {
         [Inject] private readonly IConnectionService _connectionService;
+        [Inject] private readonly FriendAvatarCache _avatarCache;
         [SerializeField] private FadePanel _panel;
         [SerializeField] private Transform _listContainer;
         [SerializeField] private FriendInviteRow _rowPrefab;
@@ -41,7 +42,11 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
         public bool IsOpen => _panel.IsShown;
 
-        private void Start() => _closeButton.onClick.AddListener(Close);
+        private void Start()
+        {
+            _closeButton.onClick.AddListener(Close);
+            _avatarCache.OnAvatarLoaded += HandleAvatarLoaded;
+        }
 
         public void Open()
         {
@@ -120,6 +125,17 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             var buttonLabel = !hasResult ? _inviteLabel : isInvited ? _invitedLabel : _inviteFailedLabel;
             row.gameObject.SetActive(true);
             row.Setup(index, friend.Name, status, buttonLabel, !isInvited);
+            row.ChangeAvatar(_avatarCache.TryGetAvatar(friend.Id, out var avatar) ? avatar : null);
+        }
+
+        private void HandleAvatarLoaded(ulong friendId)
+        {
+            if (!_panel.IsShown) return;
+
+            int index = _friends.FindIndex(friend => friend.Id == friendId);
+            if (index < 0 || !_avatarCache.TryGetAvatar(friendId, out var avatar)) return;
+
+            _rows[index].ChangeAvatar(avatar);
         }
 
         private void InviteFriend(int index)
@@ -189,6 +205,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             StopRefreshing();
             _closeButton.onClick.RemoveListener(Close);
+            _avatarCache.OnAvatarLoaded -= HandleAvatarLoaded;
             foreach (var row in _rows) row.OnClicked -= InviteFriend;
         }
     }

@@ -33,7 +33,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private Button _inviteFriendsButton;
         [SerializeField] private TMP_Text _inviteFriendsButtonLabel;
         [SerializeField] private string _inviteFriendsLabel = "Invite friends";
-        // optional: opens when the invite dialog can't (e.g. the Steam overlay isn't hooked)
+        // optional: the in-game invite list; without it the platform invite dialog opens instead
         [SerializeField] private FriendInviteHUD _friendInvite;
         // shown on the button for a moment when the invite dialog can't open and there is no in-game list
         [SerializeField] private string _inviteUnavailableLabel = "Overlay unavailable\n<size=60%>share the join code</size>";
@@ -135,12 +135,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
         private void InviteFriends()
         {
-            if (_connectionService.TryOpenInviteDialog()) return;
             if (_friendInvite != null)
             {
                 _friendInvite.Open();
                 return;
             }
+            if (_connectionService.TryOpenInviteDialog()) return;
             if (_inviteFriendsButtonLabel == null) return;
 
             StopInviteUnavailableLabel();
