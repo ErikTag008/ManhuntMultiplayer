@@ -100,18 +100,25 @@ inline half3 CalculateToonLighting(BRDFData brdfData, Light light, half3 normalW
 
     // Diffuse calculations (n dot l).
     half NdotL = dot(normalWS, light.direction);
-    half rawDiffuseAmount = smoothstep(_DiffuseThresholds.x, _DiffuseThresholds.y, NdotL);
+    half unshadowedDiffuseAmount = smoothstep(_DiffuseThresholds.x, _DiffuseThresholds.y, NdotL);
+
+    // Cast shadows pull the surface into the shadow band (_ShadowTint) instead of scaling the whole
+    // radiance to zero. Scaling made faces turned away from the light (already in the shadow band)
+    // flip between _ShadowTint and black depending on which shadow cascade sampled them.
+    half shadowAmount = half(1.0);
+
+#ifdef _RECEIVE_SHADOWS_ON
+    shadowAmount = smoothstep(_ShadowThresholds.x, _ShadowThresholds.y, light.shadowAttenuation);
+#endif
+
+    half rawDiffuseAmount = unshadowedDiffuseAmount * shadowAmount;
 
     // Light attenuation.
     half lightAtten = saturate(light.distanceAttenuation);
 
-#ifdef _RECEIVE_SHADOWS_ON
-    lightAtten *= smoothstep(_ShadowThresholds.x, _ShadowThresholds.y, light.shadowAttenuation);
-#endif
-
     // Calculate radiance from diffuse values.
 #ifdef _USE_SECOND_THRESHOLD
-    half diffuseAmount = rawDiffuseAmount + smoothstep(_DiffuseThresholds.z, _DiffuseThresholds.w, NdotL);
+    half diffuseAmount = rawDiffuseAmount + smoothstep(_DiffuseThresholds.z, _DiffuseThresholds.w, NdotL) * shadowAmount;
     half3 radiance = lerp(lerp(_ShadowTint, _MiddleTint, saturate(diffuseAmount)), _LightTint, saturate(diffuseAmount - 1.0f));
 #else
     half3 radiance = lerp(_ShadowTint, _LightTint, saturate(rawDiffuseAmount));
@@ -137,12 +144,13 @@ inline half3 CalculateToonLighting(BRDFData brdfData, Light light, half3 normalW
 #endif
     
     specularTerm = smoothstep(_SpecularThresholds.x, _SpecularThresholds.y, specularTerm + specularOffset);
-    specularTerm *= _SpecularBoost;
+    // Only the lit band gets highlights, so shadowed and back-facing surfaces stay flat.
+    specularTerm *= _SpecularBoost * rawDiffuseAmount;
     
     brdf += brdfData.specular * specularTerm;
 
     // Rim lighting.
-    float rimAmount = (1.0f - saturate(dot(normalWS, viewWS))) * saturate(rawDiffuseAmount + _RimExtension);
+    float rimAmount = (1.0f - saturate(dot(normalWS, viewWS))) * saturate(unshadowedDiffuseAmount + _RimExtension);
     rimAmount = smoothstep(_RimThresholds.x, _RimThresholds.y, rimAmount);
     half3 rimColor = rimAmount * _RimColor;
 

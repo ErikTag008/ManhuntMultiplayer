@@ -33,7 +33,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private Button _inviteFriendsButton;
         [SerializeField] private TMP_Text _inviteFriendsButtonLabel;
         [SerializeField] private string _inviteFriendsLabel = "Invite friends";
-        // shown on the button for a moment when the invite dialog can't open (e.g. the Steam overlay isn't hooked)
+        // optional: opens when the invite dialog can't (e.g. the Steam overlay isn't hooked)
+        [SerializeField] private FriendInviteHUD _friendInvite;
+        // shown on the button for a moment when the invite dialog can't open and there is no in-game list
         [SerializeField] private string _inviteUnavailableLabel = "Overlay unavailable\n<size=60%>share the join code</size>";
         [SerializeField, Min(0f)] private float _inviteUnavailableLabelDurationInSeconds = 3f;
         // optional: shown only when the session has a join code (Steam)
@@ -77,6 +79,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _customizeButton.onClick.AddListener(OpenCustomize);
             if (_inviteFriendsButton != null) _inviteFriendsButton.onClick.AddListener(InviteFriends);
             if (_copyJoinCodeButton != null) _copyJoinCodeButton.onClick.AddListener(CopyJoinCode);
+            if (_friendInvite != null) _friendInvite.OnClosed += HandleFriendInviteClosed;
             RefreshInviteButton();
             RefreshJoinCode();
             // values set before this scene's UI started
@@ -108,6 +111,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             else
             {
                 _panel.Hide();
+                if (_friendInvite != null) _friendInvite.Close();
             }
         }
 
@@ -131,11 +135,23 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
         private void InviteFriends()
         {
-            if (_connectionService.TryOpenInviteDialog() || _inviteFriendsButtonLabel == null) return;
+            if (_connectionService.TryOpenInviteDialog()) return;
+            if (_friendInvite != null)
+            {
+                _friendInvite.Open();
+                return;
+            }
+            if (_inviteFriendsButtonLabel == null) return;
 
             StopInviteUnavailableLabel();
             _inviteUnavailableLabelCTS = new();
             ShowInviteUnavailableLabel(_inviteUnavailableLabelCTS.Token).Forget();
+        }
+
+        // focus goes back to the button that opened the list, unless the menu closed with it
+        private void HandleFriendInviteClosed()
+        {
+            if (_panel.IsShown && _inviteFriendsButton != null && _inviteFriendsButton.gameObject.activeInHierarchy) _inviteFriendsButton.Select();
         }
 
         // the menu runs in real time
@@ -258,6 +274,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _customizeButton.onClick.RemoveListener(OpenCustomize);
             if (_inviteFriendsButton != null) _inviteFriendsButton.onClick.RemoveListener(InviteFriends);
             if (_copyJoinCodeButton != null) _copyJoinCodeButton.onClick.RemoveListener(CopyJoinCode);
+            if (_friendInvite != null) _friendInvite.OnClosed -= HandleFriendInviteClosed;
             StopCopiedLabel();
             StopInviteUnavailableLabel();
         }

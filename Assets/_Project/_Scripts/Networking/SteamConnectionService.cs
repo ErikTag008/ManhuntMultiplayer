@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using Steamworks;
 using Steamworks.Data;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using Unity.Netcode;
@@ -134,6 +135,24 @@ namespace Project.Assets._Project._Scripts.Networking
             return true;
         }
 
+        public override void GetInvitableFriends(List<InvitableFriend> results)
+        {
+            results.Clear();
+            if (!CanInviteFriends) return;
+
+            var lobby = _steamPlatform.CurrentLobby.Value;
+            foreach (var friend in SteamFriends.GetFriends())
+            {
+                if (!friend.IsOnline || IsLobbyMember(lobby, friend.Id)) continue;
+                results.Add(new InvitableFriend(friend.Id.Value, friend.Name, friend.IsPlayingThisGame));
+            }
+
+            results.Sort(InvitableFriend.CompareForInvite);
+        }
+
+        // a Steam chat invite: accepting it reaches SteamPlatform as a lobby join request, the same as an overlay invite
+        public override bool TryInviteFriend(ulong friendId) => CanInviteFriends && _steamPlatform.CurrentLobby.Value.InviteFriend(friendId);
+
         // Clients leave the lobby too once the host is gone, so a later invite doesn't find them still inside
         protected override void HandleSessionEnded() => LeaveLobby();
 
@@ -176,6 +195,16 @@ namespace Project.Assets._Project._Scripts.Networking
         // the host writes its id into the lobby; the owner can change hands when the host leaves first
         private static ulong GetHostSteamId(Lobby lobby) =>
             SteamLobbyId.TryParse(lobby.GetData(SteamLobbyData.HostSteamIdKey), out var hostSteamId) ? hostSteamId : lobby.Owner.Id.Value;
+
+        private static bool IsLobbyMember(Lobby lobby, SteamId steamId)
+        {
+            foreach (var member in lobby.Members)
+            {
+                if (member.Id == steamId) return true;
+            }
+
+            return false;
+        }
 
         private string GetRoomEnterReason(RoomEnter result) => result switch
         {

@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Project.Assets._Project._Scripts.Networking
@@ -36,5 +37,9 @@ namespace Project.Assets._Project._Scripts.Networking
         // Opens the platform's invite dialog for this session; false when CanInviteFriends is false or the dialog can't open
         // (Steam: the overlay isn't hooked)
         bool TryOpenInviteDialog();
+        // Online friends who aren't in this session yet, sorted by InvitableFriend.CompareForInvite; empty when CanInviteFriends is false
+        void GetInvitableFriends(List<InvitableFriend> results);
+        // Sends an invite to this session without the platform overlay; false when it couldn't be sent
+        bool TryInviteFriend(ulong friendId);
     }
 }

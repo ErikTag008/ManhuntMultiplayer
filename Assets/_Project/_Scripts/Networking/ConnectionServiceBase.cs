@@ -72,6 +72,10 @@ namespace Project.Assets._Project._Scripts.Networking
 
         public virtual bool TryOpenInviteDialog() => false;
 
+        public virtual void GetInvitableFriends(List<InvitableFriend> results) => results.Clear();
+
+        public virtual bool TryInviteFriend(ulong friendId) => false;
+
         protected void ClearFailure() => _lastFailureReason = null;
 
         protected bool Fail(string reason)
