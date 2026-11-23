@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Project.Assets._Project._Scripts.Networking;
+using Project.Assets._Project._Scripts.Settings;
 using Project.Assets._Project._Scripts.UI.Shared;
 using Reflex.Attributes;
 using System;
@@ -17,6 +18,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
     {
         [Inject] private readonly LobbyMenuState _state;
         [Inject] private readonly IConnectionService _connectionService;
+        [Inject] private readonly MenuButtonInput _menuButtons;
         [SerializeField] private FadePanel _panel;
         [SerializeField] private OptionList _abilityList;
         // hidden while there is only one map to vote for
@@ -68,6 +70,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private void Start()
         {
             _state.OnOpenChanged += HandleOpenChanged;
+            _menuButtons.OnBackPressed += HandleMenuBackPressed;
             _state.OnAbilityOptionsChanged += HandleAbilityOptionsChanged;
             _state.OnChoiceChanged += HandleChoiceChanged;
             _abilityList.OnOptionClicked += _state.RequestAbilityPick;
@@ -124,6 +127,16 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         }
 
         private void OpenCustomize() => _state.ToggleCustomizeOpen(true);
+
+        // the gamepad's B closes the innermost open layer: the invite list, then Customize, then the lobby menu itself
+        private void HandleMenuBackPressed()
+        {
+            if (!_state.IsOpen) return;
+
+            if (_friendInvite != null && _friendInvite.IsOpen) _friendInvite.Close();
+            else if (_state.IsCustomizeOpen) _state.ToggleCustomizeOpen(false);
+            else _state.ToggleOpen(false);
+        }
 
         private void RefreshInviteButton()
         {
@@ -263,6 +276,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private void OnDestroy()
         {
             _state.OnOpenChanged -= HandleOpenChanged;
+            _menuButtons.OnBackPressed -= HandleMenuBackPressed;
             _state.OnAbilityOptionsChanged -= HandleAbilityOptionsChanged;
             _state.OnChoiceChanged -= HandleChoiceChanged;
             _abilityList.OnOptionClicked -= _state.RequestAbilityPick;

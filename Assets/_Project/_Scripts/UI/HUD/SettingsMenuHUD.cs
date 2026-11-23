@@ -13,6 +13,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [Inject] private readonly SettingsMenuState _state;
         [Inject] private readonly GameSettingsService _settings;
         [Inject] private readonly KeybindService _keybinds;
+        [Inject] private readonly MenuButtonInput _menuButtons;
         [SerializeField] private FadePanel _panel;
         [SerializeField] private OptionList _tabList;
         [SerializeField] private Button _resetButton;
@@ -27,6 +28,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             _state.OnOpenChanged += HandleOpenChanged;
             _tabList.OnOptionClicked += ShowTab;
+            _menuButtons.OnTabStepped += HandleTabStepped;
             _resetButton.onClick.AddListener(ResetCurrentTab);
             _backButton.onClick.AddListener(Close);
 
@@ -64,6 +66,15 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             LinkNavigation();
         }
 
+        // LB/RB walk the tabs round, and the focus goes to the new tab because the old page's rows just turned off
+        private void HandleTabStepped(int step)
+        {
+            if (!_panel.IsShown || _tabs.Count == 0) return;
+
+            ShowTab((_currentTab + step + _tabs.Count) % _tabs.Count);
+            _tabList.FocusSelected();
+        }
+
         // tabs, then the page's rows, then reset and back; the page's first row goes up to the open tab.
         // The page builds its rows when it turns on, so this runs after SetActive and settles its layout first.
         private void LinkNavigation()
@@ -99,6 +110,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             _state.OnOpenChanged -= HandleOpenChanged;
             _tabList.OnOptionClicked -= ShowTab;
+            _menuButtons.OnTabStepped -= HandleTabStepped;
             _resetButton.onClick.RemoveListener(ResetCurrentTab);
             _backButton.onClick.RemoveListener(Close);
         }

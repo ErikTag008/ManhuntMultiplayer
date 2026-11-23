@@ -1104,6 +1104,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Project.UI::Project.Assets._Project._Scripts.UI.Shared.SelectionKeeper
   _eventSystem: {fileID: 453461027}
   _inputModule: {fileID: 453461026}
+  _isFocusFollowingMouse: 1
 --- !u!1 &565290507
 GameObject:
   m_ObjectHideFlags: 0

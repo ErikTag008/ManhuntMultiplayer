@@ -23,7 +23,7 @@ namespace Project.Assets._Project._Scripts.UI.Shared
         [SerializeField] private float _tiltRightDuration = 0.14f;
         [SerializeField] private float _settleDuration = 0.08f;
         [SerializeField] private Ease _tiltEase = Ease.InOutSine;
-        // the mouse jiggles what it points at, even while the keyboard or gamepad focus sits somewhere else
+        // the mouse jiggles what it points at (the EventSystem's SelectionKeeper usually moves the focus there too)
         [SerializeField] private bool _isHoverJiggled = true;
 
         private readonly Dictionary<RectTransform, Quaternion> _baseRotations = new();

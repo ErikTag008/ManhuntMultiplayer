@@ -2844,6 +2844,13 @@ MonoBehaviour:
   _countdownText: {fileID: 1434959660}
   _nextCatchersText: {fileID: 188533415}
   _gameStartButton: {fileID: 2060408821}
+  _gameStartButtonGroup: {fileID: 2060408824}
+  _gameStartAppearDelay: 0.1
+  _gameStartAppearDuration: 0.35
+  _gameStartHiddenScale: 0.6
+  _gameStartAppearEase: 27
+  _gameStartDisappearDuration: 0.15
+  _gameStartDisappearEase: 8
 --- !u!1 &627013022
 GameObject:
   m_ObjectHideFlags: 0
@@ -6613,9 +6620,9 @@ MonoBehaviour:
   m_fontSize: 34
   m_fontSizeBase: 34
   m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 22
+  m_fontSizeMax: 34
   m_fontStyle: 0
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 512
@@ -6627,7 +6634,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -8530,6 +8537,7 @@ GameObject:
   - component: {fileID: 2060408823}
   - component: {fileID: 2060408822}
   - component: {fileID: 2060408821}
+  - component: {fileID: 2060408824}
   m_Layer: 5
   m_Name: StartGameButton
   m_TagString: Untagged
@@ -8639,6 +8647,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2060408819}
   m_CullTransparentMesh: 1
+--- !u!225 &2060408824
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2060408819}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &2062985298
 GameObject:
   m_ObjectHideFlags: 0

@@ -3,7 +3,7 @@ using System;
 namespace Project.Assets._Project._Scripts.Settings
 {
     // Whether the local player is on a gamepad or on keyboard and mouse; key hints show that device's bindings.
-    // The local player's input sets it when its control scheme switches.
+    // ControlSchemeTracker sets it from the device behind each performed action.
     public class ControlSchemeState
     {
         private bool _isGamepad;

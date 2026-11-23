@@ -55,6 +55,12 @@ namespace Project.Assets._Project._Scripts.Settings
         [field: SerializeField] public string RebindCancelPath { get; private set; } = "<Keyboard>/escape";
         [field: SerializeField] public float RebindTimeoutInSeconds { get; private set; } = 6f;
 
+        // Fixed gamepad menu buttons, next to the rebindable keys: Esc/Start already go back through the pause key
+        [field: Header("Menu buttons")]
+        [field: SerializeField] public string MenuBackBinding { get; private set; } = "<Gamepad>/buttonEast";
+        [field: SerializeField] public string PreviousTabBinding { get; private set; } = "<Gamepad>/leftShoulder";
+        [field: SerializeField] public string NextTabBinding { get; private set; } = "<Gamepad>/rightShoulder";
+
         public GameSettingsValues CreateDefaults() => new()
         {
             WindowMode = DefaultWindowMode,

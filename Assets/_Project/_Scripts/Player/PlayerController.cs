@@ -36,7 +36,6 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly EmoteWheelState _emoteWheelState;
         [Inject] private readonly GameSettingsService _settings;
         [Inject] private readonly KeybindService _keybinds;
-        [Inject] private readonly ControlSchemeState _controlScheme;
         [SerializeField, Self] private PlayerInput _playerInput;
         [SerializeField, Self] private InputReader _inputReader;
         [SerializeField, Self] private Rigidbody _rb;
@@ -110,9 +109,6 @@ namespace Project.Assets._Project._Scripts.Player
             _inputReader.OnPause += HandlePausePressed;
             _inputReader.OnWalkHeldChanged += HandleWalkHeldChanged;
             _inputReader.OnCrouchHeldChanged += HandleCrouchHeldChanged;
-            // PlayerInput invokes Unity events, so its C# onControlsChanged never fires
-            _playerInput.controlsChangedEvent.AddListener(HandleControlsChanged);
-            HandleControlsChanged(_playerInput);
             HandleMenuOpenChanged(IsAnyMenuOpen);
         }
 
@@ -310,9 +306,6 @@ namespace Project.Assets._Project._Scripts.Player
             _pauseMenuState.ToggleOpen(true);
         }
 
-        // Owner only: key hints follow the device this player last switched to
-        private void HandleControlsChanged(PlayerInput _) => _controlScheme.ChangeIsGamepad(!_inputReader.IsUsingMouse);
-
         private void HandleSettingsChanged(SettingsCategory category)
         {
             if (category == SettingsCategory.Controls) ApplyKeybinds();
@@ -363,7 +356,6 @@ namespace Project.Assets._Project._Scripts.Player
             _inputReader.OnPause -= HandlePausePressed;
             _inputReader.OnWalkHeldChanged -= HandleWalkHeldChanged;
             _inputReader.OnCrouchHeldChanged -= HandleCrouchHeldChanged;
-            _playerInput.controlsChangedEvent.RemoveListener(HandleControlsChanged);
             // the menu belongs to this session
             _pauseMenuState.ToggleOpen(false);
             // the session is over (back to the main menu), so its buttons need the cursor

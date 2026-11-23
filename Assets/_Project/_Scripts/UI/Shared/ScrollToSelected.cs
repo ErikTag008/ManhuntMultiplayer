@@ -2,6 +2,8 @@ using DG.Tweening;
 using KBCore.Refs;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 namespace Project.Assets._Project._Scripts.UI.Shared
@@ -29,8 +31,21 @@ namespace Project.Assets._Project._Scripts.UI.Shared
 
             _lastSelected = selected;
             if (selected == null || !selected.transform.IsChildOf(_scrollRect.content)) return;
+            if (IsUnderMouse(eventSystem, selected)) return;
 
             ScrollIntoView((RectTransform)selected.transform);
+        }
+
+        // focus follows a moving mouse, and a row the mouse points at is already in view; scrolling it would slide the list under the cursor.
+        // A resting mouse means the keyboard or gamepad picked the row, so it still scrolls fully into view.
+        private static bool IsUnderMouse(EventSystem eventSystem, GameObject selected)
+        {
+            var mouse = Mouse.current;
+            if (mouse == null || Cursor.lockState == CursorLockMode.Locked || mouse.delta.ReadValue() == Vector2.zero) return false;
+            if (eventSystem.currentInputModule is not InputSystemUIInputModule inputModule) return false;
+
+            var hit = inputModule.GetLastRaycastResult(mouse.deviceId).gameObject;
+            return hit != null && hit.transform.IsChildOf(selected.transform);
         }
 
         private void ScrollIntoView(RectTransform target)

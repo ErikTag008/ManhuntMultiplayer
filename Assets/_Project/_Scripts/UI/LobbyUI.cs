@@ -1,3 +1,5 @@
+using DG.Tweening;
+using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Attributes;
 using TMPro;
 using UnityEngine;
@@ -13,6 +15,19 @@ namespace Project.Assets._Project._Scripts.UI
         [SerializeField] private TMP_Text _nextCatchersText;
         [SerializeField] private Button _gameStartButton;
         [Inject] private readonly IUIManager _uiManager;
+        [Inject] private readonly LobbyMenuState _lobbyMenuState;
+        // on the Start Game button: it shows with the lobby menu, so it fades and pops up from its bottom edge
+        [SerializeField] private CanvasGroup _gameStartButtonGroup;
+        [SerializeField] private float _gameStartAppearDelay = 0.1f;
+        [SerializeField] private float _gameStartAppearDuration = 0.35f;
+        [SerializeField] private float _gameStartHiddenScale = 0.6f;
+        [SerializeField] private Ease _gameStartAppearEase = Ease.OutBack;
+        [SerializeField] private float _gameStartDisappearDuration = 0.15f;
+        [SerializeField] private Ease _gameStartDisappearEase = Ease.InCubic;
+
+        private Tween _gameStartButtonTween;
+        private bool _isGameStartAllowed;
+        private bool _isGameStartButtonShown;
 
         private void Start()
         {
@@ -22,8 +37,10 @@ namespace Project.Assets._Project._Scripts.UI
             _uiManager.OnNextCatchersTextChanged += HandleNextCatchersChange;
             _uiManager.OnStartGameButtonAvailabilityChanged += HandleGameStartButtonAvailabilityChange;
             _uiManager.OnStartGameButtonVisibilityChanged += HandleGameStartButtonVisibilityChange;
+            _lobbyMenuState.OnOpenChanged += HandleLobbyMenuChanged;
+            _lobbyMenuState.OnCustomizeOpenChanged += HandleLobbyMenuChanged;
             // hidden until the host says it's theirs, so joining players never see it flash
-            HandleGameStartButtonVisibilityChange(false);
+            HideGameStartButtonImmediately();
             _uiManager.RequestLobbyUIInitialization();
             _gameStartButton.onClick.AddListener(_uiManager.StartGame);
         }
@@ -34,9 +51,10 @@ namespace Project.Assets._Project._Scripts.UI
             uiText.text = text;
         }
 
+        // the start key works while walking around too, when the button itself is hidden with the menu
         public void InvokeGameStartButtonPress()
         {
-            if(_gameStartButton.gameObject.activeSelf && _gameStartButton.interactable)
+            if (_isGameStartAllowed && _gameStartButton.interactable)
                 _gameStartButton.onClick.Invoke();
         }
 
@@ -47,7 +65,72 @@ namespace Project.Assets._Project._Scripts.UI
 
         private void HandleGameStartButtonVisibilityChange(bool isVisible)
         {
-            if (_gameStartButton.gameObject.activeSelf != isVisible) _gameStartButton.gameObject.SetActive(isVisible);
+            _isGameStartAllowed = isVisible;
+            RefreshGameStartButton();
+        }
+
+        private void HandleLobbyMenuChanged(bool _) => RefreshGameStartButton();
+
+        // the host's button belongs to the lobby menu: it shows only while that menu is on screen
+        private void RefreshGameStartButton()
+        {
+            bool isShown = _isGameStartAllowed && _lobbyMenuState.IsOpen && !_lobbyMenuState.IsCustomizeOpen;
+            if (isShown == _isGameStartButtonShown) return;
+
+            _isGameStartButtonShown = isShown;
+            if (isShown) ShowGameStartButton();
+            else HideGameStartButton();
+        }
+
+        private void ShowGameStartButton()
+        {
+            var buttonTransform = _gameStartButton.transform;
+            _gameStartButtonTween?.Kill();
+            _gameStartButton.gameObject.SetActive(true);
+            _gameStartButtonGroup.interactable = true;
+            _gameStartButtonGroup.blocksRaycasts = true;
+            _gameStartButtonGroup.alpha = 0f;
+            buttonTransform.localScale = Vector3.one * _gameStartHiddenScale;
+            _gameStartButtonTween = DOTween.Sequence()
+                .AppendInterval(_gameStartAppearDelay)
+                .Append(buttonTransform.DOScale(Vector3.one, _gameStartAppearDuration).SetEase(_gameStartAppearEase))
+                .Join(FadeGameStartButton(1f, _gameStartAppearDuration))
+                .SetUpdate(true)
+                .SetLink(_gameStartButton.gameObject);
+        }
+
+        // switched off at once so navigation skips it while it fades
+        private void HideGameStartButton()
+        {
+            _gameStartButtonTween?.Kill();
+            _gameStartButtonGroup.interactable = false;
+            _gameStartButtonGroup.blocksRaycasts = false;
+            if (!_gameStartButton.gameObject.activeInHierarchy)
+            {
+                HideGameStartButtonImmediately();
+                return;
+            }
+
+            _gameStartButtonTween = DOTween.Sequence()
+                .Append(_gameStartButton.transform.DOScale(Vector3.one * _gameStartHiddenScale, _gameStartDisappearDuration).SetEase(_gameStartDisappearEase))
+                .Join(FadeGameStartButton(0f, _gameStartDisappearDuration))
+                .SetUpdate(true)
+                .SetLink(_gameStartButton.gameObject)
+                .OnComplete(HideGameStartButtonImmediately);
+        }
+
+        // core DOTween.To: the CanvasGroup DOFade shortcut lives in the DOTween UI module, which no project assembly references
+        private Tween FadeGameStartButton(float alpha, float duration) =>
+            DOTween.To(() => _gameStartButtonGroup.alpha, value => _gameStartButtonGroup.alpha = value, alpha, duration);
+
+        private void HideGameStartButtonImmediately()
+        {
+            _isGameStartButtonShown = false;
+            _gameStartButtonGroup.alpha = 0f;
+            _gameStartButtonGroup.interactable = false;
+            _gameStartButtonGroup.blocksRaycasts = false;
+            _gameStartButton.transform.localScale = Vector3.one;
+            if (_gameStartButton.gameObject.activeSelf) _gameStartButton.gameObject.SetActive(false);
         }
 
         private void HandleJoinedPlayerAmountChange(string text) => HandleUITextChange(_joinedPlayerAmountText, text);
@@ -67,9 +150,10 @@ namespace Project.Assets._Project._Scripts.UI
             uiManager.OnNextCatchersTextChanged -= HandleNextCatchersChange;
             uiManager.OnStartGameButtonAvailabilityChanged -= HandleGameStartButtonAvailabilityChange;
             uiManager.OnStartGameButtonVisibilityChanged -= HandleGameStartButtonVisibilityChange;
+            _lobbyMenuState.OnOpenChanged -= HandleLobbyMenuChanged;
+            _lobbyMenuState.OnCustomizeOpenChanged -= HandleLobbyMenuChanged;
             _gameStartButton.onClick.RemoveListener(uiManager.StartGame);
-
+            _gameStartButtonTween?.Kill();
         }
     }
 }
-

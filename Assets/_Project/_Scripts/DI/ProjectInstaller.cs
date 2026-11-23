@@ -63,6 +63,8 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(typeof(GameSettingsService), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(KeybindService), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(ControlSchemeState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(ControlSchemeTracker), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(MenuButtonInput), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             // Eager so the saved loadout is loaded before the local player spawns and sends it
             builder.RegisterType(typeof(CosmeticProfileService), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PersistentObjectRegistry), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);

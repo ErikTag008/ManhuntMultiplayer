@@ -1,3 +1,4 @@
+using Project.Assets._Project._Scripts.Settings;
 using Project.Assets._Project._Scripts.UI.Shared;
 using Reflex.Attributes;
 using UnityEngine;
@@ -10,6 +11,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
     {
         [Inject] private readonly PauseMenuState _state;
         [Inject] private readonly SettingsMenuState _settingsMenuState;
+        [Inject] private readonly MenuButtonInput _menuButtons;
         [SerializeField] private FadePanel _panel;
         [SerializeField] private Button _resumeButton;
         [SerializeField] private Button _settingsButton;
@@ -22,6 +24,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             _state.OnOpenChanged += HandleOpenChanged;
             _state.OnBackRequested += HandleBackRequested;
+            _menuButtons.OnBackPressed += HandleMenuBackPressed;
             _settingsMenuState.OnOpenChanged += HandleSettingsOpenChanged;
             _confirmDialog.OnClosed += HandleConfirmClosed;
             _resumeButton.onClick.AddListener(Resume);
@@ -49,6 +52,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         }
 
         private void HandleSettingsOpenChanged(bool _) => RefreshPanel();
+
+        // the gamepad's B steps back like the pause key does, while this menu is open
+        private void HandleMenuBackPressed()
+        {
+            if (_state.IsOpen) HandleBackRequested();
+        }
 
         private void HandleConfirmClosed()
         {
@@ -82,6 +91,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             _state.OnOpenChanged -= HandleOpenChanged;
             _state.OnBackRequested -= HandleBackRequested;
+            _menuButtons.OnBackPressed -= HandleMenuBackPressed;
             _settingsMenuState.OnOpenChanged -= HandleSettingsOpenChanged;
             _confirmDialog.OnClosed -= HandleConfirmClosed;
             _resumeButton.onClick.RemoveListener(Resume);

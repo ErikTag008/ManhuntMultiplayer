@@ -74,6 +74,8 @@ namespace Project.Assets._Project._Scripts.Settings
                 .WithCancelingThrough(_data.RebindCancelPath)
                 .WithTimeout(_data.RebindTimeoutInSeconds)
                 .OnMatchWaitForAnother(0f)
+                // the press that picks the key never reaches an action, so it can't also click, close or switch the menu
+                .WithMatchingEventsBeingSuppressed()
                 .OnApplyBinding((operation, path) =>
                 {
                     if (TryFindConflict(entry, action, bindingIndex, operation.selectedControl, isGamepad, out conflictControl, out conflictActionName)) return;

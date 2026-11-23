@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Project.Assets._Project._Scripts.Networking;
+using Project.Assets._Project._Scripts.Settings;
 using Project.Assets._Project._Scripts.UI.Shared;
 using Reflex.Attributes;
 using System.Threading;
@@ -18,6 +19,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [Inject] private readonly FriendAvatarCache _avatarCache;
         [Inject] private readonly IConnectionService _connectionService;
         [Inject] private readonly PauseMenuState _pauseMenuState;
+        [Inject] private readonly MenuButtonInput _menuButtons;
         [SerializeField] private FadePanel _panel;
         [SerializeField] private RawImage _avatarImage;
         // shown until the friend's avatar has loaded, and for friends without one
@@ -40,6 +42,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private GameObject _selectionBeforeShown;
         private ulong _shownFriendId;
         private bool _wasCursorFree;
+        private bool _isBackClaimed;
 
         private void Start()
         {
@@ -57,6 +60,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             bool isCursorFree = Cursor.lockState != CursorLockMode.Locked;
             _openMenuHint.SetActive(!isCursorFree);
             if (isCursorFree && !_wasCursorFree) TakeFocus();
+            ToggleBackClaim(isCursorFree);
             _wasCursorFree = isCursorFree;
         }
 
@@ -87,7 +91,18 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
             _panel.Hide();
             _openMenuHint.SetActive(false);
+            ToggleBackClaim(false);
             RestoreSelection();
+        }
+
+        // while the popup can be answered, the gamepad's B declines it before any menu behind steps back; with the cursor locked B stays the emote
+        private void ToggleBackClaim(bool isClaimed)
+        {
+            if (_isBackClaimed == isClaimed) return;
+
+            _isBackClaimed = isClaimed;
+            if (isClaimed) _menuButtons.ClaimBack(_state.Decline);
+            else _menuButtons.ReleaseBack(_state.Decline);
         }
 
         // remembered when focus is taken, not when shown: in gameplay the menu opens (and picks its button) after the popup appears
@@ -150,6 +165,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private void OnDestroy()
         {
             StopExpiring();
+            ToggleBackClaim(false);
             _state.OnCurrentChanged -= Refresh;
             _avatarCache.OnAvatarLoaded -= HandleAvatarLoaded;
             _acceptButton.onClick.RemoveListener(_state.Accept);

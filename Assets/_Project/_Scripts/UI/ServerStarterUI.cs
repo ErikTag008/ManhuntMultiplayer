@@ -22,6 +22,7 @@ namespace Project.Assets._Project._Scripts.UI
         [Inject] private readonly MainMenuState _mainMenuState;
         [Inject] private readonly GameSettingsService _settings;
         [Inject] private readonly KeybindService _keybinds;
+        [Inject] private readonly MenuButtonInput _menuButtons;
         [SerializeField] private Button _quitButton;
         [SerializeField] private FadePanel _mainPanel;
         // on the canvas root, so busy switches off every screen at once
@@ -48,6 +49,7 @@ namespace Project.Assets._Project._Scripts.UI
             _mainMenuState.OnScreenChanged += HandleScreenChanged;
             _mainMenuState.OnBusyChanged += HandleBusyChanged;
             _mainMenuState.OnStatusChanged += HandleStatusChanged;
+            _menuButtons.OnBackPressed += HandleMenuBackPressed;
             _backAction = _settings.Data.InputActions.FindAction(_backActionName);
 
             HandleStatusChanged(_mainMenuState.StatusText);
@@ -108,7 +110,15 @@ namespace Project.Assets._Project._Scripts.UI
             _statusText.text = text;
         }
 
-        private void HandleBackPerformed(InputAction.CallbackContext _)
+        private void HandleBackPerformed(InputAction.CallbackContext _) => GoBack();
+
+        // the gamepad's B goes back like the pause key, on the same screens
+        private void HandleMenuBackPressed()
+        {
+            if (_isListeningForBack) GoBack();
+        }
+
+        private void GoBack()
         {
             if (_mainMenuState.IsBusy) return;
 
@@ -171,6 +181,7 @@ namespace Project.Assets._Project._Scripts.UI
             _mainMenuState.OnScreenChanged -= HandleScreenChanged;
             _mainMenuState.OnBusyChanged -= HandleBusyChanged;
             _mainMenuState.OnStatusChanged -= HandleStatusChanged;
+            _menuButtons.OnBackPressed -= HandleMenuBackPressed;
             ToggleBackListening(false);
         }
     }
