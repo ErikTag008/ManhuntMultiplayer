@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd8e89d33bf3f74a822dff969b72354, type: 3}
   m_Name: CatcherStats
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.Player.CatcherStats
-  <MaxMoveSpeed>k__BackingField: 25
-  <JumpForce>k__BackingField: 20
+  <MaxMoveSpeed>k__BackingField: 22
+  <JumpForce>k__BackingField: 15
   <CoyoteTime>k__BackingField: 0.2
   <JumpBuffer>k__BackingField: 0.1
   <JumpButtonUpVerticalVelocityMultiplier>k__BackingField: 0.5
@@ -30,6 +30,36 @@ MonoBehaviour:
   <GroundCheckLayers>k__BackingField:
     serializedVersion: 2
     m_Bits: 1
+  <Parkour>k__BackingField:
+    <CrouchHeight>k__BackingField: 1.2
+    <CrouchSpeedMultiplier>k__BackingField: 0.35
+    <CrouchCameraSmoothing>k__BackingField: 15
+    <SlideMinStartSpeed>k__BackingField: 12
+    <SlideBoostSpeed>k__BackingField: 8
+    <SlideMaxSpeed>k__BackingField: 38
+    <SlideEndSpeed>k__BackingField: 8
+    <SlideMaxDurationInSeconds>k__BackingField: 1.2
+    <SlideCooldownInSeconds>k__BackingField: 0.6
+    <SlideDamping>k__BackingField: 0.8
+    <WallCheckDistance>k__BackingField: 0.35
+    <WallCheckHeight>k__BackingField: 1
+    <WallCheckRayCount>k__BackingField: 8
+    <WallMaxNormalY>k__BackingField: 0.3
+    <WallJumpAwaySpeed>k__BackingField: 14
+    <WallJumpUpSpeed>k__BackingField: 14
+    <WallJumpCooldownInSeconds>k__BackingField: 0.25
+    <WallJumpControlLockInSeconds>k__BackingField: 0.25
+    <SameWallNormalDot>k__BackingField: 0.8
+    <MantleMinHeight>k__BackingField: 0.8
+    <MantleMaxHeight>k__BackingField: 2.2
+    <MantleReach>k__BackingField: 0.6
+    <MantleLandingDepth>k__BackingField: 0.6
+    <MantleMinForwardInput>k__BackingField: 0.5
+    <MantleRiseDurationInSeconds>k__BackingField: 0.25
+    <MantleForwardDurationInSeconds>k__BackingField: 0.15
+    <MantleExitSpeed>k__BackingField: 6
+    <MantleEdgeProbeDepth>k__BackingField: 0.15
+    <SurfaceClearance>k__BackingField: 0.05
   <MaxPitch>k__BackingField: 85
   <MouseLookXSensitivity>k__BackingField: 0.05
   <MouseLookYSensitivity>k__BackingField: 0.05
@@ -52,3 +82,38 @@ MonoBehaviour:
     _kind: 1
     _value: 0.25
   <Model>k__BackingField: {fileID: 675287499876964928, guid: 07fc33c04c129474a97b15fa6a89f6da, type: 3}
+  <Lunge>k__BackingField:
+    <ChargeStartDelayInSeconds>k__BackingField: 0.15
+    <FullChargeDurationInSeconds>k__BackingField: 0.6
+    <ChargeModifiers>k__BackingField:
+    - _stat: 0
+      _kind: 1
+      _value: 0.6
+    <LungeSpeed>k__BackingField: 26
+    <LungeDurationInSeconds>k__BackingField: 0.3
+    <HitDelayInSeconds>k__BackingField: 0.25
+    <HitRadius>k__BackingField: 0.7
+    <ReachInMeters>k__BackingField: 2.6
+    <HitWindowInSeconds>k__BackingField: 0.15
+    <MaxTargetDistance>k__BackingField: 12
+    <HitCooldownInSeconds>k__BackingField: 1.5
+    <MissCooldownInSeconds>k__BackingField: 2.5
+    <MissRecoveryDurationInSeconds>k__BackingField: 1.2
+    <MissRecoveryModifiers>k__BackingField:
+    - _stat: 0
+      _kind: 1
+      _value: 0.4
+    - _stat: 1
+      _kind: 1
+      _value: 0.5
+  <HitBlockingLayers>k__BackingField:
+    serializedVersion: 2
+    m_Bits: 1
+  <SnareDurationInSeconds>k__BackingField: 1.5
+  <SnareModifiers>k__BackingField:
+  - _stat: 0
+    _kind: 1
+    _value: 0.3
+  - _stat: 1
+    _kind: 1
+    _value: 0.5

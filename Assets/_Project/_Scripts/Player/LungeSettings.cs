@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Project.Assets._Project._Scripts.Player
 {
@@ -24,9 +25,14 @@ namespace Project.Assets._Project._Scripts.Player
         [field: SerializeField, Min(0f)] public float LungeDurationInSeconds { get; private set; } = 0.3f;
         // time from the release until the weapon reaches the target; match the Lunge animation
         [field: SerializeField, Min(0f)] public float HitDelayInSeconds { get; private set; } = 0.25f;
-        [field: SerializeField, Min(0f)] public float HitRadius { get; private set; } = 1.2f;
-        // the server rejects a lunge hit centred farther than this from the attacker (lunge distance plus reach and lag)
-        [field: SerializeField, Min(0f)] public float MaxHitOriginDistance { get; private set; } = 10f;
+        // thickness of the view sweep; wider than a swing, since the catcher is moving fast
+        [field: SerializeField, Min(0f)] public float HitRadius { get; private set; } = 0.7f;
+        [field: SerializeField, Min(0f)] public float ReachInMeters { get; private set; } = 2.6f;
+        // the sweep repeats every frame for this long after the hit delay
+        [field: SerializeField, Min(0f)] public float HitWindowInSeconds { get; private set; } = 0.15f;
+        // the server rejects a target farther than this from the attacker (lunge distance plus reach and lag)
+        [field: SerializeField, Min(0f), FormerlySerializedAs("<MaxHitOriginDistance>k__BackingField")]
+        public float MaxTargetDistance { get; private set; } = 12f;
         // from the release to the next attack when the lunge caught something
         [field: SerializeField, Min(0f)] public float HitCooldownInSeconds { get; private set; } = 1.5f;
 

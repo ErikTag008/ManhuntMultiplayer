@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65daa9602e026674e88e06cc7d163ba7, type: 3}
+  m_Name: TripTrapAbilityData
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.Abilities.SpawnObjectAbilityData
+  <Id>k__BackingField: 6
+  <DisplayName>k__BackingField: Trip Trap
+  <CooldownInSeconds>k__BackingField: 30
+  <ReadyHint>k__BackingField: '{0}'
+  <AnimationTrigger>k__BackingField: 
+  <ActiveDurationInSeconds>k__BackingField: 0
+  <UseFeedback>k__BackingField:
+    <Clips>k__BackingField: []
+    <Volume>k__BackingField: 1
+    <PitchRange>k__BackingField: {x: 0.95, y: 1.05}
+    <VfxPrefab>k__BackingField: {fileID: 0}
+    <IsVfxShownToOwner>k__BackingField: 0
+  <Prefab>k__BackingField: {fileID: 695683455920373449, guid: 103a32d9911c416458c10b49acf5ada1, type: 3}

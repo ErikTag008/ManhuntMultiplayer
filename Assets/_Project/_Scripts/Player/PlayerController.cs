@@ -75,6 +75,8 @@ namespace Project.Assets._Project._Scripts.Player
         public StatModifierStack StatModifiers => _statModifiers;
         // Owner only, and null until the first scene gives the player a camera
         public IPlayerMovement Movement => _movement;
+        // owner only: the first-person camera this player looks through, null until a scene binds it
+        public Camera ViewCamera => _cameraBinder.Camera;
         // Eliminated players and anyone with a menu open stand still
         private bool CanMove => _lifeState.CanMove && !(IsOwner && IsAnyMenuOpen);
         private bool IsAnyMenuOpen => _lobbyMenuState.IsOpen || _pauseMenuState.IsOpen;

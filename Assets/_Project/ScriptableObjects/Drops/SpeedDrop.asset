@@ -21,4 +21,10 @@ MonoBehaviour:
   - _stat: 0
     _kind: 1
     _value: 1.4
+  - _stat: 2
+    _kind: 1
+    _value: 1.4
+  - _stat: 3
+    _kind: 1
+    _value: 1.4
   <Statuses>k__BackingField: 0

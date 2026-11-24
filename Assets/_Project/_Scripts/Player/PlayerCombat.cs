@@ -15,6 +15,9 @@ namespace Project.Assets._Project._Scripts.Player
 {
     // Holds the team's weapon in the model's hand; the owner swings, every instance plays the swing, the server resolves the catch.
     // A tap swings on release; holding Attack until the charge is full lunges forward on release (CatcherStats.Lunge).
+    // The owner finds the targets with a sweep along its own view, against the runners it sees (fair to the catcher: what lands on
+    // screen counts). The server only accepts targets within a lag-sized distance of the catcher (fair to runners: no hits from far
+    // away), and the owner never counts a runner behind a wall.
     [RequireComponent(typeof(PlayerTeam), typeof(InputReader), typeof(PlayerHideHold))]
     [RequireComponent(typeof(PlayerController))]
     public class PlayerCombat : NetworkBehaviour
@@ -28,6 +31,8 @@ namespace Project.Assets._Project._Scripts.Player
         // used only when the model has no weapon socket
         [SerializeField] private Transform _weaponPivot;
         [SerializeField] private int _maxCatchTargets = 3;
+        // colliders one sweep can return; a runner has several and knocked runners fill slots too
+        [SerializeField] private int _sweepBufferSize = 16;
         // the owner's clock and the server's can disagree slightly, so an honest swing may arrive a little early
         [SerializeField] private float _cooldownToleranceInSeconds = 0.1f;
 
@@ -36,7 +41,8 @@ namespace Project.Assets._Project._Scripts.Player
         public event Action OnLungeStarted;
 
         private MeleeWeaponBase _currentWeapon;
-        private Collider[] _catchTargets;
+        private Collider[] _sweepHits;
+        private readonly List<NetworkObject> _sweepTargets = new();
         // a runner with several colliders is hit once per catch, so a shield can't be used up and then knocked through
         private readonly List<PlayerTeam> _caughtTeams = new();
         private bool _isAttackInputBound;
@@ -49,10 +55,13 @@ namespace Project.Assets._Project._Scripts.Player
         private double _serverChargeStartTime = double.NegativeInfinity;
         private CancellationTokenSource _swingCTS = new();
         private CancellationTokenSource _chargeCTS = new();
+        // owner only: a Trip Trap snare blocks the lunge until then
+        private float _snareEndTime = float.NegativeInfinity;
 
         public MeleeWeaponBase CurrentWeapon => _currentWeapon;
         public bool IsAttackReady => _isAttackInputBound && Time.time >= _nextAttackTime;
         public bool IsCharging => _isCharging;
+        public bool IsSnared => Time.time < _snareEndTime;
         // owner only: 0..1 from the press to a full charge
         public float ChargeProgress => _isCharging && Lunge != null && Lunge.FullChargeDurationInSeconds > 0f
             ? Mathf.Clamp01((Time.time - _attackPressTime) / Lunge.FullChargeDurationInSeconds)
@@ -62,7 +71,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void OnValidate() => this.ValidateRefs();
 
-        private void Awake() => _catchTargets = new Collider[_maxCatchTargets];
+        private void Awake() => _sweepHits = new Collider[_sweepBufferSize];
 
         public override void OnNetworkSpawn()
         {
@@ -149,7 +158,7 @@ namespace Project.Assets._Project._Scripts.Player
             if (!_isAttackPressed) return;
 
             var lunge = Lunge;
-            bool isFullyCharged = lunge != null && Time.time - _attackPressTime >= lunge.FullChargeDurationInSeconds;
+            bool isFullyCharged = lunge != null && !IsSnared && Time.time - _attackPressTime >= lunge.FullChargeDurationInSeconds;
             CancelAttackPress();
 
             if (isFullyCharged) PerformLunge(lunge);
@@ -164,7 +173,7 @@ namespace Project.Assets._Project._Scripts.Player
             _attackPressTime = Time.time;
 
             var lunge = Lunge;
-            if (lunge == null) return;
+            if (lunge == null || IsSnared) return;
 
             RestartCTS(ref _chargeCTS);
             StartChargeAsync(lunge, _chargeCTS.Token).Forget();
@@ -217,7 +226,8 @@ namespace Project.Assets._Project._Scripts.Player
             PlayAttackRpc();
 
             RestartCTS(ref _swingCTS);
-            SwingAsync(_currentWeapon, _currentWeapon.HitDelayInSeconds, false, _swingCTS.Token).Forget();
+            var sweep = new SwingSweep(_currentWeapon.HitDelayInSeconds, _currentWeapon.HitWindowInSeconds, _currentWeapon.ReachInMeters, _currentWeapon.HitRadius);
+            SwingAsync(_currentWeapon, sweep, false, _swingCTS.Token).Forget();
         }
 
         // Owner only: the lunge rides the dash burst; its cooldown assumes a hit and a reported miss lengthens it.
@@ -238,15 +248,78 @@ namespace Project.Assets._Project._Scripts.Player
             PlayLungeRpc();
 
             RestartCTS(ref _swingCTS);
-            SwingAsync(_currentWeapon, lunge.HitDelayInSeconds, true, _swingCTS.Token).Forget();
+            var sweep = new SwingSweep(lunge.HitDelayInSeconds, lunge.HitWindowInSeconds, lunge.ReachInMeters, lunge.HitRadius);
+            SwingAsync(_currentWeapon, sweep, true, _swingCTS.Token).Forget();
         }
 
-        private async UniTaskVoid SwingAsync(MeleeWeaponBase weapon, float hitDelayInSeconds, bool isLunge, CancellationToken token)
+        // Sweeps every frame of the hit window and reports the first frame that finds a target, or an empty miss when the window ends
+        private async UniTaskVoid SwingAsync(MeleeWeaponBase weapon, SwingSweep sweep, bool isLunge, CancellationToken token)
         {
-            await UniTask.WaitForSeconds(hitDelayInSeconds, cancellationToken: token);
-            if (weapon == null || weapon != _currentWeapon) return;
+            await UniTask.WaitForSeconds(sweep.HitDelayInSeconds, cancellationToken: token);
 
-            RequestCatchServerRpc(weapon.HitOrigin, isLunge);
+            float windowEndTime = Time.time + sweep.HitWindowInSeconds;
+            while (true)
+            {
+                if (weapon == null || weapon != _currentWeapon) return;
+                if (FindSweepTargets(sweep.ReachInMeters, sweep.RadiusInMeters) > 0 || Time.time >= windowEndTime) break;
+
+                await UniTask.Yield(cancellationToken: token);
+            }
+
+            var targets = new NetworkObjectReference[_sweepTargets.Count];
+            for (int i = 0; i < targets.Length; i++) targets[i] = _sweepTargets[i];
+            RequestCatchServerRpc(targets, isLunge);
+        }
+
+        // Owner only: a capsule from the eye along the view; a standing, catchable runner or a decoy counts when nothing solid is between
+        private int FindSweepTargets(float reachInMeters, float radiusInMeters)
+        {
+            _sweepTargets.Clear();
+            var viewCamera = _controller.ViewCamera;
+            if (viewCamera == null || _team.CurrentStats is not CatcherStats catcherStats) return 0;
+
+            Vector3 eye = viewCamera.transform.position;
+            Vector3 end = eye + viewCamera.transform.forward * reachInMeters;
+            int hitCount = Physics.OverlapCapsuleNonAlloc(eye, end, radiusInMeters, _sweepHits, catcherStats.AttackRaycastLayer);
+            for (int i = 0; i < hitCount && _sweepTargets.Count < _maxCatchTargets; i++)
+            {
+                var hit = _sweepHits[i];
+                if (!TryGetSweepTarget(hit, out NetworkObject target) || _sweepTargets.Contains(target)) continue;
+                if (IsBehindCover(eye, hit, catcherStats.HitBlockingLayers)) continue;
+
+                _sweepTargets.Add(target);
+            }
+
+            return _sweepTargets.Count;
+        }
+
+        // a knocked runner can't be caught, so it doesn't use up the swing (invulnerability is only known on the server, so the host's check is the only one that sees it)
+        private bool TryGetSweepTarget(Collider hit, out NetworkObject target)
+        {
+            target = null;
+            var decoy = hit.GetComponentInParent<Decoy>();
+            if (decoy != null)
+            {
+                target = decoy.NetworkObject;
+                return target != null;
+            }
+
+            var targetTeam = hit.GetComponentInParent<PlayerTeam>();
+            if (targetTeam == null || targetTeam == _team || targetTeam.Team != Team.Runner) return false;
+            if (!targetTeam.TryGetComponent(out PlayerLifeState targetLifeState) || !targetLifeState.IsUp || targetLifeState.IsInvulnerable) return false;
+
+            target = targetTeam.NetworkObject;
+            return target != null;
+        }
+
+        // aims at the target's nearest point, so a runner half out from behind a corner can still be hit
+        private static bool IsBehindCover(Vector3 eye, Collider hit, LayerMask blockingLayers)
+        {
+            Vector3 toTarget = hit.ClosestPoint(eye) - eye;
+            float distance = toTarget.magnitude;
+            if (distance <= 0f) return false;
+
+            return Physics.Raycast(eye, toTarget / distance, distance, blockingLayers, QueryTriggerInteraction.Ignore);
         }
 
         private void CancelSwing() => _swingCTS?.Cancel();
@@ -267,11 +340,11 @@ namespace Project.Assets._Project._Scripts.Player
         [Rpc(SendTo.NotOwner)]
         private void PlayLungeRpc() => OnLungeStarted?.Invoke();
 
-        // A catcher's hit knocks every runner inside the hit sphere and pops any decoy there; other catchers are ignored.
-        // The client only says where the swing landed and whether it was a lunge: the radius, reach and cooldowns are the server's own,
-        // and a landing point out of the attacker's reach is dropped. A lunge reports back whether it caught anything.
+        // A catcher's hit knocks the runners the owner's sweep found and pops any decoy among them; other catchers are ignored.
+        // The client only names its targets and whether it was a lunge: cooldowns and the distance limit are the server's own,
+        // and a target farther from the catcher than the limit is dropped. A lunge reports back whether it caught anything.
         [Rpc(SendTo.Server)]
-        private void RequestCatchServerRpc(Vector3 hitOrigin, bool isLunge)
+        private void RequestCatchServerRpc(NetworkObjectReference[] targets, bool isLunge)
         {
             if (_team.Team != Team.Catcher || _currentWeapon == null) return;
 
@@ -283,15 +356,12 @@ namespace Project.Assets._Project._Scripts.Player
             // the charge started one start delay after the press, so a full charge leaves at least the rest before the lunge
             if (isLunge && now - _serverChargeStartTime + _cooldownToleranceInSeconds < lunge.FullChargeDurationInSeconds - lunge.ChargeStartDelayInSeconds) return;
 
-            float hitRadius = isLunge ? lunge.HitRadius : _currentWeapon.HitRadius;
-            float maxHitOriginDistance = isLunge ? lunge.MaxHitOriginDistance : _currentWeapon.MaxHitOriginDistance;
-            // written as "not within" so a NaN or infinite origin is rejected too
-            if (!(Vector3.Distance(hitOrigin, transform.position) <= maxHitOriginDistance)) return;
+            float maxTargetDistance = isLunge ? lunge.MaxTargetDistance : _currentWeapon.MaxTargetDistance;
 
             // each charge allows one lunge
             if (isLunge) _serverChargeStartTime = double.NegativeInfinity;
             // a held catcher's warm-up swings run their cooldowns but never catch
-            bool hasCaught = !_hideHold.IsHeld && TryCatchAt(hitOrigin, hitRadius);
+            bool hasCaught = !_hideHold.IsHeld && TryCatch(targets, maxTargetDistance);
             float cooldown = !isLunge ? _currentWeapon.AttackCooldownInSeconds
                 : hasCaught ? lunge.HitCooldownInSeconds
                 : lunge.MissCooldownInSeconds;
@@ -302,23 +372,26 @@ namespace Project.Assets._Project._Scripts.Player
         }
 
         // Server only: true when a runner was knocked, a shield took the hit or a decoy popped
-        private bool TryCatchAt(Vector3 hitOrigin, float hitRadius)
+        private bool TryCatch(NetworkObjectReference[] targets, float maxTargetDistance)
         {
+            if (targets == null) return false;
+
             bool hasCaught = false;
-            int hitCount = Physics.OverlapSphereNonAlloc(hitOrigin, hitRadius, _catchTargets, _team.CurrentStats.AttackRaycastLayer);
             _caughtTeams.Clear();
-            for (int i = 0; i < hitCount; i++)
+            int targetCount = Mathf.Min(targets.Length, _maxCatchTargets);
+            for (int i = 0; i < targetCount; i++)
             {
-                var decoy = _catchTargets[i].GetComponentInParent<Decoy>();
-                if (decoy != null)
+                if (!targets[i].TryGet(out NetworkObject target)) continue;
+                if (!(Vector3.Distance(target.transform.position, transform.position) <= maxTargetDistance)) continue;
+
+                if (target.TryGetComponent(out Decoy decoy))
                 {
                     decoy.Pop();
                     hasCaught = true;
                     continue;
                 }
 
-                var targetTeam = _catchTargets[i].GetComponentInParent<PlayerTeam>();
-                if (targetTeam == null || targetTeam == _team || targetTeam.Team != Team.Runner) continue;
+                if (!target.TryGetComponent(out PlayerTeam targetTeam) || targetTeam == _team || targetTeam.Team != Team.Runner) continue;
                 if (_caughtTeams.Contains(targetTeam)) continue;
 
                 _caughtTeams.Add(targetTeam);
@@ -337,6 +410,28 @@ namespace Project.Assets._Project._Scripts.Player
             }
 
             return hasCaught;
+        }
+
+        // Server only: a runner's Trip Trap caught this catcher; the owner applies the slow, since movement is the owner's
+        public void Snare()
+        {
+            if (!IsServer || _team.Team != Team.Catcher) return;
+
+            SnareRpc();
+        }
+
+        [Rpc(SendTo.Owner)]
+        private void SnareRpc()
+        {
+            if (_team.CurrentStats is not CatcherStats catcherStats) return;
+
+            CancelAttackPress();
+            _snareEndTime = Time.time + catcherStats.SnareDurationInSeconds;
+            foreach (var modifier in catcherStats.SnareModifiers)
+            {
+                _controller.StatModifiers.Remove(modifier);
+                _controller.StatModifiers.Add(modifier, catcherStats.SnareDurationInSeconds);
+            }
         }
 
         // Server only: a shield drop takes the hit instead of the runner; only a catch that would knock uses it up
@@ -358,6 +453,23 @@ namespace Project.Assets._Project._Scripts.Player
             {
                 _controller.StatModifiers.Remove(modifier);
                 _controller.StatModifiers.Add(modifier, lunge.MissRecoveryDurationInSeconds);
+            }
+        }
+
+        // what one swing or lunge sweeps, captured when it starts so a stats change mid-swing can't mix two settings
+        private readonly struct SwingSweep
+        {
+            public readonly float HitDelayInSeconds;
+            public readonly float HitWindowInSeconds;
+            public readonly float ReachInMeters;
+            public readonly float RadiusInMeters;
+
+            public SwingSweep(float hitDelayInSeconds, float hitWindowInSeconds, float reachInMeters, float radiusInMeters)
+            {
+                HitDelayInSeconds = hitDelayInSeconds;
+                HitWindowInSeconds = hitWindowInSeconds;
+                ReachInMeters = reachInMeters;
+                RadiusInMeters = radiusInMeters;
             }
         }
 

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce1a61047cb89264e9aa7830f03acdde, type: 3}
   m_Name: RunnerStats
   m_EditorClassIdentifier: ProjectAssembly::Project.Assets._Project._Scripts.Player.RunnerStats
-  <MaxMoveSpeed>k__BackingField: 25
+  <MaxMoveSpeed>k__BackingField: 20
   <JumpForce>k__BackingField: 15
   <CoyoteTime>k__BackingField: 0.2
   <JumpBuffer>k__BackingField: 0.1
@@ -25,7 +25,7 @@ MonoBehaviour:
   <MaxGroundAngle>k__BackingField: 45
   <HorizontalDamping>k__BackingField: 5
   <VerticalDamping>k__BackingField: 1
-  <GroundAcceleration>k__BackingField: 100
+  <GroundAcceleration>k__BackingField: 110
   <AirAcceleration>k__BackingField: 50
   <GroundCheckLayers>k__BackingField:
     serializedVersion: 2
