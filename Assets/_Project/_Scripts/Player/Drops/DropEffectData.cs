@@ -17,6 +17,10 @@ namespace Project.Assets._Project._Scripts.Player.Drops
         // applied to the owner's movement for the duration
         [field: SerializeField] public List<StatModifier> Modifiers { get; private set; } = new();
         [field: SerializeField] public DropStatus Statuses { get; private set; }
+        // one line for the pickup popup; {0} is the duration in seconds, e.g. "Run faster for {0:0} s"
+        [field: SerializeField] public string Description { get; private set; } = "";
+
+        public string FormatDescription() => string.Format(Description, DurationInSeconds);
 
         public bool Has(DropStatus status) => (Statuses & status) != 0;
     }

@@ -22,3 +22,4 @@ MonoBehaviour:
     _kind: 1
     _value: 0.6
   <Statuses>k__BackingField: 0
+  <Description>k__BackingField: You run slower for {0:0} s

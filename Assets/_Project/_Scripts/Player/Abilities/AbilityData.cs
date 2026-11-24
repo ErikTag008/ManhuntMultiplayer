@@ -18,11 +18,15 @@ namespace Project.Assets._Project._Scripts.Player.Abilities
         [field: SerializeField, Min(0f)] public float ActiveDurationInSeconds { get; private set; }
         // what everyone hears and sees on a use; left empty, PlayerFeedbackData.AbilityUsed plays instead
         [field: SerializeField] public FeedbackCue UseFeedback { get; private set; } = new();
+        // one line for the lobby pick and the HUD hint; {0} is the active duration in seconds, e.g. "See every catcher for {0:0} s"
+        [field: SerializeField] public string Description { get; private set; } = "";
 
         // while active, the user sees where every catcher is, through walls
         public virtual bool RevealsCatchersWhileActive => false;
 
         public abstract AbilityTrigger Trigger { get; }
+
+        public string FormatDescription() => string.Format(Description, ActiveDurationInSeconds);
 
         // Owner only: applies the effect, or returns false when it can't happen right now (no cooldown is spent)
         public abstract bool TryActivate(IPlayerMovement movement);

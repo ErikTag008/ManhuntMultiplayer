@@ -24,5 +24,6 @@ MonoBehaviour:
     <PitchRange>k__BackingField: {x: 0.95, y: 1.05}
     <VfxPrefab>k__BackingField: {fileID: 0}
     <IsVfxShownToOwner>k__BackingField: 0
+  <Description>k__BackingField: Burst forward a short distance
   <DashSpeed>k__BackingField: 96
   <DashDurationInSeconds>k__BackingField: 0.4

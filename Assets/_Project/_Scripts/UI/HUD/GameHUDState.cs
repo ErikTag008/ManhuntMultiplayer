@@ -21,6 +21,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private bool _isAbilityShown;
         private string _abilityName;
         private string _abilityReadyHint;
+        private string _abilityDescription;
         private float _abilityCooldownRemainingInSeconds;
         private float _abilityCooldownProgress;
         private bool _isDropEffectShown;
@@ -50,6 +51,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private string _rescueHintName;
         private readonly List<Vector2> _knockedMarkerPositions = new();
         private readonly List<int> _knockedMarkerSeconds = new();
+        private bool _isSpectating;
 
         public event Action OnRunnerCountsChanged;
         public event Action OnBleedOutChanged;
@@ -67,6 +69,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public event Action OnCrosshairChanged;
         public event Action OnRescueHintChanged;
         public event Action OnKnockedMarkersChanged;
+        public event Action OnSpectatingChanged;
+        // the effect's name, its description and whether it's good, the moment this runner takes a drop; a one-off
+        public event Action<string, string, bool> OnDropTaken;
         // a teammate's name the moment they get knocked; a one-off like OnStationCompleted
         public event Action<string> OnTeammateKnocked;
         // the seconds a station just took off the round; a one-off, so a HUD that starts later doesn't replay it
@@ -87,6 +92,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public bool IsAbilityShown => _isAbilityShown;
         public string AbilityName => _abilityName;
         public string AbilityReadyHint => _abilityReadyHint;
+        public string AbilityDescription => _abilityDescription;
         public float AbilityCooldownRemainingInSeconds => _abilityCooldownRemainingInSeconds;
         // 1 right after use, 0 when ready
         public float AbilityCooldownProgress => _abilityCooldownProgress;
@@ -127,6 +133,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public IReadOnlyList<Vector2> KnockedMarkerPositions => _knockedMarkerPositions;
         // whole bleed-out seconds left per knocked marker, 0 when not known yet
         public IReadOnlyList<int> KnockedMarkerSeconds => _knockedMarkerSeconds;
+        // true while this player watches another one through the spectator camera
+        public bool IsSpectating => _isSpectating;
 
         public void SetRunnerCounts(int up, int knocked, int eliminated, int catchers)
         {
@@ -160,14 +168,16 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             OnRescueChanged?.Invoke();
         }
 
-        public void SetAbility(bool isShown, string abilityName, string readyHint, float cooldownRemainingInSeconds, float cooldownProgress)
+        public void SetAbility(bool isShown, string abilityName, string readyHint, string description, float cooldownRemainingInSeconds,
+            float cooldownProgress)
         {
-            if (_isAbilityShown == isShown && _abilityName == abilityName && _abilityReadyHint == readyHint
+            if (_isAbilityShown == isShown && _abilityName == abilityName && _abilityReadyHint == readyHint && _abilityDescription == description
                 && _abilityCooldownRemainingInSeconds == cooldownRemainingInSeconds && _abilityCooldownProgress == cooldownProgress) return;
 
             _isAbilityShown = isShown;
             _abilityName = abilityName;
             _abilityReadyHint = readyHint;
+            _abilityDescription = description;
             _abilityCooldownRemainingInSeconds = cooldownRemainingInSeconds;
             _abilityCooldownProgress = cooldownProgress;
             OnAbilityChanged?.Invoke();
@@ -276,6 +286,16 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         }
 
         public void NotifyTeammateKnocked(string teammateName) => OnTeammateKnocked?.Invoke(teammateName);
+
+        public void NotifyDropTaken(string effectName, string description, bool isGood) => OnDropTaken?.Invoke(effectName, description, isGood);
+
+        public void SetSpectating(bool isSpectating)
+        {
+            if (_isSpectating == isSpectating) return;
+
+            _isSpectating = isSpectating;
+            OnSpectatingChanged?.Invoke();
+        }
 
         // copies the tags, so the caller can reuse its list
         public void SetNameTags(IReadOnlyList<NameTag> tags)

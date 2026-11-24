@@ -24,4 +24,5 @@ MonoBehaviour:
     <PitchRange>k__BackingField: {x: 0.95, y: 1.05}
     <VfxPrefab>k__BackingField: {fileID: 0}
     <IsVfxShownToOwner>k__BackingField: 0
+  <Description>k__BackingField: Drop a snare that slows the first catcher to cross it
   <Prefab>k__BackingField: {fileID: 695683455920373449, guid: 103a32d9911c416458c10b49acf5ada1, type: 3}

@@ -124,12 +124,15 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public readonly string Label;
         // optional picture of the option, e.g. a map preview
         public readonly Texture Preview;
+        // optional line on what the option does, e.g. an ability's description
+        public readonly string Description;
 
-        public LobbyOption(int id, string label, Texture preview = null)
+        public LobbyOption(int id, string label, Texture preview = null, string description = null)
         {
             Id = id;
             Label = label;
             Preview = preview;
+            Description = description;
         }
     }
 }

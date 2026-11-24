@@ -18,3 +18,10 @@ MonoBehaviour:
   <ReadyHint>k__BackingField: '{0}'
   <AnimationTrigger>k__BackingField: 
   <ActiveDurationInSeconds>k__BackingField: 4
+  <UseFeedback>k__BackingField:
+    <Clips>k__BackingField: []
+    <Volume>k__BackingField: 1
+    <PitchRange>k__BackingField: {x: 0.95, y: 1.05}
+    <VfxPrefab>k__BackingField: {fileID: 0}
+    <IsVfxShownToOwner>k__BackingField: 0
+  <Description>k__BackingField: See every catcher through walls for {0:0} s

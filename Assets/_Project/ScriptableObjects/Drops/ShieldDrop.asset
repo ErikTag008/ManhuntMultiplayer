@@ -19,3 +19,4 @@ MonoBehaviour:
   <DurationInSeconds>k__BackingField: 10
   <Modifiers>k__BackingField: []
   <Statuses>k__BackingField: 4
+  <Description>k__BackingField: Blocks the next catch within {0:0} s

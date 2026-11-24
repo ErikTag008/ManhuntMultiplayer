@@ -17,4 +17,12 @@ MonoBehaviour:
   <CooldownInSeconds>k__BackingField: 20
   <ReadyHint>k__BackingField: Air
   <AnimationTrigger>k__BackingField: 
+  <ActiveDurationInSeconds>k__BackingField: 0
+  <UseFeedback>k__BackingField:
+    <Clips>k__BackingField: []
+    <Volume>k__BackingField: 1
+    <PitchRange>k__BackingField: {x: 0.95, y: 1.05}
+    <VfxPrefab>k__BackingField: {fileID: 0}
+    <IsVfxShownToOwner>k__BackingField: 0
+  <Description>k__BackingField: Jump once more in mid-air
   <JumpForceMultiplier>k__BackingField: 1

@@ -1444,6 +1444,7 @@ MonoBehaviour:
   _controller: {fileID: 7194238487740375515}
   _weaponPivot: {fileID: 2525241098816555749}
   _maxCatchTargets: 3
+  _sweepBufferSize: 16
   _cooldownToleranceInSeconds: 0.1
 --- !u!114 &4982083531400345192
 MonoBehaviour:
@@ -1540,9 +1541,11 @@ MonoBehaviour:
   _cameraBinder: {fileID: 36421261748081134}
   _combat: {fileID: 91084392635682791}
   _ghost: {fileID: 2243932752006811638}
+  _spectator: {fileID: 3464033196263984798}
   _revealMarkerHeightInMeters: 2.2
   _revealMarkerEdgeMargin: 0.05
   _stationMarkerHeightInMeters: 2.5
+  _knockedMarkerHeightInMeters: 1.2
 --- !u!114 &7077680969358838090
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1602,6 +1605,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _team: {fileID: 2895491558510482950}
   _inputReader: {fileID: 4851020409925496502}
+  _notInstalledMapFormat: '{0} (not installed)'
+  _notEveryoneHasMapFormat: '{0} (not everyone has it)'
 --- !u!114 &5802237443212687060
 MonoBehaviour:
   m_ObjectHideFlags: 0

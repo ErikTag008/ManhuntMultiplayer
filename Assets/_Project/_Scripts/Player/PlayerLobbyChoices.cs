@@ -60,7 +60,7 @@ namespace Project.Assets._Project._Scripts.Player
             _optionBuffer.Clear();
             foreach (var ability in _catalog.Abilities)
             {
-                if (ability != null) _optionBuffer.Add(new LobbyOption(ability.Id, ability.DisplayName));
+                if (ability != null) _optionBuffer.Add(new LobbyOption(ability.Id, ability.DisplayName, description: ability.FormatDescription()));
             }
 
             _lobbyMenuState.SetAbilityOptions(_optionBuffer);

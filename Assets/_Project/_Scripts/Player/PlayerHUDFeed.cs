@@ -13,10 +13,10 @@ namespace Project.Assets._Project._Scripts.Player
     // Owner only: pushes the round's runner and catcher counts and this player's bleed-out, rescue progress, ability cooldown and drop effect
     // into the gameplay HUD, plus, for catchers, where revealed runners are on screen and the lunge charge, for runners the catchers
     // ghosts pinged, knocked teammates and the rescue in reach, for ghosts their ping and view, and for everyone the objective
-    // stations, the round phase and whether the crosshair is wanted
+    // stations, the round phase, whether the crosshair is wanted, whether this player spectates and the drops they take
     [RequireComponent(typeof(PlayerLifeState), typeof(PlayerRescue), typeof(PlayerAbility))]
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerDropEffects), typeof(PlayerCameraBinder))]
-    [RequireComponent(typeof(PlayerCombat), typeof(PlayerGhost))]
+    [RequireComponent(typeof(PlayerCombat), typeof(PlayerGhost), typeof(PlayerSpectator))]
     public class PlayerHUDFeed : NetworkBehaviour
     {
         private const float ViewportCenter = 0.5f;
@@ -38,6 +38,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerCameraBinder _cameraBinder;
         [SerializeField, Self] private PlayerCombat _combat;
         [SerializeField, Self] private PlayerGhost _ghost;
+        [SerializeField, Self] private PlayerSpectator _spectator;
         // the marker sits this far above the revealed runner's feet
         [SerializeField] private float _revealMarkerHeightInMeters = 2.2f;
         // off-screen runners get a marker pinned this far (viewport units) inside the screen edge, pointing their way
@@ -59,6 +60,9 @@ namespace Project.Assets._Project._Scripts.Player
         // FixedString to string allocates, so the rescue hint's name is converted once per target
         private ulong _rescueHintClientId;
         private string _rescueHintName;
+        // formatting the ability's description allocates, so it is done once per ability
+        private AbilityData _describedAbility;
+        private string _abilityDescription;
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -71,6 +75,7 @@ namespace Project.Assets._Project._Scripts.Player
             _lifeState.OnLifeStateChanged += HandleLifeStateChanged;
             _stations.OnStationCompleted += HandleStationCompleted;
             _cameraBinder.OnCameraUpdated += RefreshScreenMarkers;
+            _dropEffects.OnEffectTaken += HandleEffectTaken;
             foreach (var session in _sessionDirectory.Sessions) _lastLifeStates[session.ClientId] = session.LifeState;
             RefreshRunnerCounts();
         }
@@ -88,6 +93,7 @@ namespace Project.Assets._Project._Scripts.Player
             RefreshGhost();
             RefreshRoundPhase();
             RefreshCrosshair();
+            RefreshSpectating();
             // no camera means no update event, so clear here
             if (_cameraBinder.Camera == null) RefreshScreenMarkers();
         }
@@ -126,6 +132,9 @@ namespace Project.Assets._Project._Scripts.Player
         }
 
         private void HandleLifeStateChanged(LifeState _) => _hasBleedOutStarted = false;
+
+        private void HandleEffectTaken(DropEffectData effect) =>
+            _hudState.NotifyDropTaken(effect.DisplayName, effect.FormatDescription(), effect.IsGood);
 
         private void HandleStationCompleted(Station _, float appliedCutInSeconds) => _hudState.NotifyStationCompleted(appliedCutInSeconds);
 
@@ -249,6 +258,8 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetCrosshair(isInRound && isAiming);
         }
 
+        private void RefreshSpectating() => _hudState.SetSpectating(_spectator.IsSpectating);
+
         private bool IsRunnerInRound() => _team.Team == Team.Runner && !_lifeState.IsEliminated;
 
         // runners still in the round see knocked teammates through walls with their bleed-out seconds; catchers never do
@@ -313,13 +324,19 @@ namespace Project.Assets._Project._Scripts.Player
             // knocked runners keep the slot (a rescue brings them back); eliminated ones are out of the round
             if (ability == null || _lifeState.IsEliminated)
             {
-                _hudState.SetAbility(false, null, null, 0f, 0f);
+                _hudState.SetAbility(false, null, null, null, 0f, 0f);
                 return;
             }
 
             float remaining = _ability.CooldownRemainingInSeconds;
             float progress = ability.CooldownInSeconds > 0f ? remaining / ability.CooldownInSeconds : 0f;
-            _hudState.SetAbility(true, ability.DisplayName, ability.ReadyHint, remaining, progress);
+            if (ability != _describedAbility)
+            {
+                _describedAbility = ability;
+                _abilityDescription = ability.FormatDescription();
+            }
+
+            _hudState.SetAbility(true, ability.DisplayName, ability.ReadyHint, _abilityDescription, remaining, progress);
         }
 
         // ActiveEffect is already null once the runner isn't Up, so knocked and eliminated runners show no effect
@@ -404,9 +421,10 @@ namespace Project.Assets._Project._Scripts.Player
             _lifeState.OnLifeStateChanged -= HandleLifeStateChanged;
             _stations.OnStationCompleted -= HandleStationCompleted;
             _cameraBinder.OnCameraUpdated -= RefreshScreenMarkers;
+            _dropEffects.OnEffectTaken -= HandleEffectTaken;
             _hudState.SetBleedOut(false, 0f, 0f, false);
             _hudState.SetRescue(false, 0f);
-            _hudState.SetAbility(false, null, null, 0f, 0f);
+            _hudState.SetAbility(false, null, null, null, 0f, 0f);
             _hudState.SetDropEffect(false, null, false, 0f, 0f);
             _revealViewportPositions.Clear();
             _hudState.SetRevealMarkers(_revealViewportPositions);
@@ -424,6 +442,8 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetKnockedMarkers(_knockedViewportPositions, _knockedSecondsLeft);
             _lastLifeStates.Clear();
             _rescueHintName = null;
+            _hudState.SetSpectating(false);
+            _describedAbility = null;
         }
     }
 }

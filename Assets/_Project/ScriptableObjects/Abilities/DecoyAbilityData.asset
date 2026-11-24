@@ -18,4 +18,11 @@ MonoBehaviour:
   <ReadyHint>k__BackingField: '{0}'
   <AnimationTrigger>k__BackingField: 
   <ActiveDurationInSeconds>k__BackingField: 0
+  <UseFeedback>k__BackingField:
+    <Clips>k__BackingField: []
+    <Volume>k__BackingField: 1
+    <PitchRange>k__BackingField: {x: 0.95, y: 1.05}
+    <VfxPrefab>k__BackingField: {fileID: 0}
+    <IsVfxShownToOwner>k__BackingField: 0
+  <Description>k__BackingField: Send a running look-alike ahead to fool catchers
   <Prefab>k__BackingField: {fileID: 5547454870068247553, guid: 3f7a365e68faab94886a94660139f004, type: 3}

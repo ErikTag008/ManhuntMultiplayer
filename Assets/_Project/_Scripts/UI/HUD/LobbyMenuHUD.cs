@@ -21,6 +21,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [Inject] private readonly MenuButtonInput _menuButtons;
         [SerializeField] private FadePanel _panel;
         [SerializeField] private OptionList _abilityList;
+        // optional: what the picked ability does
+        [SerializeField] private TMP_Text _abilityDescriptionText;
         // hidden while there is only one map to vote for
         [SerializeField] private GameObject _mapVotePanel;
         [SerializeField] private OptionList _mapVoteList;
@@ -229,6 +231,20 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _optionBuffer.Clear();
             foreach (var option in _state.AbilityOptions) _optionBuffer.Add((option.Id, option.Label));
             _abilityList.Build(_optionBuffer);
+            RefreshAbilityDescription();
+        }
+
+        private void RefreshAbilityDescription()
+        {
+            if (_abilityDescriptionText == null) return;
+
+            string description = string.Empty;
+            foreach (var option in _state.AbilityOptions)
+            {
+                if (option.Id == _state.SelectedAbilityId) description = option.Description ?? string.Empty;
+            }
+
+            _abilityDescriptionText.text = description;
         }
 
         private void HandleMapOptionsChanged()
@@ -269,6 +285,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private void HandleChoiceChanged()
         {
             _abilityList.Select(_state.SelectedAbilityId);
+            RefreshAbilityDescription();
             _readyButtonLabel.text = _state.IsReady ? _cancelReadyLabel : _readyUpLabel;
             _readyButtonImage.color = _state.IsReady ? _readyColor : _notReadyColor;
         }
