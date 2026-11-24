@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
-    // Game tab: mouse and gamepad look sensitivity per axis, and invert Y
+    // Game tab: mouse and gamepad look sensitivity per axis, invert Y and the crosshair
     public class GameSettingsPage : MonoBehaviour
     {
         [Inject] private readonly GameSettingsService _settings;
@@ -18,6 +18,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private string _gamepadXLabel = "Gamepad sensitivity X";
         [SerializeField] private string _gamepadYLabel = "Gamepad sensitivity Y";
         [SerializeField] private string _invertYLabel = "Invert look Y";
+        [SerializeField] private string _crosshairLabel = "Show crosshair";
         [SerializeField] private string _sensitivityFormat = "{0:0.00}x";
 
         private SliderRow _mouseXRow;
@@ -25,6 +26,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private SliderRow _gamepadXRow;
         private SliderRow _gamepadYRow;
         private ToggleRow _invertYRow;
+        private ToggleRow _crosshairRow;
         private bool _isBuilt;
 
         private void OnEnable()
@@ -42,9 +44,16 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _gamepadXRow = CreateSensitivityRow(_gamepadXLabel, (values, sensitivity) => values.GamepadSensitivityX = sensitivity);
             _gamepadYRow = CreateSensitivityRow(_gamepadYLabel, (values, sensitivity) => values.GamepadSensitivityY = sensitivity);
 
-            _invertYRow = Instantiate(_toggleRowPrefab, _container);
-            _invertYRow.Setup(_invertYLabel);
-            _invertYRow.OnToggled += isOn => _settings.Change(SettingsCategory.Game, values => values.IsLookYInverted = isOn);
+            _invertYRow = CreateToggleRow(_invertYLabel, (values, isOn) => values.IsLookYInverted = isOn);
+            _crosshairRow = CreateToggleRow(_crosshairLabel, (values, isOn) => values.IsCrosshairShown = isOn);
+        }
+
+        private ToggleRow CreateToggleRow(string label, Action<GameSettingsValues, bool> apply)
+        {
+            var row = Instantiate(_toggleRowPrefab, _container);
+            row.Setup(label);
+            row.OnToggled += isOn => _settings.Change(SettingsCategory.Game, values => apply(values, isOn));
+            return row;
         }
 
         private SliderRow CreateSensitivityRow(string label, Action<GameSettingsValues, float> apply)
@@ -69,6 +78,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _gamepadXRow.SetValueWithoutNotify(values.GamepadSensitivityX);
             _gamepadYRow.SetValueWithoutNotify(values.GamepadSensitivityY);
             _invertYRow.SetIsOnWithoutNotify(values.IsLookYInverted);
+            _crosshairRow.SetIsOnWithoutNotify(values.IsCrosshairShown);
         }
 
         private void OnDisable() => _settings.OnChanged -= HandleSettingsChanged;

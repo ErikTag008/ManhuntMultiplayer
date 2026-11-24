@@ -43,6 +43,13 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private float _ghostPingCooldownRemainingInSeconds;
         private float _ghostPingCooldownProgress;
         private readonly List<NameTag> _nameTags = new();
+        private RoundPhase _roundPhase;
+        private bool _isLocalCatcher;
+        private bool _isCrosshairWanted;
+        private bool _isRescueHintShown;
+        private string _rescueHintName;
+        private readonly List<Vector2> _knockedMarkerPositions = new();
+        private readonly List<int> _knockedMarkerSeconds = new();
 
         public event Action OnRunnerCountsChanged;
         public event Action OnBleedOutChanged;
@@ -56,6 +63,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public event Action OnLungeChanged;
         public event Action OnGhostChanged;
         public event Action OnNameTagsChanged;
+        public event Action OnRoundPhaseChanged;
+        public event Action OnCrosshairChanged;
+        public event Action OnRescueHintChanged;
+        public event Action OnKnockedMarkersChanged;
+        // a teammate's name the moment they get knocked; a one-off like OnStationCompleted
+        public event Action<string> OnTeammateKnocked;
         // the seconds a station just took off the round; a one-off, so a HUD that starts later doesn't replay it
         public event Action<float> OnStationCompleted;
 
@@ -103,6 +116,17 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public float GhostPingCooldownProgress => _ghostPingCooldownProgress;
         // the other players' name tags this player can see right now
         public IReadOnlyList<NameTag> NameTags => _nameTags;
+        public RoundPhase RoundPhase => _roundPhase;
+        public bool IsLocalCatcher => _isLocalCatcher;
+        // true while the local player aims at something in a round; menus and the setting decide on top of it
+        public bool IsCrosshairWanted => _isCrosshairWanted;
+        public bool IsRescueHintShown => _isRescueHintShown;
+        // the knocked teammate a rescue would start on
+        public string RescueHintName => _rescueHintName;
+        // viewport positions (0..1) of knocked teammates on this runner's screen
+        public IReadOnlyList<Vector2> KnockedMarkerPositions => _knockedMarkerPositions;
+        // whole bleed-out seconds left per knocked marker, 0 when not known yet
+        public IReadOnlyList<int> KnockedMarkerSeconds => _knockedMarkerSeconds;
 
         public void SetRunnerCounts(int up, int knocked, int eliminated, int catchers)
         {
@@ -217,6 +241,42 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             OnGhostChanged?.Invoke();
         }
 
+        public void SetRoundPhase(RoundPhase phase, bool isLocalCatcher)
+        {
+            if (_roundPhase == phase && _isLocalCatcher == isLocalCatcher) return;
+
+            _roundPhase = phase;
+            _isLocalCatcher = isLocalCatcher;
+            OnRoundPhaseChanged?.Invoke();
+        }
+
+        public void SetCrosshair(bool isWanted)
+        {
+            if (_isCrosshairWanted == isWanted) return;
+
+            _isCrosshairWanted = isWanted;
+            OnCrosshairChanged?.Invoke();
+        }
+
+        public void SetRescueHint(bool isShown, string teammateName)
+        {
+            if (_isRescueHintShown == isShown && _rescueHintName == teammateName) return;
+
+            _isRescueHintShown = isShown;
+            _rescueHintName = teammateName;
+            OnRescueHintChanged?.Invoke();
+        }
+
+        // copies both lists, so the caller can reuse them; they pair up by index
+        public void SetKnockedMarkers(IReadOnlyList<Vector2> viewportPositions, IReadOnlyList<int> secondsLeft)
+        {
+            bool hasPositionsChanged = CopyPositionsIfChanged(_knockedMarkerPositions, viewportPositions);
+            bool haveSecondsChanged = CopySecondsIfChanged(secondsLeft);
+            if (hasPositionsChanged || haveSecondsChanged) OnKnockedMarkersChanged?.Invoke();
+        }
+
+        public void NotifyTeammateKnocked(string teammateName) => OnTeammateKnocked?.Invoke(teammateName);
+
         // copies the tags, so the caller can reuse its list
         public void SetNameTags(IReadOnlyList<NameTag> tags)
         {
@@ -234,6 +294,17 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
             current.Clear();
             for (int i = 0; i < next.Count; i++) current.Add(next[i]);
+            return true;
+        }
+
+        private bool CopySecondsIfChanged(IReadOnlyList<int> next)
+        {
+            bool isEqual = _knockedMarkerSeconds.Count == next.Count;
+            for (int i = 0; isEqual && i < next.Count; i++) isEqual = _knockedMarkerSeconds[i] == next[i];
+            if (isEqual) return false;
+
+            _knockedMarkerSeconds.Clear();
+            for (int i = 0; i < next.Count; i++) _knockedMarkerSeconds.Add(next[i]);
             return true;
         }
 
@@ -260,5 +331,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
             return true;
         }
+    }
+
+    public enum RoundPhase
+    {
+        None,
+        Hide,
+        Hunt
     }
 }

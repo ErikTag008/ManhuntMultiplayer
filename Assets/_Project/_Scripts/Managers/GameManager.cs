@@ -31,6 +31,11 @@ namespace Project.Assets._Project._Scripts.Managers
         [Inject] private readonly PointRewards _pointRewards;
         [SerializeField, Self] private PlayerRegistry _playerRegistry;
         [SerializeField, Self] private GameStateMachine _gameStateMachine;
+        [SerializeField] private string _initializingLobbyText = "Initializing Lobby...";
+        // {0} is the minimum number of players
+        [SerializeField] private string _waitingForPlayersFormat = "Waiting for players... ({0} required)";
+        [SerializeField] private string _gameStartingText = "Game starting in";
+        [SerializeField] private string _assigningTeamsText = "Assigning teams...";
         [SerializeField] private string _catchersWinTitle = "Catchers win!";
         [SerializeField] private string _runnersWinTitle = "Runners win!";
         [SerializeField] private string _practiceOverTitle = "Practice over";
@@ -260,27 +265,17 @@ namespace Project.Assets._Project._Scripts.Managers
             switch (current)
             {
                 case GameState.Lobby:
-                    _uiManager.ChangeLobbyStatusText("Initializing Lobby...");
+                    _uiManager.ChangeLobbyStatusText(_initializingLobbyText);
                     break;
                 case GameState.WaitingForPlayers:
-                    _uiManager.ChangeLobbyStatusText($"Waiting for players... ({_gameLobbySettings.MinRequiredPlayers} required)");
+                    _uiManager.ChangeLobbyStatusText(string.Format(_waitingForPlayersFormat, _gameLobbySettings.MinRequiredPlayers));
                     break;
-
                 case GameState.Countdown:
-                    _uiManager.ChangeLobbyStatusText($"Game starting in");
+                    _uiManager.ChangeLobbyStatusText(_gameStartingText);
                     break;
-
                 case GameState.AssigningTeams:
-                    _uiManager.ChangeLobbyStatusText($"Assigning teams...");
+                    _uiManager.ChangeLobbyStatusText(_assigningTeamsText);
                     break;
-                case GameState.Playing:
-                    //_uiManager.ShowGameplayUI();
-                    
-                    break;
-
-                case GameState.DeterminingWinner:
-                    break;
-
                 case GameState.Results:
                     ShowResultsIfReady();
                     break;

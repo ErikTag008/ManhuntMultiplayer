@@ -31,6 +31,7 @@ namespace Project.Assets._Project._Scripts.Settings
         public float GamepadSensitivityX;
         public float GamepadSensitivityY;
         public bool IsLookYInverted;
+        public bool IsCrosshairShown;
 
         public string BindingOverridesJson;
 
@@ -67,6 +68,7 @@ namespace Project.Assets._Project._Scripts.Settings
                     GamepadSensitivityX = source.GamepadSensitivityX;
                     GamepadSensitivityY = source.GamepadSensitivityY;
                     IsLookYInverted = source.IsLookYInverted;
+                    IsCrosshairShown = source.IsCrosshairShown;
                     break;
                 case SettingsCategory.Controls:
                     BindingOverridesJson = source.BindingOverridesJson;

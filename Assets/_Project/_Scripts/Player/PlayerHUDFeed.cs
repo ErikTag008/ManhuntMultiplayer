@@ -12,7 +12,8 @@ namespace Project.Assets._Project._Scripts.Player
 {
     // Owner only: pushes the round's runner and catcher counts and this player's bleed-out, rescue progress, ability cooldown and drop effect
     // into the gameplay HUD, plus, for catchers, where revealed runners are on screen and the lunge charge, for runners the catchers
-    // ghosts pinged, for ghosts their ping and view, and for everyone the objective stations
+    // ghosts pinged, knocked teammates and the rescue in reach, for ghosts their ping and view, and for everyone the objective
+    // stations, the round phase and whether the crosshair is wanted
     [RequireComponent(typeof(PlayerLifeState), typeof(PlayerRescue), typeof(PlayerAbility))]
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerDropEffects), typeof(PlayerCameraBinder))]
     [RequireComponent(typeof(PlayerCombat), typeof(PlayerGhost))]
@@ -25,6 +26,7 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly RunnerStats _runnerStats;
         [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
         [Inject] private readonly StationDirectory _stations;
+        [Inject] private readonly HidePhase _hidePhase;
         [Inject] private readonly HuntPhase _huntPhase;
         [Inject] private readonly SmokeCloudDirectory _smokeClouds;
         [Inject] private readonly GhostPingDirectory _ghostPings;
@@ -42,12 +44,21 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Range(0f, 0.5f)] private float _revealMarkerEdgeMargin = 0.05f;
         // station markers sit this far above the station's pivot and share the reveal markers' edge margin
         [SerializeField] private float _stationMarkerHeightInMeters = 2.5f;
+        // knocked runners lie low, so their marker sits closer to the ground
+        [SerializeField] private float _knockedMarkerHeightInMeters = 1.2f;
 
         // reused every frame so the markers don't allocate
         private readonly List<Vector2> _revealViewportPositions = new();
         private readonly List<Vector2> _stationViewportPositions = new();
+        private readonly List<Vector2> _knockedViewportPositions = new();
+        private readonly List<int> _knockedSecondsLeft = new();
+        // each player's last life state, to spot the moment a teammate gets knocked
+        private readonly Dictionary<ulong, LifeState> _lastLifeStates = new();
 
         private bool _hasBleedOutStarted;
+        // FixedString to string allocates, so the rescue hint's name is converted once per target
+        private ulong _rescueHintClientId;
+        private string _rescueHintName;
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -60,6 +71,7 @@ namespace Project.Assets._Project._Scripts.Player
             _lifeState.OnLifeStateChanged += HandleLifeStateChanged;
             _stations.OnStationCompleted += HandleStationCompleted;
             _cameraBinder.OnCameraUpdated += RefreshScreenMarkers;
+            foreach (var session in _sessionDirectory.Sessions) _lastLifeStates[session.ClientId] = session.LifeState;
             RefreshRunnerCounts();
         }
 
@@ -74,6 +86,8 @@ namespace Project.Assets._Project._Scripts.Player
             RefreshStationCounts();
             RefreshLunge();
             RefreshGhost();
+            RefreshRoundPhase();
+            RefreshCrosshair();
             // no camera means no update event, so clear here
             if (_cameraBinder.Camera == null) RefreshScreenMarkers();
         }
@@ -83,12 +97,33 @@ namespace Project.Assets._Project._Scripts.Player
         {
             RefreshRevealMarkers();
             RefreshStationMarkers();
+            RefreshKnockedMarkers();
         }
 
-        private void HandleSessionChanged(PlayerSession _) => RefreshRunnerCounts();
+        private void HandleSessionChanged(PlayerSession session)
+        {
+            RefreshRunnerCounts();
+            if (session.ClientId == _rescueHintClientId) _rescueHintName = null;
+            NotifyIfTeammateKnocked(session);
+        }
 
         // a runner who leaves mid-round no longer counts
-        private void HandleSessionRemoved(ulong _) => RefreshRunnerCounts();
+        private void HandleSessionRemoved(ulong clientId)
+        {
+            RefreshRunnerCounts();
+            _lastLifeStates.Remove(clientId);
+        }
+
+        // runners still in the round hear about a teammate going down during the hunt
+        private void NotifyIfTeammateKnocked(PlayerSession session)
+        {
+            bool wasKnocked = _lastLifeStates.TryGetValue(session.ClientId, out var previous) && previous == LifeState.Knocked;
+            _lastLifeStates[session.ClientId] = session.LifeState;
+            if (wasKnocked || session.LifeState != LifeState.Knocked) return;
+            if (session.ClientId == OwnerClientId || session.Team != Team.Runner || !IsRunnerInRound() || !_huntPhase.IsActive) return;
+
+            _hudState.NotifyTeammateKnocked(session.DisplayName.ToString());
+        }
 
         private void HandleLifeStateChanged(LifeState _) => _hasBleedOutStarted = false;
 
@@ -114,13 +149,26 @@ namespace Project.Assets._Project._Scripts.Player
         }
 
         // Rescue progress is synced on both the rescuer and the knocked runner, and drops to zero when the rescue stops.
-        // A rescue comes first; otherwise the ring shows the station this runner is holding Interact at, or a hint when they could.
+        // A rescue comes first, then the hint for a knocked teammate in reach; otherwise the ring shows the station this runner
+        // is holding Interact at, or a hint when they could.
         private void RefreshRescue()
         {
             float progress = _rescue.RescueProgress;
             if (progress > 0f)
             {
                 _hudState.SetRescue(true, progress);
+                _hudState.SetRescueHint(false, null);
+                _hudState.SetStationHint(false);
+                return;
+            }
+
+            // while Interact is held the server is about to start the rescue, so the ring waits at zero instead of showing a station
+            bool hasRescueTarget = TryGetRescueTargetName(out string teammateName);
+            bool isRescueHintShown = hasRescueTarget && !_rescue.IsLocalInteractHeld;
+            _hudState.SetRescueHint(isRescueHintShown, isRescueHintShown ? teammateName : null);
+            if (hasRescueTarget)
+            {
+                _hudState.SetRescue(_rescue.IsLocalInteractHeld, 0f);
                 _hudState.SetStationHint(false);
                 return;
             }
@@ -151,6 +199,78 @@ namespace Project.Assets._Project._Scripts.Player
             bool isHuntActive = _huntPhase.IsActive;
             _hudState.SetGhost(true, _ghost.IsFlying, _ghost.CanPing,
                 isHuntActive ? _ghost.PingCooldownRemainingInSeconds : 0f, isHuntActive ? _ghost.PingCooldownProgress : 0f);
+        }
+
+        // the same pick PlayerRescue makes on the server: the nearest knocked runner within the rescue range that nobody is reviving yet
+        private bool TryGetRescueTargetName(out string teammateName)
+        {
+            teammateName = null;
+            if (_team.Team != Team.Runner || !_lifeState.IsUp) return false;
+
+            PlayerController target = null;
+            float closestSqrDistance = _runnerStats.RescueRange * _runnerStats.RescueRange;
+            foreach (var player in _spawnedPlayers.Players)
+            {
+                if (player == null || player.OwnerClientId == OwnerClientId) continue;
+                if (player.Team != Team.Runner || !player.LifeState.IsKnocked) continue;
+                // rescue progress is synced on the knocked runner too, so above zero means someone else is already on it
+                if (player.TryGetComponent(out PlayerRescue rescue) && rescue.RescueProgress > 0f) continue;
+
+                float sqrDistance = (player.transform.position - transform.position).sqrMagnitude;
+                if (sqrDistance > closestSqrDistance) continue;
+
+                closestSqrDistance = sqrDistance;
+                target = player;
+            }
+
+            if (target == null) return false;
+
+            if (_rescueHintName == null || _rescueHintClientId != target.OwnerClientId)
+            {
+                _rescueHintClientId = target.OwnerClientId;
+                _rescueHintName = _sessionDirectory.TryGetSession(target.OwnerClientId, out var session) ? session.DisplayName.ToString() : string.Empty;
+            }
+
+            teammateName = _rescueHintName;
+            return true;
+        }
+
+        private void RefreshRoundPhase()
+        {
+            var phase = _hidePhase.IsActive ? RoundPhase.Hide : _huntPhase.IsActive ? RoundPhase.Hunt : RoundPhase.None;
+            _hudState.SetRoundPhase(phase, _team.Team == Team.Catcher);
+        }
+
+        // wanted during the hide phase and the hunt, unless this player only watches through the spectator camera
+        private void RefreshCrosshair()
+        {
+            bool isInRound = _hidePhase.IsActive || _huntPhase.IsActive;
+            bool isAiming = !_lifeState.IsEliminated || (_ghost.IsGhost && _ghost.IsFlying);
+            _hudState.SetCrosshair(isInRound && isAiming);
+        }
+
+        private bool IsRunnerInRound() => _team.Team == Team.Runner && !_lifeState.IsEliminated;
+
+        // runners still in the round see knocked teammates through walls with their bleed-out seconds; catchers never do
+        private void RefreshKnockedMarkers()
+        {
+            _knockedViewportPositions.Clear();
+            _knockedSecondsLeft.Clear();
+            var camera = _cameraBinder.Camera;
+            if (_huntPhase.IsActive && camera != null && IsRunnerInRound())
+            {
+                foreach (var player in _spawnedPlayers.Players)
+                {
+                    if (player == null || player.OwnerClientId == OwnerClientId) continue;
+                    if (player.Team != Team.Runner || !player.LifeState.IsKnocked) continue;
+
+                    Vector3 viewportPoint = camera.WorldToViewportPoint(player.transform.position + Vector3.up * _knockedMarkerHeightInMeters);
+                    _knockedViewportPositions.Add(ClampToScreenEdge(viewportPoint));
+                    _knockedSecondsLeft.Add(Mathf.CeilToInt(player.LifeState.BleedOutRemainingInSeconds));
+                }
+            }
+
+            _hudState.SetKnockedMarkers(_knockedViewportPositions, _knockedSecondsLeft);
         }
 
         private bool TryGetWorkableStation(out Station station)
@@ -296,6 +416,14 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetGhost(false, false, false, 0f, 0f);
             _stationViewportPositions.Clear();
             _hudState.SetStationMarkers(_stationViewportPositions);
+            _hudState.SetRoundPhase(RoundPhase.None, false);
+            _hudState.SetCrosshair(false);
+            _hudState.SetRescueHint(false, null);
+            _knockedViewportPositions.Clear();
+            _knockedSecondsLeft.Clear();
+            _hudState.SetKnockedMarkers(_knockedViewportPositions, _knockedSecondsLeft);
+            _lastLifeStates.Clear();
+            _rescueHintName = null;
         }
     }
 }

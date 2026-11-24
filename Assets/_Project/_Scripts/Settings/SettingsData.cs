@@ -42,6 +42,7 @@ namespace Project.Assets._Project._Scripts.Settings
         [field: SerializeField] public float DefaultSensitivity { get; private set; } = 1f;
         [field: SerializeField] public float MinSensitivity { get; private set; } = 0.1f;
         [field: SerializeField] public float MaxSensitivity { get; private set; } = 3f;
+        [field: SerializeField] public bool DefaultIsCrosshairShown { get; private set; } = true;
 
         [field: Header("Controls")]
         [field: SerializeField] public InputActionAsset InputActions { get; private set; }
@@ -79,6 +80,7 @@ namespace Project.Assets._Project._Scripts.Settings
             MouseSensitivityY = DefaultSensitivity,
             GamepadSensitivityX = DefaultSensitivity,
             GamepadSensitivityY = DefaultSensitivity,
+            IsCrosshairShown = DefaultIsCrosshairShown,
             BindingOverridesJson = string.Empty
         };
 
