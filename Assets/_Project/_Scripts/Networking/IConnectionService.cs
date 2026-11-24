@@ -9,6 +9,8 @@ namespace Project.Assets._Project._Scripts.Networking
     public interface IConnectionService
     {
         bool IsConnected { get; }
+        // True while this instance hosts a session and approves who joins it
+        bool IsHosting { get; }
         // Host only: players in the session plus approved ones still connecting; 0 when not hosting
         int TakenSlotCount { get; }
         // Why the last Host or Join failed (e.g. "Lobby is full"); null after a success
@@ -33,6 +35,9 @@ namespace Project.Assets._Project._Scripts.Networking
         // Host only: while closed, connecting clients are turned away with ConnectionSettings.RoundInProgressReason
         void ToggleJoinsOpen(bool isOpen);
         void Leave();
+        // Host only: disconnects a connected client and turns them away if they try to rejoin before the host stops hosting;
+        // false for the host itself or a client that isn't connected
+        bool TryKick(ulong clientId);
         // Host only: the name a client connected with; false when it sent none (local sessions)
         bool TryGetPlayerName(ulong clientId, out string name);
         // Opens the platform's invite dialog for this session; false when CanInviteFriends is false or the dialog can't open

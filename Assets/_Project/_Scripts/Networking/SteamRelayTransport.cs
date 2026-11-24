@@ -17,6 +17,8 @@ namespace Project.Assets._Project._Scripts.Networking
         private const int PayloadCacheGrowthFactor = 2;
 
         private readonly Dictionary<ulong, Connection> _clientConnections = new();
+        // server only: the Steam user behind each client connection
+        private readonly Dictionary<ulong, ulong> _clientSteamIds = new();
         private ConnectionManager _connectionManager;
         private SocketManager _socketManager;
         private byte[] _payloadCache = new byte[InitialPayloadCacheSize];
@@ -27,7 +29,14 @@ namespace Project.Assets._Project._Scripts.Networking
         // Client only: whose relay socket StartClient connects to
         public void SetHostSteamId(ulong hostSteamId) => _hostSteamId = hostSteamId;
 
-        public override void Initialize(NetworkManager networkManager = null) => _clientConnections.Clear();
+        public override void Initialize(NetworkManager networkManager = null)
+        {
+            _clientConnections.Clear();
+            _clientSteamIds.Clear();
+        }
+
+        // Server only: transportClientId is the transport's id (NetworkManager.GetTransportIdFromClientId), not Netcode's client id
+        public bool TryGetSteamId(ulong transportClientId, out ulong steamId) => _clientSteamIds.TryGetValue(transportClientId, out steamId);
 
         public override bool StartServer()
         {
@@ -79,6 +88,7 @@ namespace Project.Assets._Project._Scripts.Networking
         {
             if (!_clientConnections.Remove(clientId, out var connection)) return;
 
+            _clientSteamIds.Remove(clientId);
             connection.Flush();
             connection.Close(true);
         }
@@ -99,6 +109,7 @@ namespace Project.Assets._Project._Scripts.Networking
             _connectionManager = null;
             _socketManager = null;
             _clientConnections.Clear();
+            _clientSteamIds.Clear();
         }
 
         void IConnectionManager.OnConnecting(ConnectionInfo info) { }
@@ -118,12 +129,16 @@ namespace Project.Assets._Project._Scripts.Networking
         {
             if (!_clientConnections.TryAdd(connection.Id, connection)) return;
 
+            _clientSteamIds[connection.Id] = info.Identity.SteamId.Value;
+
             InvokeOnTransportEvent(NetworkEvent.Connect, connection.Id, default, Time.realtimeSinceStartup);
         }
 
         void ISocketManager.OnDisconnected(Connection connection, ConnectionInfo info)
         {
             if (!_clientConnections.Remove(connection.Id)) return;
+
+            _clientSteamIds.Remove(connection.Id);
 
             InvokeOnTransportEvent(NetworkEvent.Disconnect, connection.Id, default, Time.realtimeSinceStartup);
         }

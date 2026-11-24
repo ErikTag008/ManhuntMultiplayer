@@ -28,7 +28,6 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly StationDirectory _stations;
         [Inject] private readonly HidePhase _hidePhase;
         [Inject] private readonly HuntPhase _huntPhase;
-        [Inject] private readonly SmokeCloudDirectory _smokeClouds;
         [Inject] private readonly GhostPingDirectory _ghostPings;
         [SerializeField, Self] private PlayerLifeState _lifeState;
         [SerializeField, Self] private PlayerRescue _rescue;
@@ -354,7 +353,7 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetDropEffect(true, effect.DisplayName, effect.IsGood, remaining, progress);
         }
 
-        // Catchers see revealed runners through walls, except inside smoke; a runner with Sixth Sense active sees every catcher,
+        // Catchers see revealed runners through walls; a runner with Sixth Sense active sees every catcher,
         // and runners still in the round (and ghosts) see the catchers ghosts pinged. One marker per player whatever marks them.
         // Players off screen or behind the camera are pinned to the screen edge.
         private void RefreshRevealMarkers()
@@ -386,7 +385,7 @@ namespace Project.Assets._Project._Scripts.Player
         }
 
         private bool IsRevealedToCatchers(PlayerController player) =>
-            player.DropEffects.Has(DropStatus.Revealed) && !_smokeClouds.IsInsideAny(player.transform.position);
+            player.DropEffects.Has(DropStatus.Revealed);
 
         private bool IsSeeingGhostPings() =>
             _ghostPings.CatcherIds.Count > 0 && _team.Team == Team.Runner && (!_lifeState.IsEliminated || _ghost.IsGhost);

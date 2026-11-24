@@ -1,5 +1,4 @@
 using KBCore.Refs;
-using Project.Assets._Project._Scripts.Player.Abilities;
 using Project.Assets._Project._Scripts.Player.Drops;
 using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Attributes;
@@ -11,7 +10,7 @@ using UnityEngine;
 namespace Project.Assets._Project._Scripts.Player
 {
     // Owner only: puts the other players' name tags on this player's screen. Teammates show through walls at any range;
-    // the other team only shows in line of sight, within range, not through or inside smoke and while not invisible, so hiding still works.
+    // the other team only shows in line of sight, within range and while not invisible, so hiding still works.
     // Knocked players get the knocked tone; eliminated players and ghosts have no tag.
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerCameraBinder), typeof(PlayerSpectator))]
     public class PlayerNameTagFeed : NetworkBehaviour
@@ -21,7 +20,6 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly GameHUDState _hudState;
         [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
         [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
-        [Inject] private readonly SmokeCloudDirectory _smokeClouds;
         [SerializeField, Self] private PlayerTeam _team;
         [SerializeField, Self] private PlayerCameraBinder _cameraBinder;
         [SerializeField, Self] private PlayerSpectator _spectator;
@@ -114,7 +112,6 @@ namespace Project.Assets._Project._Scripts.Player
                 float distance = Vector3.Distance(camera.transform.position, anchor);
                 if (distance > _enemyRangeInMeters) return false;
                 if (player.DropEffects.Has(DropStatus.Invisible)) return false;
-                if (_smokeClouds.BlocksSightAny(camera.transform.position, anchor)) return false;
                 if (!IsInSight(camera.transform.position, anchor, player)) return false;
 
                 alpha = GetEnemyAlpha(distance);

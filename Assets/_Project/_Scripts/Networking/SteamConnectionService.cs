@@ -187,6 +187,14 @@ namespace Project.Assets._Project._Scripts.Networking
             return texture;
         }
 
+        protected override string GetPlayerKey(NetworkManager networkManager, ulong clientId)
+        {
+            if (!networkManager.TryGetComponent(out SteamRelayTransport transport)) return null;
+
+            ulong transportClientId = networkManager.GetTransportIdFromClientId(clientId);
+            return transport.TryGetSteamId(transportClientId, out ulong steamId) ? SteamLobbyId.Format(steamId) : null;
+        }
+
         // Clients leave the lobby too once the host is gone, so a later invite doesn't find them still inside
         protected override void HandleSessionEnded() => LeaveLobby();
 

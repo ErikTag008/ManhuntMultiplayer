@@ -11,31 +11,49 @@ namespace Project.Assets._Project.Tests.EditMode
         [Test]
         public void OpenLobby_WithFreeSlot_LetsTheClientIn()
         {
-            Assert.AreEqual(JoinRejection.None, JoinAdmission.Evaluate(false, true, MaxPlayers - 1, MaxPlayers));
+            Assert.AreEqual(JoinRejection.None, JoinAdmission.Evaluate(false, false, true, MaxPlayers - 1, MaxPlayers));
         }
 
         [Test]
         public void OpenLobby_WithoutFreeSlot_IsFull()
         {
-            Assert.AreEqual(JoinRejection.LobbyFull, JoinAdmission.Evaluate(false, true, MaxPlayers, MaxPlayers));
+            Assert.AreEqual(JoinRejection.LobbyFull, JoinAdmission.Evaluate(false, false, true, MaxPlayers, MaxPlayers));
         }
 
         [Test]
         public void RoundRunning_RejectsEvenWithFreeSlots()
         {
-            Assert.AreEqual(JoinRejection.RoundInProgress, JoinAdmission.Evaluate(false, false, 0, MaxPlayers));
+            Assert.AreEqual(JoinRejection.RoundInProgress, JoinAdmission.Evaluate(false, false, false, 0, MaxPlayers));
         }
 
         [Test]
         public void RoundRunning_FullLobby_ReportsTheRound()
         {
-            Assert.AreEqual(JoinRejection.RoundInProgress, JoinAdmission.Evaluate(false, false, MaxPlayers, MaxPlayers));
+            Assert.AreEqual(JoinRejection.RoundInProgress, JoinAdmission.Evaluate(false, false, false, MaxPlayers, MaxPlayers));
         }
 
         [Test]
         public void HostClient_AlwaysGetsIn()
         {
-            Assert.AreEqual(JoinRejection.None, JoinAdmission.Evaluate(true, false, MaxPlayers, MaxPlayers));
+            Assert.AreEqual(JoinRejection.None, JoinAdmission.Evaluate(true, false, false, MaxPlayers, MaxPlayers));
+        }
+
+        [Test]
+        public void KickedPlayer_IsTurnedAwayFromAnOpenLobby()
+        {
+            Assert.AreEqual(JoinRejection.Kicked, JoinAdmission.Evaluate(false, true, true, 0, MaxPlayers));
+        }
+
+        [Test]
+        public void KickedPlayer_DuringARound_ReportsTheKick()
+        {
+            Assert.AreEqual(JoinRejection.Kicked, JoinAdmission.Evaluate(false, true, false, MaxPlayers, MaxPlayers));
+        }
+
+        [Test]
+        public void HostClient_IsNeverKicked()
+        {
+            Assert.AreEqual(JoinRejection.None, JoinAdmission.Evaluate(true, true, true, 0, MaxPlayers));
         }
 
         [TestCase(GameState.Lobby, false)]

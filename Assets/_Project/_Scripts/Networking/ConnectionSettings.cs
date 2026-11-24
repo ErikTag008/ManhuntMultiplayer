@@ -29,6 +29,9 @@ namespace Project.Assets._Project._Scripts.Networking
 
         [field: SerializeField] public string LobbyFullReason { get; private set; } = "Lobby is full";
         [field: SerializeField] public string RoundInProgressReason { get; private set; } = "A round is in progress, try again once it ends";
+        // shown to a player the host kicks, and again when they try to rejoin the same hosted session
+        [field: SerializeField] public string KickedReason { get; private set; } = "You were kicked by the host";
+        [field: SerializeField] public string KickedRejoinReason { get; private set; } = "The host kicked you from this lobby";
         [field: SerializeField] public string HostFailedReason { get; private set; } = "Could not create the lobby";
         [field: SerializeField] public string JoinFailedReason { get; private set; } = "Could not join the lobby";
         // {0} is the timeout in seconds

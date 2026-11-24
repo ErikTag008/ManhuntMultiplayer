@@ -16,5 +16,5 @@ MonoBehaviour:
   <InteractRange>k__BackingField: 2.5
   <TimeCutInSeconds>k__BackingField: 30
   <MinRemainingInSeconds>k__BackingField: 30
-  <ActiveLoopSFX>k__BackingField: {fileID: 0}
-  <ActiveLoopSFXVolume>k__BackingField: 1
+  <ActiveLoopSFX>k__BackingField: {fileID: 8300000, guid: 3f958bb850b44ca47abf5c7a51bb68e1, type: 3}
+  <ActiveLoopSFXVolume>k__BackingField: 0.6

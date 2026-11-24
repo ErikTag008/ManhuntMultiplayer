@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player.Abilities
 {
-    // Leaves a networked object (smoke cloud, decoy, ...) where the runner stood, facing their heading; the object runs its own effect and lifetime
+    // Leaves a networked object (e.g. a decoy) where the runner stood, facing their heading; the object runs its own effect and lifetime
     [CreateAssetMenu(fileName = "SpawnObjectAbilityData", menuName = "ScriptableObjects/SpawnObjectAbilityData", order = 1)]
     public class SpawnObjectAbilityData : AbilityData
     {

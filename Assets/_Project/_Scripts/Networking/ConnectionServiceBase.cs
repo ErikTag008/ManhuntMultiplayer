@@ -20,6 +20,9 @@ namespace Project.Assets._Project._Scripts.Networking
         private readonly HashSet<ulong> _pendingClientIds = new();
         // names clients sent in their connection data, kept while they're connected
         private readonly Dictionary<ulong, string> _playerNames = new();
+        // who each connected client is on the platform (GetPlayerKey), so a kick can keep them out of this hosted session
+        private readonly Dictionary<ulong, string> _playerKeys = new();
+        private readonly HashSet<string> _kickedPlayerKeys = new();
 
         public event Action<string> OnDisconnected;
 
@@ -42,7 +45,7 @@ namespace Project.Assets._Project._Scripts.Networking
         public virtual bool CanInviteFriends => false;
         public virtual string JoinCode => null;
         public virtual bool IsHiddenFromFriends => false;
-        protected bool IsHosting => _approvingNetworkManager != null;
+        public bool IsHosting => _approvingNetworkManager != null;
         private string LogPrefix => $"[{GetType().Name}]";
 
         public abstract UniTask<bool> Host(LobbyConfig config, CancellationToken token);
@@ -69,6 +72,17 @@ namespace Project.Assets._Project._Scripts.Networking
             _sessionNetworkManager.Shutdown();
         }
 
+        public bool TryKick(ulong clientId)
+        {
+            if (!IsHosting || clientId == NetworkManager.ServerClientId) return false;
+            if (!IsConnectedClient(clientId)) return false;
+
+            if (_playerKeys.TryGetValue(clientId, out var playerKey)) _kickedPlayerKeys.Add(playerKey);
+            EUtils.Logger.Log($"{LogPrefix} Kicked client {clientId}.");
+            _approvingNetworkManager.DisconnectClient(clientId, _settings.KickedReason);
+            return true;
+        }
+
         public bool TryGetPlayerName(ulong clientId, out string name) => _playerNames.TryGetValue(clientId, out name);
 
         public virtual bool TryOpenInviteDialog() => false;
@@ -80,6 +94,10 @@ namespace Project.Assets._Project._Scripts.Networking
         public virtual UniTask<Texture2D> LoadFriendAvatar(ulong friendId, CancellationToken token) => UniTask.FromResult<Texture2D>(null);
 
         protected void ClearFailure() => _lastFailureReason = null;
+
+        // A stable id for the player behind a connecting client (Steam: their SteamId), used to keep kicked players out.
+        // null when the platform can't tell players apart (local sessions), so a kick there only disconnects.
+        protected virtual string GetPlayerKey(NetworkManager networkManager, ulong clientId) => null;
 
         protected bool Fail(string reason)
         {
@@ -135,6 +153,8 @@ namespace Project.Assets._Project._Scripts.Networking
             _approvingNetworkManager = null;
             _pendingClientIds.Clear();
             _playerNames.Clear();
+            _playerKeys.Clear();
+            _kickedPlayerKeys.Clear();
         }
 
         // Starts the client on the already configured transport and waits until it connects, is rejected or times out.
@@ -204,6 +224,17 @@ namespace Project.Assets._Project._Scripts.Networking
         {
             _pendingClientIds.Remove(clientId);
             _playerNames.Remove(clientId);
+            _playerKeys.Remove(clientId);
+        }
+
+        private bool IsConnectedClient(ulong clientId)
+        {
+            foreach (var connectedClientId in _approvingNetworkManager.ConnectedClientsIds)
+            {
+                if (connectedClientId == clientId) return true;
+            }
+
+            return false;
         }
 
         private int CountTakenSlots()
@@ -222,9 +253,12 @@ namespace Project.Assets._Project._Scripts.Networking
         private void ApproveConnection(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
         {
             bool isHostClient = request.ClientNetworkId == NetworkManager.ServerClientId;
-            var rejection = JoinAdmission.Evaluate(isHostClient, _isJoiningOpen, CountTakenSlots(), _hostedMaxPlayers);
+            var playerKey = isHostClient ? null : GetPlayerKey(_approvingNetworkManager, request.ClientNetworkId);
+            bool isKicked = playerKey != null && _kickedPlayerKeys.Contains(playerKey);
+            var rejection = JoinAdmission.Evaluate(isHostClient, isKicked, _isJoiningOpen, CountTakenSlots(), _hostedMaxPlayers);
             bool isApproved = rejection == JoinRejection.None;
             if (!isHostClient && isApproved) _pendingClientIds.Add(request.ClientNetworkId);
+            if (isApproved && playerKey != null) _playerKeys[request.ClientNetworkId] = playerKey;
             if (isApproved && PlayerNamePayload.TryDecode(request.Payload, out var name)) _playerNames[request.ClientNetworkId] = name;
 
             response.Approved = isApproved;
@@ -237,6 +271,7 @@ namespace Project.Assets._Project._Scripts.Networking
         {
             JoinRejection.LobbyFull => _settings.LobbyFullReason,
             JoinRejection.RoundInProgress => _settings.RoundInProgressReason,
+            JoinRejection.Kicked => _settings.KickedRejoinReason,
             _ => string.Empty
         };
 

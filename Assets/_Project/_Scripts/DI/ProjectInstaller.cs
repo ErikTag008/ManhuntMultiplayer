@@ -51,11 +51,11 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterType(typeof(HidePhase), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(HuntPhase), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(StationDirectory), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
-            builder.RegisterType(typeof(SmokeCloudDirectory), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(GhostPingDirectory), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(GameHUDState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(LobbyMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PauseMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(PlayersMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(IncomingInviteState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(EmoteWheelState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(SettingsMenuState), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
@@ -86,6 +86,7 @@ namespace Project.Assets._Project._Scripts.DI
             // Eager so it listens for disconnects from the first session on
             builder.RegisterType(typeof(SessionEndHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PauseMenuLeaveHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(PlayerKickHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             // Eager so invites that arrive in the main menu are already caught
             builder.RegisterType(typeof(LobbyInviteHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(LocalMapLibrary), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
