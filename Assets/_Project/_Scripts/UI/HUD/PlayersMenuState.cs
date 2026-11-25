@@ -9,16 +9,20 @@ namespace Project.Assets._Project._Scripts.UI.HUD
     {
         private readonly List<PlayersMenuEntry> _players = new();
         private bool _canKick;
+        private bool _canBlockRejoin;
 
         public event Action OnPlayersChanged;
         public event Action<ulong> OnKickRequested;
 
         public IReadOnlyList<PlayersMenuEntry> Players => _players;
         public bool CanKick => _canKick;
+        // a kicked player can't come back to this hosted session (false: the kick only disconnects them)
+        public bool CanBlockRejoin => _canBlockRejoin;
 
-        public void ChangePlayers(bool canKick, IReadOnlyList<PlayersMenuEntry> players)
+        public void ChangePlayers(bool canKick, bool canBlockRejoin, IReadOnlyList<PlayersMenuEntry> players)
         {
             _canKick = canKick;
+            _canBlockRejoin = canBlockRejoin;
             _players.Clear();
             for (int i = 0; i < players.Count; i++) _players.Add(players[i]);
             OnPlayersChanged?.Invoke();

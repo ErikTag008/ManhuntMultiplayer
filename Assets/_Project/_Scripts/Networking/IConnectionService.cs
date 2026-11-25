@@ -11,6 +11,8 @@ namespace Project.Assets._Project._Scripts.Networking
         bool IsConnected { get; }
         // True while this instance hosts a session and approves who joins it
         bool IsHosting { get; }
+        // True when TryKick also keeps the player out of this hosted session (Steam knows who they are; Local only disconnects)
+        bool CanBlockRejoin { get; }
         // Host only: players in the session plus approved ones still connecting; 0 when not hosting
         int TakenSlotCount { get; }
         // Why the last Host or Join failed (e.g. "Lobby is full"); null after a success

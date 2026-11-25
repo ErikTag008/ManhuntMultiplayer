@@ -31,6 +31,9 @@ namespace Project.Assets._Project._Scripts.Managers
         // {0} is the address
         [SerializeField] private string _joiningStatusFormat = "Joining {0}...";
 
+        // an invite accepted while another host or join was running; followed if that attempt fails
+        private ulong _queuedLobbyId;
+
         // before the host menu builds its map list in Start, so maps exported since the last visit show up
         private void Awake() => _mapCatalog.RefreshLocalListings();
 
@@ -76,7 +79,8 @@ namespace Project.Assets._Project._Scripts.Managers
             }
             if (_mainMenuState.IsBusy)
             {
-                EUtils.Logger.Log($"[MainMenuStarter] Ignored the request to join lobby {lobbyId}: another host or join is running.");
+                EUtils.Logger.Log($"[MainMenuStarter] Queued the request to join lobby {lobbyId}: another host or join is running.");
+                _queuedLobbyId = lobbyId;
                 return;
             }
 
@@ -127,6 +131,11 @@ namespace Project.Assets._Project._Scripts.Managers
         {
             _mainMenuState.ToggleBusy(false);
             _mainMenuState.SetStatus(_connectionService.LastFailureReason);
+            if (_queuedLobbyId == 0) return;
+
+            ulong lobbyId = _queuedLobbyId;
+            _queuedLobbyId = 0;
+            HandleLobbyJoinRequested(lobbyId);
         }
 
         // destroyWithScene: false keeps GameSystems alive across Single-mode scene loads

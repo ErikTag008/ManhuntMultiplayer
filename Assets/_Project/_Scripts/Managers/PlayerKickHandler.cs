@@ -53,7 +53,7 @@ namespace Project.Assets._Project._Scripts.Managers
             }
             _entries.Sort(CompareByClientId);
 
-            _playersMenuState.ChangePlayers(canKick, _entries);
+            _playersMenuState.ChangePlayers(canKick, _connectionService.CanBlockRejoin, _entries);
         }
 
         private static int CompareByClientId(PlayersMenuEntry a, PlayersMenuEntry b) => a.ClientId.CompareTo(b.ClientId);

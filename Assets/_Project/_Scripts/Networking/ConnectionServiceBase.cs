@@ -45,6 +45,8 @@ namespace Project.Assets._Project._Scripts.Networking
         public virtual bool CanInviteFriends => false;
         public virtual string JoinCode => null;
         public virtual bool IsHiddenFromFriends => false;
+        // a rejoin is only blocked when GetPlayerKey can name the player
+        public virtual bool CanBlockRejoin => false;
         public bool IsHosting => _approvingNetworkManager != null;
         private string LogPrefix => $"[{GetType().Name}]";
 

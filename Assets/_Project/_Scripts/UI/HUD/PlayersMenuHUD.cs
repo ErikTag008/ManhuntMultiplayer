@@ -22,7 +22,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private ConfirmDialog _confirmDialog;
         [SerializeField] private string _kickLabel = "Kick";
         [SerializeField] private string _noPlayersText = "No other players";
+        // {0} is the player's name; the first when the kick also blocks a rejoin, the second when it only disconnects
         [SerializeField] private string _kickMessageFormat = "Kick {0}?\nThey can't rejoin until you host a new lobby.";
+        [SerializeField] private string _kickWithoutBlockMessageFormat = "Kick {0}?\nThey can join again later.";
 
         public event Action OnClosed;
 
@@ -112,7 +114,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             if (index < 0 || index >= players.Count) return;
 
             _pendingKickClientId = players[index].ClientId;
-            _confirmDialog.Open(string.Format(_kickMessageFormat, players[index].Name), Kick);
+            var format = _state.CanBlockRejoin ? _kickMessageFormat : _kickWithoutBlockMessageFormat;
+            _confirmDialog.Open(string.Format(format, players[index].Name), Kick);
         }
 
         private void Kick() => _state.RequestKick(_pendingKickClientId);
