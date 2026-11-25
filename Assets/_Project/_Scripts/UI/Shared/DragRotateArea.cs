@@ -15,7 +15,9 @@ namespace Project.Assets._Project._Scripts.UI.Shared
         [SerializeField] private float _axisDegreesPerSecond = 180f;
         // a float axis, positive turning like a drag to the right. Bound here, so it works while the gameplay actions are
         // off. The triggers by default: the sticks and the d-pad already move UI focus
-        [SerializeField] private InputAction _turnAction = CreateDefaultTurnAction();
+        // the defaults are set in Reset/Awake, not a field initializer: that runs off the main thread during a domain
+        // reload, where building a composite binding throws
+        [SerializeField] private InputAction _turnAction;
         [SerializeField, Range(0f, 1f)] private float _axisDeadZone = 0.2f;
 
         // degrees of yaw; a drag to the right gives negative
@@ -23,6 +25,18 @@ namespace Project.Assets._Project._Scripts.UI.Shared
 
         private CancellationTokenSource _axisCTS;
         private bool _isInputOn;
+
+        // the turn axis' bindings as the player sees them, e.g. "LT/RT"; every binding is listed, so it stays gamepad-only,
+        // and as it isn't rebindable the text never changes at runtime
+        public string TurnBindingText => _turnAction.GetBindingDisplayString();
+
+        private void Reset() => _turnAction = CreateDefaultTurnAction();
+
+        // a component added from code has no serialized action
+        private void Awake()
+        {
+            if (_turnAction == null || _turnAction.bindings.Count == 0) _turnAction = CreateDefaultTurnAction();
+        }
 
         public void ToggleInput(bool isOn)
         {
