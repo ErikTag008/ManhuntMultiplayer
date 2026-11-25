@@ -48,9 +48,9 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField] private float _knockedMarkerHeightInMeters = 1.2f;
 
         // reused every frame so the markers don't allocate
-        private readonly List<Vector2> _revealViewportPositions = new();
-        private readonly List<Vector2> _stationViewportPositions = new();
-        private readonly List<Vector2> _knockedViewportPositions = new();
+        private readonly List<Vector3> _revealMarkerPoints = new();
+        private readonly List<Vector3> _stationMarkerPoints = new();
+        private readonly List<Vector3> _knockedMarkerPoints = new();
         private readonly List<int> _knockedSecondsLeft = new();
         // each player's last life state, to spot the moment a teammate gets knocked
         private readonly Dictionary<ulong, LifeState> _lastLifeStates = new();
@@ -266,7 +266,7 @@ namespace Project.Assets._Project._Scripts.Player
         // runners still in the round see knocked teammates through walls with their bleed-out seconds; catchers never do
         private void RefreshKnockedMarkers()
         {
-            _knockedViewportPositions.Clear();
+            _knockedMarkerPoints.Clear();
             _knockedSecondsLeft.Clear();
             var camera = _cameraBinder.Camera;
             if (_huntPhase.IsActive && camera != null && IsRunnerInRound())
@@ -276,13 +276,12 @@ namespace Project.Assets._Project._Scripts.Player
                     if (player == null || player.OwnerClientId == OwnerClientId) continue;
                     if (player.Team != Team.Runner || !player.LifeState.IsKnocked) continue;
 
-                    Vector3 viewportPoint = camera.WorldToViewportPoint(player.transform.position + Vector3.up * _knockedMarkerHeightInMeters);
-                    _knockedViewportPositions.Add(ClampToScreenEdge(viewportPoint));
+                    _knockedMarkerPoints.Add(GetMarkerPoint(camera, player.transform.position + Vector3.up * _knockedMarkerHeightInMeters));
                     _knockedSecondsLeft.Add(Mathf.CeilToInt(player.LifeState.BleedOutRemainingInSeconds));
                 }
             }
 
-            _hudState.SetKnockedMarkers(_knockedViewportPositions, _knockedSecondsLeft);
+            _hudState.SetKnockedMarkers(_knockedMarkerPoints, _knockedSecondsLeft);
         }
 
         private bool TryGetWorkableStation(out Station station)
@@ -301,7 +300,7 @@ namespace Project.Assets._Project._Scripts.Player
         // both teams see where unfinished stations are during the hunt, pinned to the screen edge when off screen
         private void RefreshStationMarkers()
         {
-            _stationViewportPositions.Clear();
+            _stationMarkerPoints.Clear();
             var camera = _cameraBinder.Camera;
             if (_huntPhase.IsActive && camera != null)
             {
@@ -310,12 +309,11 @@ namespace Project.Assets._Project._Scripts.Player
                 {
                     if (stations[i].IsCompleted) continue;
 
-                    Vector3 viewportPoint = camera.WorldToViewportPoint(stations[i].transform.position + Vector3.up * _stationMarkerHeightInMeters);
-                    _stationViewportPositions.Add(ClampToScreenEdge(viewportPoint));
+                    _stationMarkerPoints.Add(GetMarkerPoint(camera, stations[i].transform.position + Vector3.up * _stationMarkerHeightInMeters));
                 }
             }
 
-            _hudState.SetStationMarkers(_stationViewportPositions);
+            _hudState.SetStationMarkers(_stationMarkerPoints);
         }
 
         // only runners have an ability, so catchers, the lobby and eliminated players show no slot
@@ -357,10 +355,10 @@ namespace Project.Assets._Project._Scripts.Player
 
         // Catchers see revealed runners through walls; a runner with Sixth Sense active sees every catcher,
         // and runners still in the round (and ghosts) see the catchers ghosts pinged. One marker per player whatever marks them.
-        // Players off screen or behind the camera are pinned to the screen edge.
+        // Players off screen or behind the camera are pinned to the screen edge; every marker carries its distance.
         private void RefreshRevealMarkers()
         {
-            _revealViewportPositions.Clear();
+            _revealMarkerPoints.Clear();
             float now = Time.time;
             _ghostPings.RemoveExpired(now);
             var camera = _cameraBinder.Camera;
@@ -378,12 +376,11 @@ namespace Project.Assets._Project._Scripts.Player
                         : player.Team == Team.Catcher && (isSensing || (seesPings && _ghostPings.IsPinged(player.OwnerClientId, now)));
                     if (!isMarked) continue;
 
-                    Vector3 viewportPoint = camera.WorldToViewportPoint(player.transform.position + Vector3.up * _revealMarkerHeightInMeters);
-                    _revealViewportPositions.Add(ClampToScreenEdge(viewportPoint));
+                    _revealMarkerPoints.Add(GetMarkerPoint(camera, player.transform.position + Vector3.up * _revealMarkerHeightInMeters));
                 }
             }
 
-            _hudState.SetRevealMarkers(_revealViewportPositions);
+            _hudState.SetRevealMarkers(_revealMarkerPoints);
         }
 
         private bool IsRevealedToCatchers(PlayerController player) =>
@@ -396,6 +393,14 @@ namespace Project.Assets._Project._Scripts.Player
         {
             var ability = _ability.Ability;
             return ability != null && ability.RevealsCatchersWhileActive && _lifeState.IsUp && _ability.ActiveRemainingInSeconds > 0f;
+        }
+
+        // x and y are where the marker sits on screen, z how far the point is from the camera so the HUD can size it
+        private Vector3 GetMarkerPoint(Camera camera, Vector3 worldPoint)
+        {
+            Vector2 viewportPosition = ClampToScreenEdge(camera.WorldToViewportPoint(worldPoint));
+            float distanceInMeters = Vector3.Distance(camera.transform.position, worldPoint);
+            return new Vector3(viewportPosition.x, viewportPosition.y, distanceInMeters);
         }
 
         private Vector2 ClampToScreenEdge(Vector3 viewportPoint)
@@ -427,20 +432,20 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetRescue(false, 0f);
             _hudState.SetAbility(false, null, null, null, 0f, 0f);
             _hudState.SetDropEffect(false, null, false, 0f, 0f);
-            _revealViewportPositions.Clear();
-            _hudState.SetRevealMarkers(_revealViewportPositions);
+            _revealMarkerPoints.Clear();
+            _hudState.SetRevealMarkers(_revealMarkerPoints);
             _hudState.SetStationCounts(false, 0, 0);
             _hudState.SetStationHint(false);
             _hudState.SetLunge(false, false, 0f);
             _hudState.SetGhost(false, false, false, 0f, 0f);
-            _stationViewportPositions.Clear();
-            _hudState.SetStationMarkers(_stationViewportPositions);
+            _stationMarkerPoints.Clear();
+            _hudState.SetStationMarkers(_stationMarkerPoints);
             _hudState.SetRoundPhase(RoundPhase.None, false, false);
             _hudState.SetCrosshair(false);
             _hudState.SetRescueHint(false, null);
-            _knockedViewportPositions.Clear();
+            _knockedMarkerPoints.Clear();
             _knockedSecondsLeft.Clear();
-            _hudState.SetKnockedMarkers(_knockedViewportPositions, _knockedSecondsLeft);
+            _hudState.SetKnockedMarkers(_knockedMarkerPoints, _knockedSecondsLeft);
             _lastLifeStates.Clear();
             _rescueHintName = null;
             _hudState.SetSpectating(false);
