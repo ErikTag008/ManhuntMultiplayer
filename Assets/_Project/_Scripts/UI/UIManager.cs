@@ -21,6 +21,7 @@ namespace Project.Assets._Project._Scripts.UI
         public event Action<string, string> OnResultsShown;
         public event Action<string> OnRoundHighlightsShown;
         public event Action<string> OnRoundPointsShown;
+        public event Action<int> OnResultsSecondsLeftChanged;
 
         public void RaiseHostStart() => OnHostStart?.Invoke();
         public void RaiseClientStart() => OnClientStart?.Invoke();
@@ -39,5 +40,7 @@ namespace Project.Assets._Project._Scripts.UI
         public void ShowRoundHighlights(string highlights) => OnRoundHighlightsShown?.Invoke(highlights);
 
         public void ShowRoundPoints(string points) => OnRoundPointsShown?.Invoke(points);
+
+        public void ChangeResultsSecondsLeft(int seconds) => OnResultsSecondsLeftChanged?.Invoke(seconds);
     }
 }

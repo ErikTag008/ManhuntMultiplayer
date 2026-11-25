@@ -35,6 +35,8 @@ namespace Project.Assets._Project._Scripts.Managers
         private readonly NetworkVariable<GameState> _state = new();
         private readonly NetworkVariable<double> _countdownEndTime = new();
         private readonly NetworkVariable<RoundResult> _lastRoundResult = new();
+        // server time the results screen ends and the lobby loads, for the "back to lobby" countdown
+        private readonly NetworkVariable<double> _resultsEndTime = new();
         // counts the rounds of this session, so per-round work (the points award) can tell rounds apart
         private readonly NetworkVariable<int> _roundNumber = new();
         private readonly List<PlayerSession> _sessionBuffer = new();
@@ -42,6 +44,7 @@ namespace Project.Assets._Project._Scripts.Managers
         private readonly Func<int, int> _pickRandomIndex = count => UnityEngine.Random.Range(0, count);
         private CancellationTokenSource _gameLoopCTS;
         private CancellationTokenSource _countdownCTS;
+        private CancellationTokenSource _resultsCountdownCTS;
         // Server only: read from the lobby config once per round, like the map and the timers
         private GameMode _roundMode;
         // Server only: nobody was made a catcher (a lone player), so the round is practice
@@ -68,6 +71,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _state.OnValueChanged += HandleStateChanged;
             _lastRoundResult.OnValueChanged += HandleLastRoundResultChanged;
             _countdownEndTime.OnValueChanged += StartCountdown;
+            _resultsEndTime.OnValueChanged += StartResultsCountdown;
             if (IsServer)
             {
                 _playerRegistry.OnBledOut += HandleBledOut;
@@ -75,6 +79,7 @@ namespace Project.Assets._Project._Scripts.Managers
             }
             // the spawn value doesn't raise OnValueChanged
             RefreshPhases();
+            if (_state.Value == GameState.Results) StartResultsCountdown(0, _resultsEndTime.Value);
         }
 
         public void StartGameLoop()
@@ -177,9 +182,10 @@ namespace Project.Assets._Project._Scripts.Managers
                 _lastRoundResult.Value = result;
                 EUtils.Logger.Log($"[GameStateMachine] Round over: {result}");
 
+                _resultsEndTime.Value = NetworkManager.ServerTime.Time + _settings.ResultsDurationInSeconds;
                 _state.Value = GameState.Results;
                 // the next iteration loads the lobby again
-                await UniTask.WaitForSeconds(_settings.ResultsDurationInSeconds, cancellationToken: token);
+                await UniTask.WaitUntil(() => NetworkManager.ServerTime.Time >= _resultsEndTime.Value, cancellationToken: token);
             }
         }
 
@@ -320,6 +326,31 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
+        private void StartResultsCountdown(double _, double endTime)
+        {
+            RestartCTS(ref _resultsCountdownCTS);
+            ResultsCountdownLoop(endTime, _resultsCountdownCTS.Token).Forget();
+        }
+
+        // server time runs in real time, so a paused or slowed time scale doesn't stretch it
+        private async UniTaskVoid ResultsCountdownLoop(double endTime, CancellationToken token)
+        {
+            int shownSeconds = IUIManager.NoResultsCountdown;
+            while (!token.IsCancellationRequested)
+            {
+                double remaining = endTime - NetworkManager.ServerTime.Time;
+                int seconds = remaining > 0 ? Mathf.CeilToInt((float)remaining) : IUIManager.NoResultsCountdown;
+                if (seconds != shownSeconds)
+                {
+                    shownSeconds = seconds;
+                    _uiManager.ChangeResultsSecondsLeft(seconds);
+                }
+                if (seconds == IUIManager.NoResultsCountdown) break;
+
+                await UniTask.Yield(cancellationToken: token);
+            }
+        }
+
         private static void RestartCTS(ref CancellationTokenSource cts)
         {
             DisposeCTS(ref cts);
@@ -338,16 +369,19 @@ namespace Project.Assets._Project._Scripts.Managers
             _state.OnValueChanged -= HandleStateChanged;
             _lastRoundResult.OnValueChanged -= HandleLastRoundResultChanged;
             _countdownEndTime.OnValueChanged -= StartCountdown;
+            _resultsEndTime.OnValueChanged -= StartResultsCountdown;
             _playerRegistry.OnBledOut -= HandleBledOut;
             _hidePhase.Toggle(false);
             _huntPhase.Toggle(false);
             DisposeCTS(ref _countdownCTS);
+            DisposeCTS(ref _resultsCountdownCTS);
         }
 
         public override void OnDestroy()
         {
             DisposeCTS(ref _gameLoopCTS);
             DisposeCTS(ref _countdownCTS);
+            DisposeCTS(ref _resultsCountdownCTS);
             _gameSystemsRegistry?.Unregister(this);
             base.OnDestroy();
         }

@@ -1,4 +1,5 @@
 using Project.Assets._Project._Scripts.Cosmetics;
+using Project.Assets._Project._Scripts.Settings;
 using Project.Assets._Project._Scripts.UI.Shared;
 using Reflex.Attributes;
 using System.Collections.Generic;
@@ -16,6 +17,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [Inject] private readonly LobbyMenuState _state;
         [Inject] private readonly CosmeticProfileService _profile;
         [Inject] private readonly ICosmeticPreview _preview;
+        [Inject] private readonly MenuButtonInput _menuButtons;
+        [Inject] private readonly SettingsMenuState _settingsMenu;
         [SerializeField] private FadePanel _panel;
         [SerializeField] private OptionList _slotList;
         [SerializeField] private OptionList _itemList;
@@ -54,6 +57,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private readonly List<(int id, string label)> _optionBuffer = new();
         private readonly List<CosmeticItem> _items = new();
         private readonly List<List<Selectable>> _navigationRows = new();
+        // the slot tabs in their on-screen order, for LB/RB stepping
+        private readonly List<CosmeticSlot> _slotOrder = new() { CosmeticSlot.CatcherWeapon, CosmeticSlot.CatcherOutfit, CosmeticSlot.RunnerOutfit };
         private CosmeticSlot _currentSlot = CosmeticSlot.CatcherWeapon;
         private CosmeticItem _pickedItem;
 
@@ -66,11 +71,10 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _actionButton.onClick.AddListener(UsePickedItem);
             _backButton.onClick.AddListener(Close);
             _previewRotateArea.OnRotated += HandlePreviewRotated;
+            _menuButtons.OnTabStepped += HandleTabStepped;
 
             _optionBuffer.Clear();
-            _optionBuffer.Add(((int)CosmeticSlot.CatcherWeapon, _catcherWeaponLabel));
-            _optionBuffer.Add(((int)CosmeticSlot.CatcherOutfit, _catcherOutfitLabel));
-            _optionBuffer.Add(((int)CosmeticSlot.RunnerOutfit, _runnerOutfitLabel));
+            foreach (var slot in _slotOrder) _optionBuffer.Add(((int)slot, GetSlotLabel(slot)));
             _slotList.Build(_optionBuffer);
             ShowSlot(_currentSlot);
             HandleCustomizeOpenChanged(_state.IsCustomizeOpen);
@@ -102,6 +106,23 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         }
 
         private void HandleSlotClicked(int slotId) => ShowSlot((CosmeticSlot)slotId);
+
+        // LB/RB walk the slot tabs round while this screen is up (and no settings menu is over it), and the focus follows
+        private void HandleTabStepped(int step)
+        {
+            if (!_panel.IsShown || _settingsMenu.IsOpen) return;
+
+            int current = Mathf.Max(0, _slotOrder.IndexOf(_currentSlot));
+            ShowSlot(_slotOrder[(current + step + _slotOrder.Count) % _slotOrder.Count]);
+            _slotList.FocusSelected();
+        }
+
+        private string GetSlotLabel(CosmeticSlot slot) => slot switch
+        {
+            CosmeticSlot.CatcherWeapon => _catcherWeaponLabel,
+            CosmeticSlot.CatcherOutfit => _catcherOutfitLabel,
+            _ => _runnerOutfitLabel
+        };
 
         private void ShowSlot(CosmeticSlot slot)
         {
@@ -220,6 +241,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _actionButton.onClick.RemoveListener(UsePickedItem);
             _backButton.onClick.RemoveListener(Close);
             _previewRotateArea.OnRotated -= HandlePreviewRotated;
+            _menuButtons.OnTabStepped -= HandleTabStepped;
         }
     }
 }

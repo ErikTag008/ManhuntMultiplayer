@@ -52,15 +52,49 @@ namespace Project.Assets._Project.Tests.EditMode
         }
 
         [Test]
-        public void Close_ReturnsLastAimedSlice_AndCentreKeepsIt()
+        public void Close_ReturnsAimedSlice()
+        {
+            var state = new EmoteWheelState();
+            state.Open(Options(4));
+            state.Aim(Vector2.right, DeadZone);
+
+            Assert.AreEqual(1, state.Close());
+            Assert.IsFalse(state.IsOpen);
+        }
+
+        [Test]
+        public void Close_BackAtCentre_Cancels()
         {
             var state = new EmoteWheelState();
             state.Open(Options(4));
             state.Aim(Vector2.right, DeadZone);
             state.Aim(Vector2.zero, DeadZone);
 
-            Assert.AreEqual(1, state.Close());
-            Assert.IsFalse(state.IsOpen);
+            Assert.AreEqual(EmoteWheelState.NoSelection, state.HighlightedIndex);
+            Assert.AreEqual(EmoteWheelState.NoSelection, state.Close());
+        }
+
+        [Test]
+        public void Close_BackAtCentre_KeepsLastAimedWhenAsked()
+        {
+            var state = new EmoteWheelState();
+            state.Open(Options(4));
+            state.Aim(Vector2.right, DeadZone);
+            state.Aim(Vector2.zero, DeadZone);
+
+            Assert.AreEqual(1, state.Close(true));
+        }
+
+        [Test]
+        public void Open_ForgetsLastAimedSliceOfThePreviousWheel()
+        {
+            var state = new EmoteWheelState();
+            state.Open(Options(4));
+            state.Aim(Vector2.right, DeadZone);
+            state.Close();
+            state.Open(Options(4));
+
+            Assert.AreEqual(EmoteWheelState.NoSelection, state.Close(true));
         }
 
         [Test]

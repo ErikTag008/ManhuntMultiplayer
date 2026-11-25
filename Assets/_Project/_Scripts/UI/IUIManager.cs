@@ -4,6 +4,8 @@ namespace Project.Assets._Project._Scripts.UI
 {
     public interface IUIManager
     {
+        public const int NoResultsCountdown = -1;
+
         event Action OnHostStart;
         event Action OnClientStart;
         event Action<string> OnJoinedPlayerAmountChanged;
@@ -19,6 +21,8 @@ namespace Project.Assets._Project._Scripts.UI
         event Action<string, string> OnResultsShown;
         event Action<string> OnRoundHighlightsShown;
         event Action<string> OnRoundPointsShown;
+        // whole seconds until the results screen ends; NoResultsCountdown hides it
+        event Action<int> OnResultsSecondsLeftChanged;
 
         void RaiseHostStart();
         void RaiseClientStart();
@@ -37,5 +41,6 @@ namespace Project.Assets._Project._Scripts.UI
         void ShowRoundHighlights(string highlights);
         // what the local player earned this round; empty hides it
         void ShowRoundPoints(string points);
+        void ChangeResultsSecondsLeft(int seconds);
     }
 }

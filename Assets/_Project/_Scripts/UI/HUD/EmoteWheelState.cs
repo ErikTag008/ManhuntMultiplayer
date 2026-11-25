@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
-    // The local player's emote wheel: the player opens it with its emotes, aims at a slice and closes it to pick one.
-    // The wheel view only draws it.
+    // The local player's emote wheel: the player opens it with its emotes, aims at a slice and closes it to pick one;
+    // aiming back at the centre cancels. The wheel view only draws it.
     public class EmoteWheelState
     {
         public const int NoSelection = -1;
@@ -14,6 +14,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private readonly List<EmoteWheelOption> _options = new();
         private bool _isOpen;
         private int _highlightedIndex = NoSelection;
+        private int _lastAimedIndex = NoSelection;
 
         public event Action<bool> OnOpenChanged;
         public event Action<int> OnHighlightChanged;
@@ -29,30 +30,34 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _options.Clear();
             _options.AddRange(options);
             _highlightedIndex = NoSelection;
+            _lastAimedIndex = NoSelection;
             _isOpen = true;
             OnOpenChanged?.Invoke(true);
         }
 
-        // Aim inside the dead zone keeps the last slice, so a stick springing back to centre doesn't lose the pick
+        // Aim inside the dead zone is the centre, which picks nothing
         public void Aim(Vector2 aim, float deadZone)
         {
             if (!_isOpen) return;
 
             int index = PickSlice(aim, _options.Count, deadZone);
-            if (index == NoSelection || index == _highlightedIndex) return;
+            if (index != NoSelection) _lastAimedIndex = index;
+            if (index == _highlightedIndex) return;
 
             _highlightedIndex = index;
             OnHighlightChanged?.Invoke(index);
         }
 
-        // Returns the highlighted option's index, or NoSelection when nothing was aimed at
-        public int Close()
+        // Returns the highlighted option's index, or NoSelection when the aim is at the centre.
+        // isLastAimedKept picks the last aimed slice from the centre too: a stick springing back as it is released.
+        public int Close(bool isLastAimedKept = false)
         {
             if (!_isOpen) return NoSelection;
 
-            int picked = _highlightedIndex;
+            int picked = _highlightedIndex == NoSelection && isLastAimedKept ? _lastAimedIndex : _highlightedIndex;
             _isOpen = false;
             _highlightedIndex = NoSelection;
+            _lastAimedIndex = NoSelection;
             OnOpenChanged?.Invoke(false);
             return picked;
         }

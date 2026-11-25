@@ -22,6 +22,10 @@ namespace Project.Assets._Project._Scripts.Settings
         // -1 previous, +1 next
         public event Action<int> OnTabStepped;
 
+        // what the tab buttons are called on the pad, e.g. "LB" / "RB", for the hints beside the tab rows
+        public string PreviousTabText => _previousTabAction.GetBindingDisplayString();
+        public string NextTabText => _nextTabAction.GetBindingDisplayString();
+
         public MenuButtonInput(SettingsData data, KeybindService keybinds)
         {
             _keybinds = keybinds;

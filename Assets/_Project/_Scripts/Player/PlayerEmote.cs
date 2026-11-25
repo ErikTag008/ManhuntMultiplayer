@@ -36,6 +36,8 @@ namespace Project.Assets._Project._Scripts.Player
         // the Look binding scales the right stick up for turning (x50), so this brings it back to stick travel
         [SerializeField, Min(0f)] private float _stickAimScale = 0.02f;
         [SerializeField, Range(0f, 1f)] private float _aimDeadZone = 0.35f;
+        // a stick that left the slice this recently before the release sprang back with it, so the slice still plays
+        [SerializeField, Min(0f)] private float _stickReleaseGraceInSeconds = 0.15f;
         // normalized planar speed; above it the emote stops, and it can't start
         [SerializeField, Range(0f, 1f)] private float _maxEmoteSpeed = 0.15f;
         // remote copies see movement through interpolation, which still trails off right after the player stopped
@@ -54,6 +56,7 @@ namespace Project.Assets._Project._Scripts.Player
         private float _emoteEndTime;
         private float _movementCheckTime;
         private Vector2 _aim;
+        private float _lastOffCentreTime;
         // Owner only
         private SpectatorCamera _thirdPersonCamera;
         private bool _isInThirdPerson;
@@ -128,6 +131,7 @@ namespace Project.Assets._Project._Scripts.Player
             var look = _inputReader.LookDirection;
             _aim = _inputReader.IsUsingMouse ? _aim + look * _mouseAimScale : look * _stickAimScale;
             _aim = Vector2.ClampMagnitude(_aim, 1f);
+            if (_aim.magnitude >= _aimDeadZone) _lastOffCentreTime = Time.time;
             _wheelState.Aim(_aim, _aimDeadZone);
         }
 
@@ -135,7 +139,9 @@ namespace Project.Assets._Project._Scripts.Player
         {
             if (!_wheelState.IsOpen) return;
 
-            int index = _wheelState.Close();
+            // the mouse aim stays where it was left, so a mouse at the centre always means cancel
+            bool isStickSpringingBack = !_inputReader.IsUsingMouse && Time.time - _lastOffCentreTime <= _stickReleaseGraceInSeconds;
+            int index = _wheelState.Close(isStickSpringingBack);
             if (index == EmoteWheelState.NoSelection || !CanStartEmote() || Time.time < _nextRequestTime) return;
 
             _nextRequestTime = Time.time + _catalog.CooldownInSeconds;
