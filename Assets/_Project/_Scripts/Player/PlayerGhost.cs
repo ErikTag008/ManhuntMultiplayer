@@ -115,6 +115,14 @@ namespace Project.Assets._Project._Scripts.Player
             session.IsSittingOut
             || (session.LifeState == LifeState.Eliminated && session.Team == Team.Runner && mode == GameMode.Classic && (isAlreadyGhost || isHuntActive));
 
+        // A visual added to the body after it was hidden (an outfit dressed late) hides with it and comes back with it
+        public void MatchGhostVisibility(Transform visual)
+        {
+            if (!_isGhost || visual == null) return;
+
+            HideRenderers(visual);
+        }
+
         // Owner only; null in scenes without bounds
         public void ChangeMapBounds(MapBounds mapBounds) => _mapBounds = mapBounds;
 
@@ -180,17 +188,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void HideBody()
         {
-            if (_team.Model != null)
-            {
-                _team.Model.GetComponentsInChildren(true, _rendererBuffer);
-                foreach (var renderer in _rendererBuffer)
-                {
-                    if (renderer.forceRenderingOff) continue;
-
-                    renderer.forceRenderingOff = true;
-                    _hiddenRenderers.Add(renderer);
-                }
-            }
+            if (_team.Model != null) HideRenderers(_team.Model);
 
             GetComponentsInChildren(true, _colliderBuffer);
             foreach (var collider in _colliderBuffer)
@@ -199,6 +197,18 @@ namespace Project.Assets._Project._Scripts.Player
 
                 collider.enabled = false;
                 _disabledColliders.Add(collider);
+            }
+        }
+
+        private void HideRenderers(Transform visual)
+        {
+            visual.GetComponentsInChildren(true, _rendererBuffer);
+            foreach (var renderer in _rendererBuffer)
+            {
+                if (renderer.forceRenderingOff) continue;
+
+                renderer.forceRenderingOff = true;
+                _hiddenRenderers.Add(renderer);
             }
         }
 

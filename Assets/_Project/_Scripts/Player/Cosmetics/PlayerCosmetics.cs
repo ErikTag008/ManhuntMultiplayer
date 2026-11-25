@@ -13,6 +13,7 @@ namespace Project.Assets._Project._Scripts.Player.Cosmetics
     // team: a catcher gets the weapon look (also on the owner's first-person copy) and the catcher outfit, a runner and a
     // player still in the lobby the runner outfit.
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerCombat), typeof(PlayerViewModel))]
+    [RequireComponent(typeof(PlayerGhost))]
     public class PlayerCosmetics : NetworkBehaviour
     {
         // injected by PlayerController.Awake together with the rest of the player
@@ -21,6 +22,7 @@ namespace Project.Assets._Project._Scripts.Player.Cosmetics
         [SerializeField, Self] private PlayerTeam _team;
         [SerializeField, Self] private PlayerCombat _combat;
         [SerializeField, Self] private PlayerViewModel _viewModel;
+        [SerializeField, Self] private PlayerGhost _ghost;
 
         private readonly NetworkVariable<CosmeticLoadout> _loadout = new(CosmeticLoadout.Empty);
         private readonly MaterialOverrideGroup _bodyMaterials = new();
@@ -101,7 +103,11 @@ namespace Project.Assets._Project._Scripts.Player.Cosmetics
         {
             _attachment = CosmeticDressing.AddAttachment(_dressedModel, outfit);
             // the owner's own outfit hides with its body, so it never blocks the first-person camera
-            if (_attachment != null) _team.MatchOwnModelVisibility(_attachment.transform);
+            if (_attachment == null) return;
+
+            _team.MatchOwnModelVisibility(_attachment.transform);
+            // a late joiner's loadout arrives after its ghost hid the body, so the new outfit hides with it
+            _ghost.MatchGhostVisibility(_attachment.transform);
         }
 
         private void RemoveAttachment()

@@ -1916,6 +1916,7 @@ MonoBehaviour:
   _team: {fileID: 2895491558510482950}
   _combat: {fileID: 91084392635682791}
   _viewModel: {fileID: 2209090428821468905}
+  _ghost: {fileID: 2243932752006811638}
 --- !u!114 &6047934319629858651
 MonoBehaviour:
   m_ObjectHideFlags: 0
