@@ -39,6 +39,8 @@ namespace Project.Assets._Project._Scripts.Player
         [field: SerializeField] public float WallJumpControlLockInSeconds { get; private set; } = 0.25f;
         // walls whose normals are at least this alike count as the same wall (no climbing one wall with repeated jumps)
         [field: SerializeField, Range(-1f, 1f)] public float SameWallNormalDot { get; private set; } = 0.8f;
+        // a jump press only kicks off the wall while the move input pushes into it at most this much (0..1)
+        [field: SerializeField, Range(-1f, 1f)] public float WallJumpMaxIntoWallInput { get; private set; } = 0.3f;
 
         [field: Header("Ledge Climb")]
         // ledge top height above the feet that can be climbed
@@ -55,6 +57,8 @@ namespace Project.Assets._Project._Scripts.Player
         [field: SerializeField] public float MantleExitSpeed { get; private set; } = 6f;
         // probes this far below the ledge top to confirm the edge is right in front of the body
         [field: SerializeField] public float MantleEdgeProbeDepth { get; private set; } = 0.15f;
+        // back input needed (0..1) for a jump press during a climb to let go and kick off the wall
+        [field: SerializeField, Range(0f, 1f)] public float MantleKickOffMinBackInput { get; private set; } = 0.5f;
 
         // small gap kept from surfaces: the climb lifts this far above the ledge, and headroom checks start this far above the ground
         [field: Header("Shared")]

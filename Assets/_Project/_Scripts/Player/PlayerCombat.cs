@@ -352,7 +352,9 @@ namespace Project.Assets._Project._Scripts.Player
             if (isLunge && lunge == null) return;
 
             double now = NetworkManager.ServerTime.Time;
-            if (now + _cooldownToleranceInSeconds < _serverNextAttackTime) return;
+            // cooldowns run from swing start to swing start, and swings and lunges reach their hit at different delays
+            double startTime = now - (isLunge ? lunge.HitDelayInSeconds : _currentWeapon.HitDelayInSeconds);
+            if (startTime + _cooldownToleranceInSeconds < _serverNextAttackTime) return;
             // the charge started one start delay after the press, so a full charge leaves at least the rest before the lunge
             if (isLunge && now - _serverChargeStartTime + _cooldownToleranceInSeconds < lunge.FullChargeDurationInSeconds - lunge.ChargeStartDelayInSeconds) return;
 
@@ -365,8 +367,7 @@ namespace Project.Assets._Project._Scripts.Player
             float cooldown = !isLunge ? _currentWeapon.AttackCooldownInSeconds
                 : hasCaught ? lunge.HitCooldownInSeconds
                 : lunge.MissCooldownInSeconds;
-            // swings and lunges share the same hit delay by default, so request-to-request matches the owner's start-to-start
-            _serverNextAttackTime = now + cooldown;
+            _serverNextAttackTime = startTime + cooldown;
 
             if (isLunge) ReportLungeResultRpc(hasCaught);
         }

@@ -34,6 +34,8 @@ namespace Project.Assets._Project._Scripts.Player
         private float _mantleBlockedEndTime = -Mathf.Infinity;
         private float _dashEndTime = -Mathf.Infinity;
         private Vector3 _dashVelocity;
+        // the latest move input, so a jump press can tell a climb, a wall jump and a kick-off apart
+        private Vector2 _moveInput;
         public event Action<float> ModelRotationChanged;
         public event Action<Quaternion> CameraFollowerRotationChanged;
 
@@ -112,7 +114,7 @@ namespace Project.Assets._Project._Scripts.Player
             {
                 if (_isMantling)
                 {
-                    KickOffMantleWall();
+                    if (ParkourInput.AllowsMantleKickOff(_moveInput, Parkour)) KickOffMantleWall();
                     return;
                 }
 
@@ -127,7 +129,8 @@ namespace Project.Assets._Project._Scripts.Player
                     return;
                 }
 
-                if (TryWallJump()) _lastJumpPressedTime = -Mathf.Infinity;
+                // a ledge in reach wins over the wall below it
+                if (TryStartMantle(true) || TryWallJump()) _lastJumpPressedTime = -Mathf.Infinity;
             }
             else
             {
@@ -171,6 +174,7 @@ namespace Project.Assets._Project._Scripts.Player
 
         public void HandleFixedMovement(Vector2 moveDirection)
         {
+            _moveInput = moveDirection;
             if(_stats == null || !_movementEnabled) return;
             if (_isMantling)
             {
@@ -186,7 +190,7 @@ namespace Project.Assets._Project._Scripts.Player
             }
 
             UpdatePosture(grounded);
-            if (!grounded && TryStartMantle(moveDirection)) return;
+            if (!grounded && TryStartMantle(IsJumpBuffered())) return;
 
             if (IsDashing)
             {
@@ -299,8 +303,11 @@ namespace Project.Assets._Project._Scripts.Player
         public bool CanJumpFromGround() =>
             _stats != null && (IsGrounded() || Time.time - _lastGroundedTime <= _stats.CoyoteTime);
 
-        // True when a jump press now kicks off a wall, or this frame's press already did; air-jump abilities stand back for it
-        public bool CanWallJump() => Time.frameCount == _wallJumpFrame || _isMantling || TryGetWallJumpNormal(out _);
+        // True when a jump press now climbs or kicks off a wall, or this frame's press already did; air-jump abilities stand back for it
+        public bool CanWallJump() =>
+            Time.frameCount == _wallJumpFrame || _isMantling || TryFindMantleLanding(true, out _) || TryGetWallJumpNormal(out _);
+
+        private bool IsJumpBuffered() => Time.time - _lastJumpPressedTime <= _stats.JumpBuffer;
 
         // Replaces the fall with a fresh upward push. HandleJump may see the same press after this, so it's marked as spent.
         public void AirJump(float jumpForceMultiplier)
@@ -452,19 +459,27 @@ namespace Project.Assets._Project._Scripts.Player
             if (!_movementEnabled || !_isParkourEnabled || _isMantling || _stats == null) return false;
             if (CanJumpFromGround() || Time.time < _lastWallJumpTime + Parkour.WallJumpCooldownInSeconds) return false;
             if (!ParkourProbe.TryFindWall(_rb.position, _posture.BodyRadius, Parkour, _stats.GroundCheckLayers, out wallNormal)) return false;
+            if (!ParkourInput.AllowsWallJump(GetWorldMoveInput(), wallNormal, Parkour)) return false;
 
             return !_hasWallJumpedSinceGrounded || Vector3.Dot(wallNormal, _lastWallJumpNormal) < Parkour.SameWallNormalDot;
         }
 
-        // Airborne and pushing forward at a ledge in reach: pull up onto it
-        private bool TryStartMantle(Vector2 moveDirection)
+        // Camera-relative move input on the ground plane; its length is the stick strength
+        private Vector3 GetWorldMoveInput()
         {
-            if (!_isParkourEnabled || !_camera || moveDirection.y < Parkour.MantleMinForwardInput) return false;
-            if (Time.time < _mantleBlockedEndTime) return false;
+            if (!_camera) return Vector3.zero;
 
             Vector3 forward = _camera.transform.forward;
-            if (!ParkourProbe.TryFindLedge(_rb.position, forward, _posture.BodyRadius, _posture.StandingHeight, _stats.MaxGroundAngle,
-                    Parkour, _stats.GroundCheckLayers, out Vector3 landing)) return false;
+            Vector3 right = _camera.transform.right;
+            forward.y = 0f;
+            right.y = 0f;
+            return Vector3.ClampMagnitude(forward.normalized * _moveInput.y + right.normalized * _moveInput.x, 1f);
+        }
+
+        // Airborne at a ledge in reach while pushing forward or pressing jump: pull up onto it
+        private bool TryStartMantle(bool isJumpPressed)
+        {
+            if (!TryFindMantleLanding(isJumpPressed, out Vector3 landing)) return false;
 
             Vector3 feetPosition = _rb.position;
             _mantleRiseTarget = new Vector3(feetPosition.x, landing.y, feetPosition.z);
@@ -478,6 +493,16 @@ namespace Project.Assets._Project._Scripts.Player
             _posture.ChangePosture(Posture.Mantling);
             UpdateMantle();
             return true;
+        }
+
+        private bool TryFindMantleLanding(bool isJumpPressed, out Vector3 landing)
+        {
+            landing = Vector3.zero;
+            if (!_movementEnabled || !_isParkourEnabled || _isMantling || !_camera || _stats == null) return false;
+            if (!ParkourInput.AllowsMantle(_moveInput, isJumpPressed, Parkour) || Time.time < _mantleBlockedEndTime) return false;
+
+            return ParkourProbe.TryFindLedge(_rb.position, _camera.transform.forward, _posture.BodyRadius, _posture.StandingHeight,
+                _stats.MaxGroundAngle, Parkour, _stats.GroundCheckLayers, out landing);
         }
 
         // Straight up beside the wall first, then forward over the edge, each in a fixed time

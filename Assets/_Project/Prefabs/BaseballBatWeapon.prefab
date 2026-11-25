@@ -48,9 +48,9 @@ MonoBehaviour:
   _hitDetectionCenter: {fileID: 7876733166054061094}
   _attackCheckRadius: 0.45
   _reachInMeters: 2.4
-  _hitDelayInSeconds: 0.25
+  _hitDelayInSeconds: 0.12
   _hitWindowInSeconds: 0.1
-  _attackCooldownInSeconds: 0.85
+  _attackCooldownInSeconds: 0.45
   _maxTargetDistance: 7
 --- !u!1 &7086058819647352901
 GameObject:
