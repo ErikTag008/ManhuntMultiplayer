@@ -92,6 +92,12 @@ namespace Project.Assets._Project._Scripts.Managers
 
         public void SetLifeState(ulong clientId, LifeState lifeState) => UpdateSession(clientId, (ref PlayerSession session) => session.LifeState = lifeState);
 
+        public void Knock(ulong clientId) => UpdateSession(clientId, (ref PlayerSession session) =>
+        {
+            session.LifeState = LifeState.Knocked;
+            session.Knocks++;
+        });
+
         public void ReportBledOut(ulong clientId)
         {
             if (!IsServer) return;
@@ -160,6 +166,7 @@ namespace Project.Assets._Project._Scripts.Managers
                     session.Rescues = 0;
                     session.StationsCompleted = 0;
                     session.LongestChaseInSeconds = 0f;
+                    session.Knocks = 0;
                 });
             }
         }

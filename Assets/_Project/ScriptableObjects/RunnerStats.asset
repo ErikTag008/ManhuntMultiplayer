@@ -82,7 +82,10 @@ MonoBehaviour:
     _kind: 1
     _value: 0.25
   <Model>k__BackingField: {fileID: 8515208621651819804, guid: d719e7bb4b9b9da46970ca84bfda5a22, type: 3}
-  <BleedOutDurationInSeconds>k__BackingField: 30
+  <BleedOutDurationsByKnockInSeconds>k__BackingField:
+  - 30
+  - 20
+  - 10
   <BleedOutPauseCatcherRange>k__BackingField: 8
   <RescueDurationInSeconds>k__BackingField: 5
   <RescueRange>k__BackingField: 2.5

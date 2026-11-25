@@ -151,8 +151,9 @@ namespace Project.Assets._Project._Scripts.Player
             float remaining = _lifeState.BleedOutRemainingInSeconds;
             if (_lifeState.IsKnocked && remaining > 0f) _hasBleedOutStarted = true;
 
+            float durationInSeconds = _lifeState.BleedOutDurationInSeconds;
             bool isShown = _lifeState.IsKnocked && _hasBleedOutStarted;
-            float progress = isShown ? remaining / _runnerStats.BleedOutDurationInSeconds : 0f;
+            float progress = isShown && durationInSeconds > 0f ? Mathf.Clamp01(remaining / durationInSeconds) : 0f;
             _hudState.SetBleedOut(isShown, isShown ? remaining : 0f, progress, isShown && _lifeState.IsBleedOutPaused);
         }
 

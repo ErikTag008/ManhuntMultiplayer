@@ -9,6 +9,7 @@ namespace Project.Assets._Project._Scripts.Player
 {
     // Up / Knocked / Eliminated read from this player's session; PlayerRegistry owns the value.
     // The server runs the bleed-out timer while the player is knocked; a rescue or a nearby catcher (anti-camp) pauses it.
+    // Each knock in a round gets a shorter bleed-out, and a knock past the last one eliminates at once.
     public class PlayerLifeState : NetworkBehaviour
     {
         [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
@@ -24,6 +25,7 @@ namespace Project.Assets._Project._Scripts.Player
         public event Action OnBledOut;
 
         private readonly NetworkVariable<double> _bleedOutEndTime = new();
+        private readonly NetworkVariable<float> _bleedOutDurationInSeconds = new();
         private readonly NetworkVariable<bool> _isBleedOutPaused = new();
         private readonly NetworkVariable<float> _pausedBleedOutRemainingInSeconds = new();
         private CancellationTokenSource _bleedOutCTS;
@@ -33,6 +35,8 @@ namespace Project.Assets._Project._Scripts.Player
         private double _invulnerableUntil;
         private bool _isRescueInProgress;
         private bool _isCatcherNearby;
+        // a knock past the last bleed-out: nothing may pause or rescue it before it runs out
+        private bool _isOutOfBleedOuts;
 
         public LifeState State => _state;
         public bool IsUp => _state == LifeState.Up;
@@ -50,6 +54,8 @@ namespace Project.Assets._Project._Scripts.Player
                 return Mathf.Max(0f, (float)(_bleedOutEndTime.Value - NetworkManager.ServerTime.Time));
             }
         }
+        // the full bleed-out of the current knock, for progress bars
+        public float BleedOutDurationInSeconds => _bleedOutDurationInSeconds.Value;
         // Server only
         public bool IsInvulnerable => NetworkManager.ServerTime.Time < _invulnerableUntil;
 
@@ -70,7 +76,7 @@ namespace Project.Assets._Project._Scripts.Player
                 return false;
             }
 
-            _playerRegistry.SetLifeState(OwnerClientId, LifeState.Knocked);
+            _playerRegistry.Knock(OwnerClientId);
             NotifyKnockedRpc();
             return true;
         }
@@ -118,10 +124,14 @@ namespace Project.Assets._Project._Scripts.Player
             {
                 _isRescueInProgress = false;
                 _isCatcherNearby = false;
+                _isOutOfBleedOuts = false;
                 if (IsKnocked)
                 {
-                    StartBleedOut(_runnerStats.BleedOutDurationInSeconds);
-                    StartCatcherWatch();
+                    // no bleed-out left this round: a zero timer runs out at once and goes through the usual bled-out path
+                    _isOutOfBleedOuts = !_runnerStats.TryGetBleedOutDuration(session.Knocks, out float durationInSeconds);
+                    _bleedOutDurationInSeconds.Value = durationInSeconds;
+                    StartBleedOut(durationInSeconds);
+                    if (!_isOutOfBleedOuts) StartCatcherWatch();
                 }
                 else EndBleedOut();
             }
@@ -140,6 +150,8 @@ namespace Project.Assets._Project._Scripts.Player
         // the timer holds while any reason to pause remains and resumes from what was left once none do
         private void RefreshBleedOutPause()
         {
+            if (_isOutOfBleedOuts) return;
+
             bool isPauseWanted = _isRescueInProgress || _isCatcherNearby;
             if (isPauseWanted == _isBleedOutPaused.Value) return;
 
@@ -192,6 +204,7 @@ namespace Project.Assets._Project._Scripts.Player
             StopBleedOut();
             _isBleedOutPaused.Value = false;
             _bleedOutEndTime.Value = 0;
+            _bleedOutDurationInSeconds.Value = 0f;
         }
 
         private void StopBleedOut()
@@ -203,6 +216,8 @@ namespace Project.Assets._Project._Scripts.Player
         // waits on the same server clock clients read, so the synced countdown and elimination agree
         private async UniTaskVoid BleedOutAsync(CancellationToken token)
         {
+            // starts from a session change, so an instant bleed-out never changes the session inside that change
+            await UniTask.Yield(token);
             await UniTask.WaitUntil(() => NetworkManager.ServerTime.Time >= _bleedOutEndTime.Value, cancellationToken: token);
             if (!IsKnocked) return;
 

@@ -28,6 +28,8 @@ namespace Project.Assets._Project._Scripts.Player
         public int Rescues;
         public int StationsCompleted;
         public float LongestChaseInSeconds;
+        // knocks taken this round; each one shortens the next bleed-out (RunnerStats)
+        public int Knocks;
 
         public readonly bool Equals(PlayerSession other) =>
             ClientId == other.ClientId &&
@@ -42,7 +44,8 @@ namespace Project.Assets._Project._Scripts.Player
             Catches == other.Catches &&
             Rescues == other.Rescues &&
             StationsCompleted == other.StationsCompleted &&
-            LongestChaseInSeconds == other.LongestChaseInSeconds;
+            LongestChaseInSeconds == other.LongestChaseInSeconds &&
+            Knocks == other.Knocks;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
@@ -59,6 +62,7 @@ namespace Project.Assets._Project._Scripts.Player
             serializer.SerializeValue(ref Rescues);
             serializer.SerializeValue(ref StationsCompleted);
             serializer.SerializeValue(ref LongestChaseInSeconds);
+            serializer.SerializeValue(ref Knocks);
         }
     }
 }
