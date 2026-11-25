@@ -949,6 +949,7 @@ GameObject:
   - component: {fileID: 3238097376751934692}
   - component: {fileID: 2209090428821468905}
   - component: {fileID: 811559797858378869}
+  - component: {fileID: 6047934319629858651}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1334,6 +1335,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: a651fcd8-21b5-4a36-9d68-3af98438f0d5
     m_ActionName: Player/Emote
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4851020409925496502}
+        m_TargetAssemblyTypeName: Project.Assets._Project._Scripts.Input.InputReader, Project.Input
+        m_MethodName: Scoreboard
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: df68f7c6-0838-4633-9343-f662b7103d9a
+    m_ActionName: Player/Scoreboard
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -1857,6 +1874,7 @@ MonoBehaviour:
   _mouseAimScale: 0.01
   _stickAimScale: 0.02
   _aimDeadZone: 0.35
+  _stickReleaseGraceInSeconds: 0.15
   _maxEmoteSpeed: 0.15
   _movementGraceInSeconds: 0.3
   _viewHeadingOffsetInDegrees: 180
@@ -1898,6 +1916,21 @@ MonoBehaviour:
   _team: {fileID: 2895491558510482950}
   _combat: {fileID: 91084392635682791}
   _viewModel: {fileID: 2209090428821468905}
+--- !u!114 &6047934319629858651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0973ebc56930f7d47b29d4a243437257, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerScoreboardFeed
+  ShowTopMostFoldoutHeaderGroup: 1
+  _inputReader: {fileID: 4851020409925496502}
+  _refreshIntervalInSeconds: 0.5
 --- !u!1 &8770936375934030648
 GameObject:
   m_ObjectHideFlags: 0

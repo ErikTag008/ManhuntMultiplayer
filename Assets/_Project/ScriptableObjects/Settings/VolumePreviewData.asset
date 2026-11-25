@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17be974c52e93d940b39de01ff2a6e18, type: 3}
+  m_Name: VolumePreviewData
+  m_EditorClassIdentifier: Project.Core::Project.Assets._Project._Scripts.Settings.VolumePreviewData
+  <EffectsSFX>k__BackingField: {fileID: 8300000, guid: 424ea3b5d50999f4bbb2626763bf5029, type: 3}
+  <EffectsSFXVolume>k__BackingField: 1
+  <InterfaceSFX>k__BackingField: {fileID: 8300000, guid: 3ca99b040ada91d4fb388d2e221d2b94, type: 3}
+  <InterfaceSFXVolume>k__BackingField: 1
+  <MinIntervalInSeconds>k__BackingField: 0.25

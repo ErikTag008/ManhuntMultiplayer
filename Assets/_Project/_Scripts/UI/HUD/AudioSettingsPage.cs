@@ -9,7 +9,8 @@ using UnityEngine;
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
     // Audio tab: master, music, SFX, UI and voice volume, shown in percent, the microphone and push-to-talk switches,
-    // and a mute switch per player whose voice can be heard (none outside a session)
+    // and a mute switch per player whose voice can be heard (none outside a session). Moving the Effects or Interface slider
+    // plays a sample through that slider's mixer group, so the new level can be heard.
     public class AudioSettingsPage : MonoBehaviour
     {
         private const float PercentScale = 100f;
@@ -19,6 +20,10 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private Transform _container;
         [SerializeField] private SliderRow _sliderRowPrefab;
         [SerializeField] private ToggleRow _toggleRowPrefab;
+        [SerializeField] private VolumePreviewData _previewData;
+        // routed to the SFX and UI mixer groups
+        [SerializeField] private AudioSource _effectsPreviewSource;
+        [SerializeField] private AudioSource _interfacePreviewSource;
         [SerializeField] private string _masterLabel = "Master";
         [SerializeField] private string _musicLabel = "Music";
         [SerializeField] private string _sfxLabel = "Effects";
@@ -39,6 +44,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private ToggleRow _micRow;
         private ToggleRow _pushToTalkRow;
         private bool _isBuilt;
+        private float _nextPreviewTime;
 
         private void OnEnable()
         {
@@ -55,7 +61,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _masterRow = CreateRow(_masterLabel, (values, volume) => values.MasterVolume = volume);
             _musicRow = CreateRow(_musicLabel, (values, volume) => values.MusicVolume = volume);
             _sfxRow = CreateRow(_sfxLabel, (values, volume) => values.SfxVolume = volume);
+            _sfxRow.OnValueChanged += _ => PlayPreview(_effectsPreviewSource, false);
             _uiRow = CreateRow(_uiLabel, (values, volume) => values.UiVolume = volume);
+            _uiRow.OnValueChanged += _ => PlayPreview(_interfacePreviewSource, true);
             _voiceRow = CreateRow(_voiceLabel, (values, volume) => values.VoiceVolume = volume);
             _micRow = CreateToggleRow(_micLabel, (values, isOn) => values.IsMicOn = isOn);
             _pushToTalkRow = CreateToggleRow(_pushToTalkLabel, (values, isOn) => values.IsPushToTalk = isOn);
@@ -75,6 +83,18 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             row.Setup(label);
             row.OnToggled += isOn => _settings.Change(SettingsCategory.Audio, values => apply(values, isOn));
             return row;
+        }
+
+        // after the row's own handler, so the mixer already has the new level; rate-limited so a drag doesn't stack samples
+        private void PlayPreview(AudioSource source, bool isInterface)
+        {
+            if (_previewData == null || source == null || Time.unscaledTime < _nextPreviewTime) return;
+
+            var clip = isInterface ? _previewData.InterfaceSFX : _previewData.EffectsSFX;
+            if (clip == null) return;
+
+            _nextPreviewTime = Time.unscaledTime + _previewData.MinIntervalInSeconds;
+            source.PlayOneShot(clip, isInterface ? _previewData.InterfaceSFXVolume : _previewData.EffectsSFXVolume);
         }
 
         // the mute rows always sit last, after the rows built once

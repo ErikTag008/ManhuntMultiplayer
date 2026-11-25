@@ -8,7 +8,8 @@ using UnityEngine.UI;
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
     // Settings shell: tabs, one page per category, reset (behind a confirm) and back. Changes apply at once and are saved on close.
-    // The confirm is the menus canvas' shared dialog, so it has to sit above this menu in the hierarchy.
+    // The confirm is the menus canvas' shared dialog, so it has to sit above this menu in the hierarchy. While this menu is
+    // open the dialog only ever holds its own questions (reset here, keep display on the Video tab), so back and close shut it.
     public class SettingsMenuHUD : MonoBehaviour
     {
         [Inject] private readonly SettingsMenuState _state;
@@ -62,10 +63,11 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             else
             {
                 _keybinds.CancelRebind();
-                _settings.Save();
                 _panel.Hide();
-                // after the hide, so the closing confirm doesn't hand focus back to this menu
-                if (_isAskingReset) _confirmDialog.Close();
+                // after the hide, so the closing confirm doesn't hand focus back to this menu, and before the save,
+                // so an unkept display change is reverted first
+                if (_confirmDialog.IsOpen) _confirmDialog.Close();
+                _settings.Save();
             }
         }
 
@@ -82,7 +84,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         // LB/RB walk the tabs round, and the focus goes to the new tab because the old page's rows just turned off
         private void HandleTabStepped(int step)
         {
-            if (!_panel.IsShown || _tabs.Count == 0 || _isAskingReset) return;
+            if (!_panel.IsShown || _tabs.Count == 0 || _confirmDialog.IsOpen) return;
 
             ShowTab((_currentTab + step + _tabs.Count) % _tabs.Count);
             _tabList.FocusSelected();
@@ -113,7 +115,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         // back closes this menu's confirm before the menu
         private void HandleBackRequested()
         {
-            if (_isAskingReset) _confirmDialog.Close();
+            if (_confirmDialog.IsOpen) _confirmDialog.Close();
             else Close();
         }
 

@@ -30,6 +30,8 @@ namespace Project.Assets._Project._Scripts.Input
         public event Action<bool> OnEmoteHeldChanged;
         // the hold ended because the gameplay actions were turned off (a menu opened), so the wheel closes without a pick
         public event Action OnEmoteCanceled;
+        // also ends (false) when a menu turns the gameplay actions off, so the scoreboard never stays up behind it
+        public event Action<bool> OnScoreboardHeldChanged;
 
         public event Action OnStartButtonKeyPressed;
 
@@ -171,6 +173,12 @@ namespace Project.Assets._Project._Scripts.Input
                 if (_isDisablingGameplayActions) OnEmoteCanceled?.Invoke();
                 else OnEmoteHeldChanged?.Invoke(false);
             }
+        }
+
+        public void Scoreboard(InputAction.CallbackContext context)
+        {
+            if (context.performed) OnScoreboardHeldChanged?.Invoke(true);
+            else if (context.canceled) OnScoreboardHeldChanged?.Invoke(false);
         }
 
         public void Ability(InputAction.CallbackContext context)

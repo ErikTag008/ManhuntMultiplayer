@@ -38,6 +38,7 @@ MonoBehaviour:
   <DefaultSensitivity>k__BackingField: 1
   <MinSensitivity>k__BackingField: 0.1
   <MaxSensitivity>k__BackingField: 3
+  <DefaultIsCrosshairShown>k__BackingField: 1
   <InputActions>k__BackingField: {fileID: -944628639613478452, guid: c396ece31d49f4148abf609015547b3f, type: 3}
   <Keybinds>k__BackingField:
   - <DisplayName>k__BackingField: Move forward
@@ -99,7 +100,12 @@ MonoBehaviour:
     <Action>k__BackingField: {fileID: -7801919325872487568, guid: c396ece31d49f4148abf609015547b3f, type: 3}
     <CompositePart>k__BackingField: 
     <HasGamepadBinding>k__BackingField: 1
-    <ShareGroup>k__BackingField: 
+    <ShareGroup>k__BackingField: LobbyMenu
+  - <DisplayName>k__BackingField: Scoreboard (hold)
+    <Action>k__BackingField: {fileID: -5740924615315373552, guid: c396ece31d49f4148abf609015547b3f, type: 3}
+    <CompositePart>k__BackingField: 
+    <HasGamepadBinding>k__BackingField: 1
+    <ShareGroup>k__BackingField: LobbyMenu
   - <DisplayName>k__BackingField: Spectate next
     <Action>k__BackingField: {fileID: -756349785758388124, guid: c396ece31d49f4148abf609015547b3f, type: 3}
     <CompositePart>k__BackingField: 
@@ -139,3 +145,6 @@ MonoBehaviour:
   - <Keyboard>/anyKey
   <RebindCancelPath>k__BackingField: <Keyboard>/escape
   <RebindTimeoutInSeconds>k__BackingField: 6
+  <MenuBackBinding>k__BackingField: <Gamepad>/buttonEast
+  <PreviousTabBinding>k__BackingField: <Gamepad>/leftShoulder
+  <NextTabBinding>k__BackingField: <Gamepad>/rightShoulder

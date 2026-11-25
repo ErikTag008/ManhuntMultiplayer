@@ -54,6 +54,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private readonly List<int> _knockedMarkerSeconds = new();
         private bool _isSpectating;
         private bool _isVoiceTransmitting;
+        private bool _isScoreboardShown;
+        private readonly List<ScoreboardEntry> _scoreboardEntries = new();
 
         public event Action OnRunnerCountsChanged;
         public event Action OnBleedOutChanged;
@@ -73,6 +75,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public event Action OnKnockedMarkersChanged;
         public event Action OnSpectatingChanged;
         public event Action OnVoiceTransmittingChanged;
+        public event Action OnScoreboardChanged;
         // the effect's name, its description and whether it's good, the moment this runner takes a drop; a one-off
         public event Action<string, string, bool> OnDropTaken;
         // a teammate's name the moment they get knocked; a one-off like OnStationCompleted
@@ -142,6 +145,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public bool IsSpectating => _isSpectating;
         // the local mic is sending voice
         public bool IsVoiceTransmitting => _isVoiceTransmitting;
+        // the hold scoreboard is up, and its lines in the order to show them
+        public bool IsScoreboardShown => _isScoreboardShown;
+        public IReadOnlyList<ScoreboardEntry> ScoreboardEntries => _scoreboardEntries;
 
         public void SetRunnerCounts(int up, int knocked, int eliminated, int catchers)
         {
@@ -313,6 +319,17 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             OnVoiceTransmittingChanged?.Invoke();
         }
 
+        // copies the entries, so the caller can reuse its list
+        public void SetScoreboard(bool isShown, IReadOnlyList<ScoreboardEntry> entries)
+        {
+            if (_isScoreboardShown == isShown && AreScoreboardEntriesEqual(entries)) return;
+
+            _isScoreboardShown = isShown;
+            _scoreboardEntries.Clear();
+            for (int i = 0; i < entries.Count; i++) _scoreboardEntries.Add(entries[i]);
+            OnScoreboardChanged?.Invoke();
+        }
+
         // copies the tags, so the caller can reuse its list
         public void SetNameTags(IReadOnlyList<NameTag> tags)
         {
@@ -351,6 +368,18 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             for (int i = 0; i < next.Count; i++)
             {
                 if (current[i] != next[i]) return false;
+            }
+
+            return true;
+        }
+
+        private bool AreScoreboardEntriesEqual(IReadOnlyList<ScoreboardEntry> entries)
+        {
+            if (_scoreboardEntries.Count != entries.Count) return false;
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                if (!_scoreboardEntries[i].Equals(entries[i])) return false;
             }
 
             return true;
