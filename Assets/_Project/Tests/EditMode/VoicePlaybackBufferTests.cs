@@ -95,6 +95,31 @@ namespace Project.Assets._Project.Tests.EditMode
         }
 
         [Test]
+        public void Write_WithGain_BoostsSamples()
+        {
+            var buffer = new VoicePlaybackBuffer(8, 1, 2f);
+            Write(buffer, 8192);
+            var data = new float[1];
+
+            buffer.Read(data);
+
+            Assert.AreEqual(0.5f, data[0], 0.0001f);
+        }
+
+        [Test]
+        public void Write_WithGain_ClipsAtFullScale()
+        {
+            var buffer = new VoicePlaybackBuffer(8, 2, 4f);
+            Write(buffer, 16384, -16384);
+            var data = new float[2];
+
+            buffer.Read(data);
+
+            Assert.AreEqual(1f, data[0], 0.0001f);
+            Assert.AreEqual(-1f, data[1], 0.0001f);
+        }
+
+        [Test]
         public void Clear_EmptiesAndStopsPlaying()
         {
             var buffer = new VoicePlaybackBuffer(8, 1);

@@ -157,7 +157,7 @@ namespace Project.Assets._Project._Scripts.Player.Voice
                 int sampleRate = _voiceChat.SampleRate;
                 if (sampleRate <= 0) return false;
 
-                _playbackBuffer = new(Mathf.CeilToInt(sampleRate * _settings.MaxBufferedInSeconds), Mathf.CeilToInt(sampleRate * _settings.StartBufferInSeconds));
+                _playbackBuffer = new(Mathf.CeilToInt(sampleRate * _settings.MaxBufferedInSeconds), Mathf.CeilToInt(sampleRate * _settings.StartBufferInSeconds), _settings.PlaybackGain);
                 _clip = AudioClip.Create(nameof(PlayerVoice), sampleRate * ClipLengthInSeconds, MonoChannels, sampleRate, true, _playbackBuffer.Read);
                 _audioSource.clip = _clip;
             }

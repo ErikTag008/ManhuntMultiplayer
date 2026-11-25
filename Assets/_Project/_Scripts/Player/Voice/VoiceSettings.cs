@@ -8,6 +8,9 @@ namespace Project.Assets._Project._Scripts.Player.Voice
         // full volume up to the min distance, then a linear fade to silence at the max
         [field: SerializeField, Min(0f)] public float MinDistanceInMeters { get; private set; } = 3f;
         [field: SerializeField, Min(0f)] public float MaxDistanceInMeters { get; private set; } = 25f;
+        // boosts every received voice before the mixer; the volume slider tops out at 0 dB, and Steam voice arrives quiet.
+        // 2 is about +6 dB; peaks above full scale are clipped, so too high distorts loud speech
+        [field: SerializeField, Range(1f, 4f)] public float PlaybackGain { get; private set; } = 2f;
         [field: SerializeField, Range(0f, 1f)] public float LivingSpatialBlend { get; private set; } = 1f;
         // ghosts and spectators aren't anywhere meaningful in the world, so their voice isn't placed
         [field: SerializeField, Range(0f, 1f)] public float DeadSpatialBlend { get; private set; } = 0f;
