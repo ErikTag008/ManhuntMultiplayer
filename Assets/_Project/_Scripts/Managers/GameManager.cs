@@ -243,7 +243,7 @@ namespace Project.Assets._Project._Scripts.Managers
             _uiManager.ChangeNextCatchersText(string.Format(_nextCatchersFormat, string.Join(_nextCatchersSeparator, _nextCatcherNameBuffer)));
         }
 
-        // Host only: the start button works once enough players are in and everyone is ready; other players never see it
+        // Host only: the countdown starts by itself, and the start button skips the rest of it; other players never see it
         private void RefreshStartAvailability()
         {
             _uiManager.ChangeStartGameButtonVisibility(IsHost);
@@ -255,7 +255,7 @@ namespace Project.Assets._Project._Scripts.Managers
             }
 
             _playerRegistry.CopySessionsTo(_sessionBuffer);
-            bool canStart = _gameStateMachine.CurrentState == GameState.WaitingForPlayers && LobbyReadiness.CanStart(_sessionBuffer, _gameLobbySettings.MinRequiredPlayers);
+            bool canStart = _gameStateMachine.CurrentState == GameState.Countdown && LobbyReadiness.CanStart(_sessionBuffer, _gameLobbySettings.MinRequiredPlayers);
             _uiManager.ChangeStartGameButtonAvailability(canStart);
         }
 

@@ -42,7 +42,6 @@ namespace Project.Assets._Project._Scripts.Managers
         private readonly Func<int, int> _pickRandomIndex = count => UnityEngine.Random.Range(0, count);
         private CancellationTokenSource _gameLoopCTS;
         private CancellationTokenSource _countdownCTS;
-        private bool _gameStartRequested;
         // Server only: read from the lobby config once per round, like the map and the timers
         private GameMode _roundMode;
         // Server only: nobody was made a catcher (a lone player), so the round is practice
@@ -102,13 +101,12 @@ namespace Project.Assets._Project._Scripts.Managers
             return true;
         }
 
-        // Only once enough players are in and every one of them is ready
+        // The countdown starts by itself once the lobby is startable; this skips what is left of it
         public void RequestGameStart()
         {
-            if (!IsServer || _state.Value != GameState.WaitingForPlayers) return;
+            if (!IsServer || _state.Value != GameState.Countdown) return;
 
-            _playerRegistry.CopySessionsTo(_sessionBuffer);
-            if (LobbyReadiness.CanStart(_sessionBuffer, _settings.MinRequiredPlayers)) _gameStartRequested = true;
+            _countdownEndTime.Value = NetworkManager.ServerTime.Time;
         }
 
         private async UniTaskVoid GameLoop(CancellationToken token)
@@ -123,7 +121,7 @@ namespace Project.Assets._Project._Scripts.Managers
                 do
                 {
                     _state.Value = GameState.WaitingForPlayers;
-                    await WaitForEnoughPlayers(token);
+                    await WaitUntilStartable(token);
 
                     _countdownEndTime.Value = NetworkManager.ServerTime.Time + _settings.GameStartWaitTimeInSeconds;
                     _state.Value = GameState.Countdown;
@@ -200,10 +198,16 @@ namespace Project.Assets._Project._Scripts.Managers
             return false;
         }
 
-        private async UniTask WaitForEnoughPlayers(CancellationToken token)
+        // enough players are in and every one of them is ready
+        private bool IsLobbyStartable()
         {
-            await UniTask.WaitUntil(() => _gameStartRequested, cancellationToken: token);
-            _gameStartRequested = false;
+            _playerRegistry.CopySessionsTo(_sessionBuffer);
+            return LobbyReadiness.CanStart(_sessionBuffer, _settings.MinRequiredPlayers);
+        }
+
+        private async UniTask WaitUntilStartable(CancellationToken token)
+        {
+            await UniTask.WaitUntil(IsLobbyStartable, cancellationToken: token);
         }
 
         private async UniTask WaitForCountdownEnd(CancellationToken token)
@@ -217,8 +221,7 @@ namespace Project.Assets._Project._Scripts.Managers
             bool isStillReady = true;
             await UniTask.WaitUntil(() =>
             {
-                _playerRegistry.CopySessionsTo(_sessionBuffer);
-                isStillReady = LobbyReadiness.CanStart(_sessionBuffer, _settings.MinRequiredPlayers);
+                isStillReady = IsLobbyStartable();
                 return !isStillReady || NetworkManager.ServerTime.Time >= _countdownEndTime.Value;
             }, cancellationToken: token);
 

@@ -180,8 +180,8 @@ namespace Project.Assets._Project._Scripts.Managers
             }
         }
 
-        // Teams are picked each round, so the lobby is neutral: default model, no weapon, everyone up and not ready.
-        // Each match gets a fresh map vote; the ability pick is kept between rounds.
+        // Teams are picked each round, so the lobby is neutral: default model, no weapon, everyone up.
+        // Each match gets a fresh map vote; the ability pick and ready are kept, so a ready lobby counts down again by itself.
         public void ResetForLobby()
         {
             for (int i = 0; i < _sessions.Count; i++)
@@ -190,7 +190,6 @@ namespace Project.Assets._Project._Scripts.Managers
                 {
                     session.Team = Team.None;
                     session.LifeState = LifeState.Up;
-                    session.IsReady = false;
                     session.MapVote = PlayerSession.NoMapVote;
                 });
             }
