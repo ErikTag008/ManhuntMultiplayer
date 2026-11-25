@@ -53,6 +53,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private readonly List<Vector2> _knockedMarkerPositions = new();
         private readonly List<int> _knockedMarkerSeconds = new();
         private bool _isSpectating;
+        private bool _isVoiceTransmitting;
 
         public event Action OnRunnerCountsChanged;
         public event Action OnBleedOutChanged;
@@ -71,6 +72,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public event Action OnRescueHintChanged;
         public event Action OnKnockedMarkersChanged;
         public event Action OnSpectatingChanged;
+        public event Action OnVoiceTransmittingChanged;
         // the effect's name, its description and whether it's good, the moment this runner takes a drop; a one-off
         public event Action<string, string, bool> OnDropTaken;
         // a teammate's name the moment they get knocked; a one-off like OnStationCompleted
@@ -138,6 +140,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public IReadOnlyList<int> KnockedMarkerSeconds => _knockedMarkerSeconds;
         // true while this player watches another one through the spectator camera
         public bool IsSpectating => _isSpectating;
+        // the local mic is sending voice
+        public bool IsVoiceTransmitting => _isVoiceTransmitting;
 
         public void SetRunnerCounts(int up, int knocked, int eliminated, int catchers)
         {
@@ -299,6 +303,14 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
             _isSpectating = isSpectating;
             OnSpectatingChanged?.Invoke();
+        }
+
+        public void SetVoiceTransmitting(bool isTransmitting)
+        {
+            if (_isVoiceTransmitting == isTransmitting) return;
+
+            _isVoiceTransmitting = isTransmitting;
+            OnVoiceTransmittingChanged?.Invoke();
         }
 
         // copies the tags, so the caller can reuse its list

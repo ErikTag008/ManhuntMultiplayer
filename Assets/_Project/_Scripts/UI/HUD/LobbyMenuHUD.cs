@@ -136,7 +136,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             if (!_state.IsOpen) return;
 
             if (_friendInvite != null && _friendInvite.IsOpen) _friendInvite.Close();
-            else if (_state.IsCustomizeOpen) _state.ToggleCustomizeOpen(false);
+            else if (_state.IsCustomizeOpen) _state.RequestCustomizeBack();
             else _state.ToggleOpen(false);
         }
 

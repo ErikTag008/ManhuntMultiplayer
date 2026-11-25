@@ -20,6 +20,9 @@ namespace Project.Assets._Project._Scripts.UI.Shared
         [SerializeField] private GameObject _noPreviewPlaceholder;
         [SerializeField] private Color _normalColor = new(0.15f, 0.15f, 0.2f, 0.87f);
         [SerializeField] private Color _selectedColor = new(0.2f, 0.6f, 0.3f, 1f);
+        // optional; fades the whole option while dimmed, which leaves it clickable
+        [SerializeField] private CanvasGroup _dimGroup;
+        [SerializeField, Range(0f, 1f)] private float _dimmedAlpha = 0.45f;
 
         public event Action<int> OnClicked;
 
@@ -54,6 +57,11 @@ namespace Project.Assets._Project._Scripts.UI.Shared
             _preview.ChangeTexture(preview);
             _preview.gameObject.SetActive(preview != null);
             if (_noPreviewPlaceholder != null) _noPreviewPlaceholder.SetActive(preview == null);
+        }
+
+        public void ToggleDimmed(bool isDimmed)
+        {
+            if (_dimGroup != null) _dimGroup.alpha = isDimmed ? _dimmedAlpha : 1f;
         }
 
         public void ToggleSelected(bool isSelected) => _background.color = isSelected ? _selectedColor : _normalColor;

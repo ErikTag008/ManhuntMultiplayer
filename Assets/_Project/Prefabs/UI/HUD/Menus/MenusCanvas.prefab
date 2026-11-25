@@ -5973,6 +5973,10 @@ MonoBehaviour:
   - <Label>k__BackingField: Controls
     <Category>k__BackingField: 3
     <Page>k__BackingField: {fileID: 457955816467985248}
+  _confirmDialog: {fileID: 7417902877599785634}
+  _resetMessageFormat: Reset all {0} settings to their defaults?
+  _resetConfirmLabel: Reset
+  _resetCancelLabel: Cancel
 --- !u!1 &6964849623980220532
 GameObject:
   m_ObjectHideFlags: 0

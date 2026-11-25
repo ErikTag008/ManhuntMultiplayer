@@ -7,7 +7,8 @@ using UnityEngine.UI;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
-    // Settings shell: tabs, one page per category, reset and back. Changes apply at once and are saved on close.
+    // Settings shell: tabs, one page per category, reset (behind a confirm) and back. Changes apply at once and are saved on close.
+    // The confirm is the menus canvas' shared dialog, so it has to sit above this menu in the hierarchy.
     public class SettingsMenuHUD : MonoBehaviour
     {
         [Inject] private readonly SettingsMenuState _state;
@@ -19,17 +20,27 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private Button _resetButton;
         [SerializeField] private Button _backButton;
         [SerializeField] private List<SettingsTab> _tabs = new();
+        [SerializeField] private ConfirmDialog _confirmDialog;
+        // {0} is the tab's label
+        [SerializeField] private string _resetMessageFormat = "Reset all {0} settings to their defaults?";
+        [SerializeField] private string _resetConfirmLabel = "Reset";
+        [SerializeField] private string _resetCancelLabel = "Cancel";
 
         private readonly List<(int id, string label)> _tabBuffer = new();
         private readonly List<List<Selectable>> _navigationRows = new();
         private int _currentTab;
+        // the dialog is shared, so this menu only reacts to the questions it asked; the tab is kept in case it changes
+        private bool _isAskingReset;
+        private int _resetTab;
 
         private void Start()
         {
             _state.OnOpenChanged += HandleOpenChanged;
+            _state.OnBackRequested += HandleBackRequested;
+            _confirmDialog.OnClosed += HandleConfirmClosed;
             _tabList.OnOptionClicked += ShowTab;
             _menuButtons.OnTabStepped += HandleTabStepped;
-            _resetButton.onClick.AddListener(ResetCurrentTab);
+            _resetButton.onClick.AddListener(AskToReset);
             _backButton.onClick.AddListener(Close);
 
             _tabBuffer.Clear();
@@ -53,6 +64,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
                 _keybinds.CancelRebind();
                 _settings.Save();
                 _panel.Hide();
+                // after the hide, so the closing confirm doesn't hand focus back to this menu
+                if (_isAskingReset) _confirmDialog.Close();
             }
         }
 
@@ -69,7 +82,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         // LB/RB walk the tabs round, and the focus goes to the new tab because the old page's rows just turned off
         private void HandleTabStepped(int step)
         {
-            if (!_panel.IsShown || _tabs.Count == 0) return;
+            if (!_panel.IsShown || _tabs.Count == 0 || _isAskingReset) return;
 
             ShowTab((_currentTab + step + _tabs.Count) % _tabs.Count);
             _tabList.FocusSelected();
@@ -97,9 +110,31 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             if (hasPageRows && openTab != null) EUtils.UI.SetNavigationUp(_navigationRows[1], openTab);
         }
 
-        private void ResetCurrentTab()
+        // back closes this menu's confirm before the menu
+        private void HandleBackRequested()
         {
-            var category = _tabs[_currentTab].Category;
+            if (_isAskingReset) _confirmDialog.Close();
+            else Close();
+        }
+
+        private void AskToReset()
+        {
+            _resetTab = _currentTab;
+            _isAskingReset = true;
+            _confirmDialog.Open(string.Format(_resetMessageFormat, _tabs[_resetTab].Label), ResetAskedTab, _resetConfirmLabel, _resetCancelLabel);
+        }
+
+        private void HandleConfirmClosed()
+        {
+            if (!_isAskingReset) return;
+
+            _isAskingReset = false;
+            if (_panel.IsShown) _resetButton.Select();
+        }
+
+        private void ResetAskedTab()
+        {
+            var category = _tabs[_resetTab].Category;
             if (category == SettingsCategory.Controls) _keybinds.ResetAll();
             else _settings.ResetCategory(category);
         }
@@ -109,9 +144,11 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private void OnDestroy()
         {
             _state.OnOpenChanged -= HandleOpenChanged;
+            _state.OnBackRequested -= HandleBackRequested;
+            _confirmDialog.OnClosed -= HandleConfirmClosed;
             _tabList.OnOptionClicked -= ShowTab;
             _menuButtons.OnTabStepped -= HandleTabStepped;
-            _resetButton.onClick.RemoveListener(ResetCurrentTab);
+            _resetButton.onClick.RemoveListener(AskToReset);
             _backButton.onClick.RemoveListener(Close);
         }
     }

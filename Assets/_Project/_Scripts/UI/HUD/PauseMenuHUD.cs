@@ -57,7 +57,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             if (_playersMenu.IsOpen) _playersMenu.Back();
             else if (_confirmDialog.IsOpen) _confirmDialog.Close();
-            else if (_settingsMenuState.IsOpen) _settingsMenuState.ToggleOpen(false);
+            else if (_settingsMenuState.IsOpen) _settingsMenuState.RequestBack();
             else _state.ToggleOpen(false);
         }
 
@@ -71,7 +71,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
         private void HandleConfirmClosed()
         {
-            if (_state.IsOpen && !_playersMenu.IsOpen) _leaveButton.Select();
+            // the settings menu asks its own questions in this dialog, and refocuses itself
+            if (_state.IsOpen && !_playersMenu.IsOpen && !_settingsMenuState.IsOpen) _leaveButton.Select();
         }
 
         private void HandlePlayersMenuClosed()

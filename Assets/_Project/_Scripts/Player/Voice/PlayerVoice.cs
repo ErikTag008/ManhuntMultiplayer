@@ -2,6 +2,7 @@ using KBCore.Refs;
 using Project.Assets._Project._Scripts.Input;
 using Project.Assets._Project._Scripts.Networking;
 using Project.Assets._Project._Scripts.Settings;
+using Project.Assets._Project._Scripts.UI.HUD;
 using Project.Assets._Project._Scripts.Voice;
 using Reflex.Attributes;
 using System;
@@ -27,6 +28,7 @@ namespace Project.Assets._Project._Scripts.Player.Voice
         [Inject] private readonly VoiceMuteList _muteList;
         [Inject] private readonly GameSettingsService _gameSettings;
         [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
+        [Inject] private readonly GameHUDState _hudState;
         [SerializeField, Self] private PlayerLifeState _lifeState;
         [SerializeField, Self] private InputReader _inputReader;
         [SerializeField] private AudioSource _audioSource;
@@ -36,10 +38,15 @@ namespace Project.Assets._Project._Scripts.Player.Voice
         private readonly List<ulong> _listenerBuffer = new();
         private VoicePlaybackBuffer _playbackBuffer;
         private AudioClip _clip;
+        private float _speakingEndTime;
         // Owner only
         private InputAction _pushToTalkAction;
         private bool _isRecording;
         private float _nextReadTime;
+        private float _transmitEndTime;
+
+        // a non-owner instance is playing this player's voice
+        public bool IsSpeaking => Time.unscaledTime < _speakingEndTime;
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -68,6 +75,7 @@ namespace Project.Assets._Project._Scripts.Player.Voice
             if (!IsSpawned || !IsOwner) return;
 
             ToggleRecording(ShouldRecord());
+            _hudState.SetVoiceTransmitting(IsTransmitting());
             if (!_voiceChat.IsAvailable || Time.unscaledTime < _nextReadTime) return;
 
             _nextReadTime = Time.unscaledTime + _settings.ReadIntervalInSeconds;
@@ -77,6 +85,7 @@ namespace Project.Assets._Project._Scripts.Player.Voice
             if (compressed.Length > _settings.MaxUnreliablePayloadBytes) SendVoiceReliableRpc(compressed);
             else SendVoiceUnreliableRpc(compressed);
 
+            _transmitEndTime = Time.unscaledTime + _settings.SpeakingHoldInSeconds;
             if (_settings.IsLoopbackOn) PlayVoice(compressed, _settings.LoopbackSpatialBlend);
         }
 
@@ -86,6 +95,14 @@ namespace Project.Assets._Project._Scripts.Player.Voice
             if (!_voiceChat.IsAvailable || !values.IsMicOn) return false;
 
             return !values.IsPushToTalk || (_pushToTalkAction != null && _pushToTalkAction.IsPressed());
+        }
+
+        // push to talk shows while the key is held; an open mic only while Steam actually hands over speech
+        private bool IsTransmitting()
+        {
+            if (!_isRecording) return false;
+
+            return _gameSettings.Values.IsPushToTalk || Time.unscaledTime < _transmitEndTime;
         }
 
         private void ToggleRecording(bool isRecording)
@@ -147,6 +164,7 @@ namespace Project.Assets._Project._Scripts.Player.Voice
 
             _audioSource.spatialBlend = spatialBlend;
             _playbackBuffer.WritePcm16(pcm.Array, pcm.Offset, pcm.Count);
+            _speakingEndTime = Time.unscaledTime + _settings.SpeakingHoldInSeconds;
         }
 
         // the clip and buffer wait for the first voice, since the sample rate is the codec's
@@ -187,9 +205,11 @@ namespace Project.Assets._Project._Scripts.Player.Voice
         public override void OnNetworkDespawn()
         {
             StopPlayback();
+            _speakingEndTime = 0f;
             if (IsOwner)
             {
                 ToggleRecording(false);
+                _hudState.SetVoiceTransmitting(false);
                 _pushToTalkAction = null;
                 return;
             }

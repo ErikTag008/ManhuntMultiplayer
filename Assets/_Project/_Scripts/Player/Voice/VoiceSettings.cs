@@ -23,6 +23,8 @@ namespace Project.Assets._Project._Scripts.Player.Voice
         [field: SerializeField, Min(0.01f)] public float MaxBufferedInSeconds { get; private set; } = 0.5f;
         // bigger packets go reliable; Netcode refuses unreliable messages above its MTU and Steam's relay drops them around 1200 bytes
         [field: SerializeField, Min(1)] public int MaxUnreliablePayloadBytes { get; private set; } = 1000;
+        // a voice counts as talking this long after its last packet, so the speaking and transmitting icons don't flicker between packets
+        [field: SerializeField, Min(0f)] public float SpeakingHoldInSeconds { get; private set; } = 0.3f;
         // {0} is the client id, shown until the player's name arrives
         [field: SerializeField] public string UnknownPeerNameFormat { get; private set; } = "Player {0}";
 

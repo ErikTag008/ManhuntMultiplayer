@@ -122,7 +122,7 @@ namespace Project.Assets._Project._Scripts.UI
         {
             if (_mainMenuState.IsBusy) return;
 
-            if (_isSettingsOpenedHere) _settingsMenuState.ToggleOpen(false);
+            if (_isSettingsOpenedHere) _settingsMenuState.RequestBack();
             else _mainMenuState.ShowScreen(MainMenuScreen.Main);
         }
 

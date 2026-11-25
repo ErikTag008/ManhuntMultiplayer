@@ -1,5 +1,6 @@
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.Player.Drops;
+using Project.Assets._Project._Scripts.Player.Voice;
 using Project.Assets._Project._Scripts.UI.HUD;
 using Reflex.Attributes;
 using System.Collections.Generic;
@@ -11,7 +12,8 @@ namespace Project.Assets._Project._Scripts.Player
 {
     // Owner only: puts the other players' name tags on this player's screen. Teammates show through walls at any range;
     // the other team only shows in line of sight, within range and while not invisible, so hiding still works.
-    // Knocked players get the knocked tone; eliminated players and ghosts have no tag.
+    // Knocked players get the knocked tone; eliminated players and ghosts have no tag. In the lobby each tag also shows
+    // whether that player is ready, and any tag shows a speaker icon while this client plays that player's voice.
     [RequireComponent(typeof(PlayerTeam), typeof(PlayerCameraBinder), typeof(PlayerSpectator))]
     public class PlayerNameTagFeed : NetworkBehaviour
     {
@@ -38,6 +40,7 @@ namespace Project.Assets._Project._Scripts.Player
         // FixedString to string allocates, so each name is converted once per change
         private readonly Dictionary<ulong, (FixedString64Bytes Raw, string Text)> _names = new();
         private readonly Dictionary<ulong, (Transform Model, Transform Head)> _heads = new();
+        private readonly Dictionary<ulong, PlayerVoice> _voices = new();
         private readonly RaycastHit[] _sightHits = new RaycastHit[SightHitCapacity];
 
         private void OnValidate() => this.ValidateRefs();
@@ -71,6 +74,7 @@ namespace Project.Assets._Project._Scripts.Player
         {
             _names.Remove(clientId);
             _heads.Remove(clientId);
+            _voices.Remove(clientId);
         }
 
         private void RefreshNameTags()
@@ -117,7 +121,7 @@ namespace Project.Assets._Project._Scripts.Player
                 alpha = GetEnemyAlpha(distance);
             }
 
-            tag = new NameTag(viewportPoint, name.Text, GetTone(player), alpha);
+            tag = new NameTag(viewportPoint, name.Text, GetTone(player), alpha, GetReadiness(player), IsSpeaking(player));
             return true;
         }
 
@@ -163,6 +167,29 @@ namespace Project.Assets._Project._Scripts.Player
             var head = rig != null ? rig.Head : null;
             _heads[player.OwnerClientId] = (model, head);
             return head;
+        }
+
+        // only the lobby has players without a team (sitting-out players are eliminated and have no tag)
+        private NameTagReadiness GetReadiness(PlayerController player)
+        {
+            if (player.Team != Team.None) return NameTagReadiness.None;
+            if (!_sessionDirectory.TryGetSession(player.OwnerClientId, out var session)) return NameTagReadiness.None;
+
+            return session.IsReady ? NameTagReadiness.Ready : NameTagReadiness.NotReady;
+        }
+
+        // the voice only plays here when this client may hear it, so a muted or dead speaker shows no icon
+        private bool IsSpeaking(PlayerController player)
+        {
+            // a respawn brings a new player object, so a cached voice of another object is looked up again
+            if (!_voices.TryGetValue(player.OwnerClientId, out var voice) || voice == null || voice.gameObject != player.gameObject)
+            {
+                if (!player.TryGetComponent(out voice)) return false;
+
+                _voices[player.OwnerClientId] = voice;
+            }
+
+            return voice.IsSpeaking;
         }
 
         private static NameTagTone GetTone(PlayerController player)

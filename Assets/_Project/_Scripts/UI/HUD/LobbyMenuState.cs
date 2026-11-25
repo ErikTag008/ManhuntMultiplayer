@@ -24,6 +24,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public event Action<bool> OnOpenChanged;
         // the Customize screen covers the lobby menu while it is open; the lobby menu itself stays open underneath
         public event Action<bool> OnCustomizeOpenChanged;
+        // back pressed on the Customize screen; the screen closes its confirm first, then itself
+        public event Action OnCustomizeBackRequested;
         public event Action OnAbilityOptionsChanged;
         public event Action OnChoiceChanged;
         public event Action<int> OnAbilityPickRequested;
@@ -64,6 +66,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _isCustomizeOpen = isOpen;
             OnCustomizeOpenChanged?.Invoke(isOpen);
         }
+
+        public void RequestCustomizeBack() => OnCustomizeBackRequested?.Invoke();
 
         public void SetAbilityOptions(IEnumerable<LobbyOption> options)
         {

@@ -299,7 +299,7 @@ namespace Project.Assets._Project._Scripts.Player
             // the Customize screen steps back to the lobby menu first
             if (_lobbyMenuState.IsCustomizeOpen)
             {
-                _lobbyMenuState.ToggleCustomizeOpen(false);
+                _lobbyMenuState.RequestCustomizeBack();
                 return;
             }
 

@@ -66,7 +66,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5885878699951676383}
+  m_Father: {fileID: 8646139758093224702}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -101,7 +101,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Leave
+  m_text: Stay
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f7453d73bf1bd714c9bdf98c50803cd0, type: 2}
   m_sharedMaterial: {fileID: -7711249710816352086, guid: f7453d73bf1bd714c9bdf98c50803cd0, type: 2}
@@ -173,7 +173,7 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!1 &2530706465013133969
+--- !u!1 &2814538564797763057
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -181,9 +181,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1128055188542332954}
-  - component: {fileID: 8417282809909393135}
-  - component: {fileID: 4679889397692873832}
+  - component: {fileID: 2817723422369472760}
+  - component: {fileID: 5697024196864765511}
+  - component: {fileID: 6449371529011316820}
   m_Layer: 5
   m_Name: Label
   m_TagString: Untagged
@@ -191,40 +191,40 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &1128055188542332954
+--- !u!224 &2817723422369472760
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2530706465013133969}
+  m_GameObject: {fileID: 2814538564797763057}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 8646139758093224702}
+  m_Father: {fileID: 5885878699951676383}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!222 &8417282809909393135
+--- !u!222 &5697024196864765511
 CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2530706465013133969}
+  m_GameObject: {fileID: 2814538564797763057}
   m_CullTransparentMesh: 1
---- !u!114 &4679889397692873832
+--- !u!114 &6449371529011316820
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2530706465013133969}
+  m_GameObject: {fileID: 2814538564797763057}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
@@ -238,7 +238,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Stay
+  m_text: Leave
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f7453d73bf1bd714c9bdf98c50803cd0, type: 2}
   m_sharedMaterial: {fileID: -7711249710816352086, guid: f7453d73bf1bd714c9bdf98c50803cd0, type: 2}
@@ -419,7 +419,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4224105499145339956}
+  - {fileID: 2817723422369472760}
   m_Father: {fileID: 2903992287411799222}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.53, y: 0.08}
@@ -540,7 +540,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1128055188542332954}
+  - {fileID: 4224105499145339956}
   m_Father: {fileID: 2903992287411799222}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.06, y: 0.08}
@@ -891,3 +891,5 @@ MonoBehaviour:
   _messageText: {fileID: 4795387989613558969}
   _confirmButton: {fileID: 3849080451432937637}
   _cancelButton: {fileID: 2886912009285966802}
+  _confirmLabel: {fileID: 6449371529011316820}
+  _cancelLabel: {fileID: 1806766630650527519}

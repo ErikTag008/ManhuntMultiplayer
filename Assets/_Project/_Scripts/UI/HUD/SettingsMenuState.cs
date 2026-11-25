@@ -8,6 +8,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private bool _isOpen;
 
         public event Action<bool> OnOpenChanged;
+        // back pressed while settings are open; the menu closes its confirm first, then itself
+        public event Action OnBackRequested;
 
         public bool IsOpen => _isOpen;
 
@@ -18,5 +20,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _isOpen = isOpen;
             OnOpenChanged?.Invoke(isOpen);
         }
+
+        public void RequestBack() => OnBackRequested?.Invoke();
     }
 }
