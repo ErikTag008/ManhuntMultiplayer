@@ -19,6 +19,8 @@ namespace Project.Assets._Project._Scripts.Cosmetics
         // outfit slots only: visuals placed on the anchor, e.g. a hat on the head; its colliders are removed
         [field: SerializeField] public GameObject AttachmentPrefab { get; private set; }
         [field: SerializeField] public CosmeticAnchor Anchor { get; private set; } = CosmeticAnchor.Head;
+        // optional shop tile picture; empty uses one rendered from the item on its model
+        [field: SerializeField] public Texture Icon { get; private set; }
     }
 
     // The CharacterRig bone an outfit attachment sits on

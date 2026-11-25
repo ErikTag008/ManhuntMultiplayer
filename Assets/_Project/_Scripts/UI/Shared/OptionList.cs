@@ -75,6 +75,16 @@ namespace Project.Assets._Project._Scripts.UI.Shared
             foreach (var button in _buttons) rows.Add(new List<Selectable> { button.Selectable });
         }
 
+        // the options as a grid filled left to right, a navigation row per columnCount options
+        public void AddSelectableRows(List<List<Selectable>> rows, int columnCount)
+        {
+            for (int i = 0; i < _buttons.Count; i++)
+            {
+                if (i % columnCount == 0) rows.Add(new List<Selectable>());
+                rows[^1].Add(_buttons[i].Selectable);
+            }
+        }
+
         public Selectable GetSelectedSelectable()
         {
             var target = _buttons.Find(button => button.Id == _selectedId);

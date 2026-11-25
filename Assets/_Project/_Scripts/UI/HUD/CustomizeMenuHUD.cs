@@ -8,15 +8,25 @@ using UnityEngine.UI;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
-    // Lobby Customize screen: a tab per slot, the slot's items with their price or state, the points balance and one
-    // action for the picked item (buy, then equip). It covers the lobby menu; Back or the pause key returns to it.
+    // Lobby Customize screen: a tab per slot, the slot's items as picture tiles with their price or state, a turnable
+    // preview of the picked item on its team's model, the points balance and one action for the picked item (buy,
+    // then equip). It covers the lobby menu; Back or the pause key returns to it.
     public class CustomizeMenuHUD : MonoBehaviour
     {
         [Inject] private readonly LobbyMenuState _state;
         [Inject] private readonly CosmeticProfileService _profile;
+        [Inject] private readonly ICosmeticPreview _preview;
         [SerializeField] private FadePanel _panel;
         [SerializeField] private OptionList _slotList;
         [SerializeField] private OptionList _itemList;
+        // its fixed column count sets the gamepad navigation rows
+        [SerializeField] private GridLayoutGroup _itemGrid;
+        [SerializeField] private CoverImage _previewImage;
+        // keeps the preview at the view's aspect, so nothing of the model is cropped
+        [SerializeField] private AspectRatioFitter _previewFitter;
+        [SerializeField] private DragRotateArea _previewRotateArea;
+        // the picked item's name and state, above the preview
+        [SerializeField] private TMP_Text _itemNameText;
         [SerializeField] private TMP_Text _pointsText;
         [SerializeField] private Button _actionButton;
         [SerializeField] private TMP_Text _actionButtonLabel;
@@ -26,7 +36,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private string _catcherWeaponLabel = "Catcher weapon";
         [SerializeField] private string _catcherOutfitLabel = "Catcher outfit";
         [SerializeField] private string _runnerOutfitLabel = "Runner outfit";
-        // {0} is the item name, {1} its price, "Owned" or "Equipped"
+        // the picked item's title: {0} is the item name, {1} its price, "Owned" or "Equipped"
         [SerializeField] private string _itemLabelFormat = "{0}  <size=70%>{1}</size>";
         // {0} is the price
         [SerializeField] private string _priceFormat = "{0} points";
@@ -55,6 +65,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _itemList.OnOptionClicked += HandleItemClicked;
             _actionButton.onClick.AddListener(UsePickedItem);
             _backButton.onClick.AddListener(Close);
+            _previewRotateArea.OnRotated += HandlePreviewRotated;
 
             _optionBuffer.Clear();
             _optionBuffer.Add(((int)CosmeticSlot.CatcherWeapon, _catcherWeaponLabel));
@@ -71,7 +82,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
             if (isOpen)
             {
-                // starts on the equipped item, with the balance as it is now
+                // starts on the equipped item facing front, with the balance as it is now
+                _preview.ResetRotation();
+                _preview.ToggleShown(true);
+                var view = _preview.View;
+                _previewFitter.aspectRatio = (float)view.width / view.height;
+                _previewImage.ChangeTexture(view);
                 ShowSlot(_currentSlot);
                 _panel.Show();
                 _slotList.FocusSelected();
@@ -79,7 +95,10 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             else
             {
                 _panel.Hide();
+                _preview.ToggleShown(false);
             }
+
+            _previewRotateArea.ToggleInput(isOpen);
         }
 
         private void HandleSlotClicked(int slotId) => ShowSlot((CosmeticSlot)slotId);
@@ -91,8 +110,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _profile.Catalog.CopyItems(slot, _items);
 
             _optionBuffer.Clear();
-            foreach (var item in _items) _optionBuffer.Add((item.Id, GetItemLabel(item)));
+            foreach (var item in _items) _optionBuffer.Add((item.Id, GetItemStatus(item)));
             _itemList.Build(_optionBuffer);
+            foreach (var item in _items) _itemList.ChangePreview(item.Id, _preview.GetThumbnail(item));
 
             PickItem(_profile.GetEquipped(slot));
             LinkNavigation();
@@ -108,9 +128,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             _pickedItem = item;
             _itemList.Select(item != null ? item.Id : CosmeticProfile.NoItem);
+            _preview.Show(item);
             ShowMessage(string.Empty);
             RefreshDetails();
         }
+
+        private void HandlePreviewRotated(float degrees) => _preview.Rotate(degrees);
 
         // Buy when not owned yet, equip when owned; the profile refuses what isn't allowed
         private void UsePickedItem()
@@ -134,7 +157,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
         private void HandleProfileChanged()
         {
-            foreach (var item in _items) _itemList.ChangeLabel(item.Id, GetItemLabel(item));
+            foreach (var item in _items) _itemList.ChangeLabel(item.Id, GetItemStatus(item));
+            // an equip in another slot also changes what the preview model wears
+            _preview.Show(_pickedItem);
             ShowMessage(string.Empty);
             RefreshDetails();
         }
@@ -143,9 +168,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         {
             _pointsText.text = string.Format(_pointsFormat, _profile.Points);
             _actionButtonLabel.text = GetActionLabel(_pickedItem);
+            _itemNameText.text = _pickedItem != null ? string.Format(_itemLabelFormat, _pickedItem.DisplayName, GetItemStatus(_pickedItem)) : string.Empty;
         }
-
-        private string GetItemLabel(CosmeticItem item) => string.Format(_itemLabelFormat, item.DisplayName, GetItemStatus(item));
 
         private string GetItemStatus(CosmeticItem item)
         {
@@ -165,7 +189,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             if (_messageText != null) _messageText.text = message;
         }
 
-        // tabs, then one row per item, then the action and back; the first item goes up to the open tab
+        // tabs, then the item grid row by row, then the action and back; the first item row goes up to the open tab
         private void LinkNavigation()
         {
             _navigationRows.Clear();
@@ -174,8 +198,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _navigationRows.Add(slotRow);
 
             LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)_slotList.transform);
-            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)_itemList.transform);
-            _itemList.AddSelectableRows(_navigationRows);
+            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)_itemGrid.transform);
+            _itemList.AddSelectableRows(_navigationRows, Mathf.Max(1, _itemGrid.constraintCount));
             bool hasItemRows = _navigationRows.Count > 1;
 
             _navigationRows.Add(new List<Selectable> { _actionButton, _backButton });
@@ -195,6 +219,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _itemList.OnOptionClicked -= HandleItemClicked;
             _actionButton.onClick.RemoveListener(UsePickedItem);
             _backButton.onClick.RemoveListener(Close);
+            _previewRotateArea.OnRotated -= HandlePreviewRotated;
         }
     }
 }

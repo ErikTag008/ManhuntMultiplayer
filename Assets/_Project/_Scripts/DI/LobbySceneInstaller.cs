@@ -1,5 +1,7 @@
 using KBCore.Refs;
 using Project.Assets._Project._Scripts.CameraUtils;
+using Project.Assets._Project._Scripts.Cosmetics;
+using Project.Assets._Project._Scripts.Player.Cosmetics;
 using Project.Assets._Project._Scripts.SceneFlow;
 using Project.Assets._Project._Scripts.UI;
 using Reflex.Attributes;
@@ -15,6 +17,7 @@ namespace Project.Assets._Project._Scripts.DI
         [SerializeField] private Camera _gameplayCamera;
         [SerializeField, Scene] private FPCameraInstaller _fpcameraInstaller;
         [SerializeField, Scene] private LobbyUI _lobbyUI;
+        [SerializeField, Scene] private CosmeticPreviewStage _cosmeticPreview;
 
         private ActiveCameraProvider _activeCameraProvider;
         private SceneContextProvider _sceneContextProvider;
@@ -45,6 +48,7 @@ namespace Project.Assets._Project._Scripts.DI
             builder.RegisterFactory(p => _lobbyUI, new[] { typeof(ILobbyUI) }, Lifetime.Singleton, Reflex.Enums.Resolution.Lazy);
             builder.RegisterValue(_gameplayCamera);
             builder.RegisterValue(_fpcameraInstaller);
+            builder.RegisterValue(_cosmeticPreview, new[] { typeof(ICosmeticPreview) });
         }
 
         private void OnDestroy()

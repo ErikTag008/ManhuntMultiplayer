@@ -83,7 +83,7 @@ namespace Project.Assets._Project._Scripts.Player.Cosmetics
                 _bodyMaterials.Clear();
                 _appliedOutfit = null;
                 _dressedModel = model;
-                CaptureBodyRenderers(model);
+                CosmeticDressing.CaptureBodyRenderers(model, _bodyMaterials, _rendererBuffer);
             }
 
             if (_dressedModel == null) return;
@@ -97,55 +97,11 @@ namespace Project.Assets._Project._Scripts.Player.Cosmetics
             AddAttachment(outfit);
         }
 
-        // the held weapon sits in the model's hand, but its look comes from the weapon slot, not the outfit
-        private void CaptureBodyRenderers(Transform model)
-        {
-            if (model == null) return;
-
-            model.GetComponentsInChildren(true, _rendererBuffer);
-            _rendererBuffer.RemoveAll(renderer => renderer.GetComponentInParent<MeleeWeaponBase>() != null);
-            _bodyMaterials.Capture(_rendererBuffer);
-            _rendererBuffer.Clear();
-        }
-
         private void AddAttachment(CosmeticItem outfit)
         {
-            if (outfit == null || outfit.AttachmentPrefab == null) return;
-
-            var anchor = FindAnchor(outfit.Anchor);
-            if (anchor == null) return;
-
-            _attachment = Instantiate(outfit.AttachmentPrefab, anchor, false);
-            StripToVisuals(_attachment, anchor.gameObject.layer);
+            _attachment = CosmeticDressing.AddAttachment(_dressedModel, outfit);
             // the owner's own outfit hides with its body, so it never blocks the first-person camera
-            _team.MatchOwnModelVisibility(_attachment.transform);
-        }
-
-        private Transform FindAnchor(CosmeticAnchor anchor)
-        {
-            var rig = _dressedModel != null ? _dressedModel.GetComponentInChildren<CharacterRig>() : null;
-            if (rig == null) return null;
-
-            return anchor switch
-            {
-                CosmeticAnchor.Spine => rig.Spine,
-                _ => rig.Head
-            };
-        }
-
-        // an outfit is only looks: it must not block movement or catches
-        private static void StripToVisuals(GameObject attachment, int layer)
-        {
-            foreach (var collider in attachment.GetComponentsInChildren<Collider>(true))
-            {
-                collider.enabled = false;
-                Destroy(collider);
-            }
-
-            foreach (var child in attachment.GetComponentsInChildren<Transform>(true))
-            {
-                child.gameObject.layer = layer;
-            }
+            if (_attachment != null) _team.MatchOwnModelVisibility(_attachment.transform);
         }
 
         private void RemoveAttachment()
@@ -158,14 +114,8 @@ namespace Project.Assets._Project._Scripts.Player.Cosmetics
         {
             if (weapon != _dressedWeapon)
             {
-                _weaponMaterials.Clear();
                 _dressedWeapon = weapon;
-                if (weapon != null)
-                {
-                    weapon.GetComponentsInChildren(true, _rendererBuffer);
-                    _weaponMaterials.Capture(_rendererBuffer);
-                    _rendererBuffer.Clear();
-                }
+                CosmeticDressing.CaptureWeaponRenderers(weapon, _weaponMaterials, _rendererBuffer);
             }
 
             if (_dressedWeapon == null) return;
