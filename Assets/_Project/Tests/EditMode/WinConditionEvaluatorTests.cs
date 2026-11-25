@@ -105,6 +105,20 @@ namespace Project.Assets._Project.Tests.EditMode
             Assert.AreEqual(RoundResult.None, _evaluator.Evaluate(sessions, false, false));
         }
 
+        // a mid-round joiner is out of the round without a team, so the last runner falling still ends it
+        [Test]
+        public void SittingOutJoiner_DoesNotKeepTheRoundGoing()
+        {
+            var sessions = new List<PlayerSession>
+            {
+                Session(0, Team.Catcher, LifeState.Up),
+                Session(1, Team.Runner, LifeState.Knocked),
+                Session(2, Team.None, LifeState.Eliminated)
+            };
+
+            Assert.AreEqual(RoundResult.CatchersWin, _evaluator.Evaluate(sessions, false, false));
+        }
+
         // a lone runner with no catchers would otherwise win the moment the hunt starts
         [Test]
         public void PracticeRound_BeforeTimeUp_RoundContinues()

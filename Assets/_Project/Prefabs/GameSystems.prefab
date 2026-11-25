@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 5497104063243791242}
   - component: {fileID: 8188318079639113506}
   - component: {fileID: 727139405806009587}
+  - component: {fileID: 1296341746451079047}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -81,8 +82,13 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _playerRegistry: {fileID: 8383161310462518707}
   _gameStateMachine: {fileID: 2195926799005246414}
+  _initializingLobbyText: Initializing Lobby...
+  _waitingForPlayersFormat: Waiting for players... ({0} required)
+  _gameStartingText: Game starting in
+  _assigningTeamsText: Assigning teams...
   _catchersWinTitle: Catchers win!
   _runnersWinTitle: Runners win!
+  _practiceOverTitle: Practice over
   _localWinSubtitle: You won
   _localLossSubtitle: You lost
   _playerCountFormat: "{0}/{1} players joined  \xB7  {2} ready"
@@ -177,3 +183,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Project.Managers::Project.Assets._Project._Scripts.Managers.MapListSync
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &1296341746451079047
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7613318948758467133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35df67580827d1d45afdb77fe316274e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Managers::Project.Assets._Project._Scripts.Managers.LateJoinSpawner
+  ShowTopMostFoldoutHeaderGroup: 1
+  _gameStateMachine: {fileID: 2195926799005246414}
+  _playerRegistry: {fileID: 8383161310462518707}
+  _playerPrefab: {fileID: 6746026668882122894, guid: 890b20bc431f4b5439a537b4c9d65ce7, type: 3}

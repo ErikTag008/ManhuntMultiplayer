@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Managers
 {
-    // Server only: keeps this session's advert in the lobby directory up to date and closes joins while a round runs.
+    // Server only: keeps this session's advert in the lobby directory up to date and closes joins while the next round starts.
     // Private lobbies are never listed
     public class LobbyAdvertiser : NetworkBehaviour
     {
@@ -32,14 +32,14 @@ namespace Project.Assets._Project._Scripts.Managers
             if (!IsServer) return;
 
             _gameStateMachine.OnStateChanged += HandleStateChanged;
-            _connectionService.ToggleJoinsOpen(!RoundProgress.IsInProgress(_gameStateMachine.CurrentState));
+            _connectionService.ToggleJoinsOpen(RoundProgress.AcceptsJoins(_gameStateMachine.CurrentState));
             StartAdvertising();
         }
 
         // browsers see a round start or end, and the voted map once it's picked, right away instead of on the next heartbeat
         private void HandleStateChanged(GameState previous, GameState current)
         {
-            _connectionService.ToggleJoinsOpen(!RoundProgress.IsInProgress(current));
+            _connectionService.ToggleJoinsOpen(RoundProgress.AcceptsJoins(current));
             if (_isAdvertising) RefreshAdvert();
         }
 

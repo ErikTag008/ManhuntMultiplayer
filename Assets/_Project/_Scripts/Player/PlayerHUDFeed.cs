@@ -247,7 +247,8 @@ namespace Project.Assets._Project._Scripts.Player
         private void RefreshRoundPhase()
         {
             var phase = _hidePhase.IsActive ? RoundPhase.Hide : _huntPhase.IsActive ? RoundPhase.Hunt : RoundPhase.None;
-            _hudState.SetRoundPhase(phase, _team.Team == Team.Catcher);
+            bool isSittingOut = _sessionDirectory.TryGetSession(OwnerClientId, out var session) && session.IsSittingOut;
+            _hudState.SetRoundPhase(phase, _team.Team == Team.Catcher, isSittingOut);
         }
 
         // wanted during the hide phase and the hunt, unless this player only watches through the spectator camera
@@ -434,7 +435,7 @@ namespace Project.Assets._Project._Scripts.Player
             _hudState.SetGhost(false, false, false, 0f, 0f);
             _stationViewportPositions.Clear();
             _hudState.SetStationMarkers(_stationViewportPositions);
-            _hudState.SetRoundPhase(RoundPhase.None, false);
+            _hudState.SetRoundPhase(RoundPhase.None, false, false);
             _hudState.SetCrosshair(false);
             _hudState.SetRescueHint(false, null);
             _knockedViewportPositions.Clear();

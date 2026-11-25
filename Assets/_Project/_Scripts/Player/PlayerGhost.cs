@@ -10,7 +10,8 @@ using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Player
 {
-    // The one place that decides who is a ghost: in Classic, a runner eliminated during the hunt, until they're back up.
+    // The one place that decides who is a ghost: in Classic, a runner eliminated during the hunt, until they're back up;
+    // in any mode, a player sitting the round out after joining it mid-way (they can't ping, having no team).
     // The server decides and syncs it, so every instance agrees whatever order the hunt and life state arrive in.
     // Every instance hides the ghost's body and turns its colliders off; the owner flies it around inside the map bounds,
     // toggles to the third-person spectator with Interact and pings the catcher it aims at with Attack,
@@ -24,6 +25,7 @@ namespace Project.Assets._Project._Scripts.Player
         [Inject] private readonly GhostPingDirectory _pings;
         [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
         [Inject] private readonly HuntPhase _huntPhase;
+        [Inject] private readonly PlayerSessionDirectory _sessionDirectory;
         [SerializeField, Self] private PlayerLifeState _lifeState;
         [SerializeField, Self] private PlayerTeam _team;
         [SerializeField, Self] private Rigidbody _rb;
@@ -60,7 +62,7 @@ namespace Project.Assets._Project._Scripts.Player
         // Owner only: 1 right after a ping, 0 when ready
         public float PingCooldownProgress => _settings.PingCooldownInSeconds > 0f ? PingCooldownRemainingInSeconds / _settings.PingCooldownInSeconds : 0f;
         // Owner only: pings are for the hunt, and only from free-fly, where Attack isn't the spectator's next-target key
-        public bool CanPing => IsFlying && _huntPhase.IsActive && PingCooldownRemainingInSeconds <= 0f;
+        public bool CanPing => IsFlying && _team.Team == Team.Runner && _huntPhase.IsActive && PingCooldownRemainingInSeconds <= 0f;
 
         private void OnValidate() => this.ValidateRefs();
 
@@ -107,9 +109,11 @@ namespace Project.Assets._Project._Scripts.Player
             _rb.linearVelocity = _isInSpectatorView ? Vector3.zero : GetBoundedFlyVelocity();
         }
 
-        // Pure rule, kept apart for tests: becoming a ghost needs the hunt; staying one only needs to stay out of the round
-        public static bool ShouldBeGhost(bool isEliminated, Team team, GameMode mode, bool isAlreadyGhost, bool isHuntActive) =>
-            isEliminated && team == Team.Runner && mode == GameMode.Classic && (isAlreadyGhost || isHuntActive);
+        // Pure rule, kept apart for tests: becoming a runner ghost needs the hunt; staying one only needs to stay out of the round.
+        // A sitting-out spectator is one for as long as the round lasts
+        public static bool ShouldBeGhost(PlayerSession session, GameMode mode, bool isAlreadyGhost, bool isHuntActive) =>
+            session.IsSittingOut
+            || (session.LifeState == LifeState.Eliminated && session.Team == Team.Runner && mode == GameMode.Classic && (isAlreadyGhost || isHuntActive));
 
         // Owner only; null in scenes without bounds
         public void ChangeMapBounds(MapBounds mapBounds) => _mapBounds = mapBounds;
@@ -141,10 +145,12 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void HandleGhostSyncedChanged(bool _, bool isGhost) => ApplyGhost(isGhost);
 
-        // Server only
+        // Server only: team and life state are read from one session snapshot, since their components update one after the other
+        // and the lobby reset changes both at once (a half-applied Team.None + Eliminated would look like a spectator)
         private void RefreshGhost()
         {
-            bool isGhost = ShouldBeGhost(_lifeState.IsEliminated, _team.Team, _activeLobbyConfig.Config.Mode, _isGhostSynced.Value, _huntPhase.IsActive);
+            bool isGhost = _sessionDirectory.TryGetSession(OwnerClientId, out var session)
+                && ShouldBeGhost(session, _activeLobbyConfig.Config.Mode, _isGhostSynced.Value, _huntPhase.IsActive);
             if (isGhost == _isGhostSynced.Value) return;
 
             if (!isGhost) _pingCooldownEndTime.Value = 0d;
@@ -334,7 +340,7 @@ namespace Project.Assets._Project._Scripts.Player
         private void RequestPingServerRpc(ulong catcherId)
         {
             double now = NetworkManager.ServerTime.Time;
-            if (!_isGhost || !_huntPhase.IsActive || now < _pingCooldownEndTime.Value) return;
+            if (!_isGhost || _team.Team != Team.Runner || !_huntPhase.IsActive || now < _pingCooldownEndTime.Value) return;
             if (!_spawnedPlayers.TryGetPlayer(catcherId, out var catcher) || catcher == null || !catcher.IsSpawned || catcher.Team != Team.Catcher) return;
 
             // the aim cone stays the owner's call; the range is checked here, written as "not within" so a NaN position is rejected too

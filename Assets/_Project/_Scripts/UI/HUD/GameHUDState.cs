@@ -46,6 +46,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         private readonly List<NameTag> _nameTags = new();
         private RoundPhase _roundPhase;
         private bool _isLocalCatcher;
+        private bool _isLocalSittingOut;
         private bool _isCrosshairWanted;
         private bool _isRescueHintShown;
         private string _rescueHintName;
@@ -124,6 +125,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         public IReadOnlyList<NameTag> NameTags => _nameTags;
         public RoundPhase RoundPhase => _roundPhase;
         public bool IsLocalCatcher => _isLocalCatcher;
+        // the local player joined mid-round and only watches it
+        public bool IsLocalSittingOut => _isLocalSittingOut;
         // true while the local player aims at something in a round; menus and the setting decide on top of it
         public bool IsCrosshairWanted => _isCrosshairWanted;
         public bool IsRescueHintShown => _isRescueHintShown;
@@ -251,12 +254,13 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             OnGhostChanged?.Invoke();
         }
 
-        public void SetRoundPhase(RoundPhase phase, bool isLocalCatcher)
+        public void SetRoundPhase(RoundPhase phase, bool isLocalCatcher, bool isLocalSittingOut)
         {
-            if (_roundPhase == phase && _isLocalCatcher == isLocalCatcher) return;
+            if (_roundPhase == phase && _isLocalCatcher == isLocalCatcher && _isLocalSittingOut == isLocalSittingOut) return;
 
             _roundPhase = phase;
             _isLocalCatcher = isLocalCatcher;
+            _isLocalSittingOut = isLocalSittingOut;
             OnRoundPhaseChanged?.Invoke();
         }
 

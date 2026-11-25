@@ -49,21 +49,39 @@ namespace Project.Assets._Project.Tests.EditMode
 
         [Test]
         public void ShouldBeGhost_EliminatedClassicRunnerInHunt_True() =>
-            Assert.IsTrue(PlayerGhost.ShouldBeGhost(true, Team.Runner, GameMode.Classic, false, true));
+            Assert.IsTrue(PlayerGhost.ShouldBeGhost(Eliminated(Team.Runner), GameMode.Classic, false, true));
 
         [Test]
         public void ShouldBeGhost_EliminatedAfterHunt_StaysSpectator() =>
-            Assert.IsFalse(PlayerGhost.ShouldBeGhost(true, Team.Runner, GameMode.Classic, false, false));
+            Assert.IsFalse(PlayerGhost.ShouldBeGhost(Eliminated(Team.Runner), GameMode.Classic, false, false));
 
         [Test]
         public void ShouldBeGhost_AlreadyGhostAfterHunt_StaysGhost() =>
-            Assert.IsTrue(PlayerGhost.ShouldBeGhost(true, Team.Runner, GameMode.Classic, true, false));
+            Assert.IsTrue(PlayerGhost.ShouldBeGhost(Eliminated(Team.Runner), GameMode.Classic, true, false));
 
         [Test]
         public void ShouldBeGhost_InfectionOrCatcher_False()
         {
-            Assert.IsFalse(PlayerGhost.ShouldBeGhost(true, Team.Runner, GameMode.Infection, false, true));
-            Assert.IsFalse(PlayerGhost.ShouldBeGhost(true, Team.Catcher, GameMode.Classic, false, true));
+            Assert.IsFalse(PlayerGhost.ShouldBeGhost(Eliminated(Team.Runner), GameMode.Infection, false, true));
+            Assert.IsFalse(PlayerGhost.ShouldBeGhost(Eliminated(Team.Catcher), GameMode.Classic, false, true));
         }
+
+        [Test]
+        public void ShouldBeGhost_SittingOutJoiner_TrueInEveryModeAndPhase()
+        {
+            Assert.IsTrue(PlayerGhost.ShouldBeGhost(Eliminated(Team.None), GameMode.Classic, false, false));
+            Assert.IsTrue(PlayerGhost.ShouldBeGhost(Eliminated(Team.None), GameMode.Infection, false, true));
+        }
+
+        // the lobby reset sets Team.None and Up together, so nobody in the lobby counts as sitting out
+        [Test]
+        public void ShouldBeGhost_LobbyPlayer_False() =>
+            Assert.IsFalse(PlayerGhost.ShouldBeGhost(new PlayerSession { Team = Team.None, LifeState = LifeState.Up }, GameMode.Classic, true, false));
+
+        [Test]
+        public void ShouldBeGhost_StandingRunnerInHunt_False() =>
+            Assert.IsFalse(PlayerGhost.ShouldBeGhost(new PlayerSession { Team = Team.Runner, LifeState = LifeState.Up }, GameMode.Classic, false, true));
+
+        private static PlayerSession Eliminated(Team team) => new() { Team = team, LifeState = LifeState.Eliminated };
     }
 }

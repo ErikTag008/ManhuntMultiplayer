@@ -58,7 +58,12 @@ namespace Project.Assets._Project._Scripts.Managers
             foreach (var session in _sessions) buffer.Add(session);
         }
 
-        public void RegisterPlayer(PlayerController player)
+        public void RegisterPlayer(PlayerController player) => RegisterPlayer(player, LifeState.Up);
+
+        // a player who joins a running round sits it out (PlayerSession.IsSittingOut) and plays from the next lobby on
+        public void RegisterSpectator(PlayerController player) => RegisterPlayer(player, LifeState.Eliminated);
+
+        private void RegisterPlayer(PlayerController player, LifeState lifeState)
         {
             if (!IsServer) return;
 
@@ -70,7 +75,7 @@ namespace Project.Assets._Project._Scripts.Managers
                 ClientId = player.OwnerClientId,
                 DisplayName = GetDisplayName(player.OwnerClientId),
                 Team = Team.None,
-                LifeState = LifeState.Up,
+                LifeState = lifeState,
                 AbilityId = PlayerSession.NoAbility,
                 MapVote = PlayerSession.NoMapVote,
                 CatcherQueueOrder = TakeNextCatcherQueueOrder()
@@ -139,11 +144,13 @@ namespace Project.Assets._Project._Scripts.Managers
             UpdateSession(clientId, (ref PlayerSession session) => session.CatcherQueueOrder = order);
         }
 
+        // everyone with a team stands up; someone who connected after teams were picked has none and sits the round out
         public void ResetLifeStates()
         {
             for (int i = 0; i < _sessions.Count; i++)
             {
-                SetLifeState(_sessions[i].ClientId, LifeState.Up);
+                var lifeState = _sessions[i].Team == Team.None ? LifeState.Eliminated : LifeState.Up;
+                SetLifeState(_sessions[i].ClientId, lifeState);
             }
         }
 

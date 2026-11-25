@@ -7,7 +7,8 @@ using UnityEngine;
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
     // The round's phase on the gameplay HUD: a short banner when the hide phase and the hunt start (the hide banner names
-    // the local player's team), a cue at the hunt start, and a Hide / Hunt label next to the round timer
+    // the local player's team), a cue at the hunt start, and a Hide / Hunt label next to the round timer.
+    // A player who joined mid-round gets a banner saying they watch until the next round instead, and no cue
     public class RoundHUD : MonoBehaviour
     {
         [Inject] private readonly GameHUDState _state;
@@ -16,6 +17,7 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         [SerializeField] private string _runnerHideBannerText = "You're a Runner: hide";
         [SerializeField] private string _catcherHideBannerText = "You're the Catcher: wait for the door";
         [SerializeField] private string _huntBannerText = "The hunt begins";
+        [SerializeField] private string _sittingOutBannerText = "Round in progress: you're watching until the next one";
         [SerializeField, Min(0f)] private float _bannerShownDurationInSeconds = 3f;
         [SerializeField] private TMP_Text _phaseLabel;
         [SerializeField] private string _hidePhaseLabel = "Hide";
@@ -39,8 +41,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _phaseLabel.text = GetPhaseLabel(phase);
             if (phase == _shownPhase)
             {
-                // the team can reach a client just after the hide phase started, so a showing hide banner follows it
-                if (phase == RoundPhase.Hide && _bannerPanel.IsShown) _bannerText.text = GetHideBannerText();
+                // the team (or a mid-round joiner's session) can reach a client just after the phase started, so a showing banner follows it
+                if (phase != RoundPhase.None && _bannerPanel.IsShown) _bannerText.text = GetBannerText(phase);
                 return;
             }
 
@@ -48,11 +50,11 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             switch (phase)
             {
                 case RoundPhase.Hide:
-                    ShowBanner(GetHideBannerText());
+                    ShowBanner(GetBannerText(phase));
                     break;
                 case RoundPhase.Hunt:
-                    ShowBanner(_huntBannerText);
-                    PlayHuntStartCue();
+                    ShowBanner(GetBannerText(phase));
+                    if (!_state.IsLocalSittingOut) PlayHuntStartCue();
                     break;
                 case RoundPhase.None:
                     HideBanner();
@@ -60,7 +62,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             }
         }
 
-        private string GetHideBannerText() => _state.IsLocalCatcher ? _catcherHideBannerText : _runnerHideBannerText;
+        private string GetBannerText(RoundPhase phase)
+        {
+            if (_state.IsLocalSittingOut) return _sittingOutBannerText;
+            if (phase == RoundPhase.Hunt) return _huntBannerText;
+            return _state.IsLocalCatcher ? _catcherHideBannerText : _runnerHideBannerText;
+        }
 
         private string GetPhaseLabel(RoundPhase phase) => phase switch
         {

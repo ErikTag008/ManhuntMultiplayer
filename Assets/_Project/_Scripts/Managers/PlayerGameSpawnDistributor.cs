@@ -89,6 +89,8 @@ namespace Project.Assets._Project._Scripts.Managers
             player.TeleportRpc(spawn.position, spawn.rotation);
         }
 
+        public Transform GetSpectatorSpawn() => _gameRoomSpawns.Length > 0 ? _gameRoomSpawns[Random.Range(0, _gameRoomSpawns.Length)] : null;
+
         private void OnDestroy() => _gameSystemsRegistry?.Unregister(this);
     }
 }

@@ -114,10 +114,8 @@ namespace Project.Assets._Project._Scripts.Managers
 
         private Team GetPlayerTeam(ulong clientId)
         {
-            if (_playerRegistry.TryGetSession(clientId, out var session)) return session.Team;
-
-            EUtils.Logger.LogError($"[GameManager] No player session for client ID: {clientId}");
-            return Team.None;
+            // a player who joins mid-round reaches the map before their session does, and sits the round out without a team anyway
+            return _playerRegistry.TryGetSession(clientId, out var session) ? session.Team : Team.None;
         }
 
         private void HandleLobbyUIInitialization()

@@ -15,8 +15,7 @@ namespace Project.Assets._Project._Scripts.Player.Stations
         [Inject] private readonly StationDirectory _directory;
         [Inject] private readonly SpawnedPlayerDirectory _spawnedPlayers;
         [Inject] private readonly HuntPhase _huntPhase;
-        [Inject] private readonly IRoundTimer _roundTimer;
-        [Inject] private readonly IPlayerRegistry _playerRegistry;
+        [Inject] private readonly IStationRewards _rewards;
         [SerializeField, Self] private AudioSource _audioSource;
         // the station's look while unfinished; swapped for the completed look if one is set
         [SerializeField] private GameObject _model;
@@ -88,11 +87,9 @@ namespace Project.Assets._Project._Scripts.Player.Stations
         // Server only: every runner working the station when it finishes shares the credit
         private void CreditWorkingRunners()
         {
-            if (_playerRegistry == null) return;
-
             foreach (var player in _spawnedPlayers.Players)
             {
-                if (IsWorking(player)) _playerRegistry.AddStationCompleted(player.OwnerClientId);
+                if (IsWorking(player)) _rewards.CreditStation(player.OwnerClientId);
             }
         }
 
@@ -103,8 +100,7 @@ namespace Project.Assets._Project._Scripts.Player.Stations
             _isCompleted.Value = true;
             CreditWorkingRunners();
 
-            float appliedCutInSeconds = 0f;
-            _roundTimer?.TryCutRoundTime(_settings.TimeCutInSeconds, _settings.MinRemainingInSeconds, out appliedCutInSeconds);
+            _rewards.TryCutRoundTime(_settings.TimeCutInSeconds, _settings.MinRemainingInSeconds, out float appliedCutInSeconds);
             NotifyCompletedRpc(appliedCutInSeconds);
         }
 

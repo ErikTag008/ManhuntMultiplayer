@@ -21,15 +21,15 @@ namespace Project.Assets._Project.Tests.EditMode
         }
 
         [Test]
-        public void RoundRunning_RejectsEvenWithFreeSlots()
+        public void RoundStarting_RejectsEvenWithFreeSlots()
         {
-            Assert.AreEqual(JoinRejection.RoundInProgress, JoinAdmission.Evaluate(false, false, false, 0, MaxPlayers));
+            Assert.AreEqual(JoinRejection.RoundStarting, JoinAdmission.Evaluate(false, false, false, 0, MaxPlayers));
         }
 
         [Test]
-        public void RoundRunning_FullLobby_ReportsTheRound()
+        public void RoundStarting_FullLobby_ReportsTheRoundStart()
         {
-            Assert.AreEqual(JoinRejection.RoundInProgress, JoinAdmission.Evaluate(false, false, false, MaxPlayers, MaxPlayers));
+            Assert.AreEqual(JoinRejection.RoundStarting, JoinAdmission.Evaluate(false, false, false, MaxPlayers, MaxPlayers));
         }
 
         [Test]
@@ -68,6 +68,21 @@ namespace Project.Assets._Project.Tests.EditMode
         public void RoundProgress_MatchesTheGameState(GameState state, bool isInProgress)
         {
             Assert.AreEqual(isInProgress, RoundProgress.IsInProgress(state));
+        }
+
+        // a mid-round joiner watches the round; only team picking and the map load turn them away
+        [TestCase(GameState.Lobby, true)]
+        [TestCase(GameState.WaitingForPlayers, true)]
+        [TestCase(GameState.Countdown, true)]
+        [TestCase(GameState.AssigningTeams, false)]
+        [TestCase(GameState.LoadingGameplay, false)]
+        [TestCase(GameState.WaitForRunnerHide, true)]
+        [TestCase(GameState.Playing, true)]
+        [TestCase(GameState.DeterminingWinner, true)]
+        [TestCase(GameState.Results, true)]
+        public void RoundProgress_AcceptsJoins_ExceptWhileTheRoundStarts(GameState state, bool isAccepting)
+        {
+            Assert.AreEqual(isAccepting, RoundProgress.AcceptsJoins(state));
         }
     }
 }

@@ -8,5 +8,12 @@ namespace Project.Assets._Project._Scripts.Managers
             GameState.Lobby or GameState.WaitingForPlayers or GameState.Countdown => false,
             _ => true
         };
+
+        // A player who joins a running round watches it; only while teams are picked and the map loads is the door shut
+        public static bool AcceptsJoins(GameState state) => state switch
+        {
+            GameState.AssigningTeams or GameState.LoadingGameplay => false,
+            _ => true
+        };
     }
 }

@@ -272,7 +272,7 @@ namespace Project.Assets._Project._Scripts.Networking
         private string GetRejectionReason(JoinRejection rejection) => rejection switch
         {
             JoinRejection.LobbyFull => _settings.LobbyFullReason,
-            JoinRejection.RoundInProgress => _settings.RoundInProgressReason,
+            JoinRejection.RoundStarting => _settings.RoundStartingReason,
             JoinRejection.Kicked => _settings.KickedRejoinReason,
             _ => string.Empty
         };

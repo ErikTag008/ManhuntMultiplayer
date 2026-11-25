@@ -31,6 +31,9 @@ namespace Project.Assets._Project._Scripts.Player
         // knocks taken this round; each one shortens the next bleed-out (RunnerStats)
         public int Knocks;
 
+        // joined after teams were picked: watches the round without a team, so it never counts for a win or points
+        public readonly bool IsSittingOut => Team == Team.None && LifeState == LifeState.Eliminated;
+
         public readonly bool Equals(PlayerSession other) =>
             ClientId == other.ClientId &&
             SteamId == other.SteamId &&

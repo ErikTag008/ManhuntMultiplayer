@@ -28,7 +28,7 @@ namespace Project.Assets._Project._Scripts.Networking
         [field: SerializeField] public string LocalRegionLabel { get; private set; } = "Local";
 
         [field: SerializeField] public string LobbyFullReason { get; private set; } = "Lobby is full";
-        [field: SerializeField] public string RoundInProgressReason { get; private set; } = "A round is in progress, try again once it ends";
+        [field: SerializeField] public string RoundStartingReason { get; private set; } = "The next round is starting, try again in a moment";
         // shown to a player the host kicks, and again when they try to rejoin the same hosted session
         [field: SerializeField] public string KickedReason { get; private set; } = "You were kicked by the host";
         [field: SerializeField] public string KickedRejoinReason { get; private set; } = "The host kicked you from this lobby";
