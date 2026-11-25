@@ -25,5 +25,5 @@ MonoBehaviour:
     <VfxPrefab>k__BackingField: {fileID: 0}
     <IsVfxShownToOwner>k__BackingField: 0
   <Description>k__BackingField: Burst forward a short distance
-  <DashSpeed>k__BackingField: 96
+  <DashSpeed>k__BackingField: 64
   <DashDurationInSeconds>k__BackingField: 0.4

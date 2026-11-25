@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.Abilities.DoubleJumpAbilityData
   <Id>k__BackingField: 2
   <DisplayName>k__BackingField: Double Jump
-  <CooldownInSeconds>k__BackingField: 20
+  <CooldownInSeconds>k__BackingField: 12
   <ReadyHint>k__BackingField: Air
   <AnimationTrigger>k__BackingField: 
   <ActiveDurationInSeconds>k__BackingField: 0
