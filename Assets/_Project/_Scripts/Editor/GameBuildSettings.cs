@@ -12,6 +12,8 @@ namespace Project.Assets._Project._Scripts.Editor
         [field: SerializeField] public string DevelopmentLabel { get; private set; } = "Dev";
         [field: SerializeField] public string DirtyTreeSuffix { get; private set; } = "-dirty";
         [field: SerializeField] public string ReportFileName { get; private set; } = "BuildReport.txt";
+        // how many unsaved scenes and assets the refusal message names
+        [field: SerializeField, Min(1)] public int MaxListedUnsavedItems { get; private set; } = 10;
 
         [field: SerializeField] public bool IsWindowsBuilt { get; private set; } = true;
         [field: SerializeField] public string WindowsFolderName { get; private set; } = "Windows";

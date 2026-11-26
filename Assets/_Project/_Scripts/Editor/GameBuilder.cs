@@ -8,7 +8,9 @@ using System.Text;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
 
 namespace Project.Assets._Project._Scripts.Editor
@@ -23,11 +25,15 @@ namespace Project.Assets._Project._Scripts.Editor
         private const string OpenFolderPath = "Tools/Build/Open Builds Folder";
         private const string DialogTitle = "Game Build";
         private const string DialogOk = "OK";
+        private const string DialogSaveAndBuild = "Save and Build";
+        private const string DialogCancel = "Cancel";
         private const string GitExecutable = "git";
         private const string GitShortHashArguments = "rev-parse --short HEAD";
         private const string GitStatusArguments = "status --porcelain";
         private const string NoCommitLabel = "nocommit";
         private const string WindowsExecutableExtension = ".exe";
+        private const string AssetsFolderPrefix = "Assets/";
+        private const string ProjectSettingsFolderPrefix = "ProjectSettings/";
         private const int SuccessExitCode = 0;
         private const int FailureExitCode = 1;
         private const int UnixModeShift = 16;
@@ -65,6 +71,12 @@ namespace Project.Assets._Project._Scripts.Editor
             if (!GameBuildSettings.TryLoad(out var settings))
             {
                 summary = $"There is no {nameof(GameBuildSettings)} asset in the project.";
+                return false;
+            }
+            // the build reads scenes from disk and the backend restore saves every dirty asset, so unsaved work must not exist
+            if (TryFindUnsavedChanges(settings, out string unsavedList))
+            {
+                summary = $"Save these changes before building:{Environment.NewLine}{unsavedList}";
                 return false;
             }
 
@@ -113,7 +125,8 @@ namespace Project.Assets._Project._Scripts.Editor
             finally
             {
                 PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, originalBackend);
-                // the Linux build writes its temporary backend to ProjectSettings.asset, so the restore must be saved too
+                // the Linux build writes its temporary backend to ProjectSettings.asset, so the restore must be saved too;
+                // nothing was unsaved before the build, so this only writes what the build itself changed
                 AssetDatabase.SaveAssets();
                 if (EditorUserBuildSettings.activeBuildTarget != originalTarget)
                 {
@@ -129,6 +142,18 @@ namespace Project.Assets._Project._Scripts.Editor
 
         private static void BuildFromMenu(bool isDevelopment)
         {
+            if (!TryLoadSettings(out var settings)) return;
+            // the Editor dirties some assets on every script reload, so the menu asks instead of refusing outright
+            if (TryFindUnsavedChanges(settings, out string unsavedList))
+            {
+                if (!EditorUtility.DisplayDialog(DialogTitle, $"These have unsaved changes:{Environment.NewLine}{unsavedList}",
+                    DialogSaveAndBuild, DialogCancel)) return;
+
+                SaveOpenPrefab();
+                EditorSceneManager.SaveOpenScenes();
+                AssetDatabase.SaveAssets();
+            }
+
             bool hasSucceeded = TryBuildAll(isDevelopment, out string outputFolder, out string summary);
             EditorUtility.DisplayDialog(DialogTitle, summary, DialogOk);
             if (hasSucceeded) EditorUtility.RevealInFinder(outputFolder);
@@ -136,11 +161,23 @@ namespace Project.Assets._Project._Scripts.Editor
 
         private static void BuildFromCommandLine(bool isDevelopment)
         {
+            // batchmode can't open a project an Editor holds, so nothing here is the user's work; this clears the reload noise
+            AssetDatabase.SaveAssets();
             bool hasSucceeded = TryBuildAll(isDevelopment, out _, out string summary);
             if (hasSucceeded) Debug.Log($"[{nameof(GameBuilder)}] {summary}");
             else Debug.LogError($"[{nameof(GameBuilder)}] {summary}");
 
             EditorApplication.Exit(hasSucceeded ? SuccessExitCode : FailureExitCode);
+        }
+
+        private static void SaveOpenPrefab()
+        {
+            var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (prefabStage == null || !prefabStage.scene.isDirty) return;
+
+            // a failed save keeps the stage dirty, so the build check still refuses
+            PrefabUtility.SaveAsPrefabAsset(prefabStage.prefabContentsRoot, prefabStage.assetPath, out bool isSaved);
+            if (isSaved) prefabStage.ClearDirtiness();
         }
 
         private static bool TryLoadSettings(out GameBuildSettings settings)
@@ -149,6 +186,36 @@ namespace Project.Assets._Project._Scripts.Editor
 
             EditorUtility.DisplayDialog(DialogTitle, $"There is no {nameof(GameBuildSettings)} asset in the project.", DialogOk);
             return false;
+        }
+
+        // open scenes, an open prefab and the project's own assets; imported, package and built-in objects are skipped
+        // because the Editor marks them dirty without anything to save
+        private static bool TryFindUnsavedChanges(GameBuildSettings settings, out string unsavedList)
+        {
+            var unsaved = new List<string>();
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                var scene = SceneManager.GetSceneAt(i);
+                if (scene.isDirty) unsaved.Add(string.IsNullOrEmpty(scene.path) ? scene.name : scene.path);
+            }
+
+            var prefabStage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (prefabStage != null && prefabStage.scene.isDirty) unsaved.Add(prefabStage.assetPath);
+
+            foreach (var asset in Resources.FindObjectsOfTypeAll<UnityEngine.Object>())
+            {
+                if (!EditorUtility.IsPersistent(asset) || !EditorUtility.IsDirty(asset)) continue;
+                if (!AssetDatabase.IsNativeAsset(asset)) continue;
+
+                string path = AssetDatabase.GetAssetPath(asset);
+                if (!path.StartsWith(AssetsFolderPrefix) && !path.StartsWith(ProjectSettingsFolderPrefix)) continue;
+                if (!unsaved.Contains(path)) unsaved.Add(path);
+            }
+
+            var listed = unsaved.Take(settings.MaxListedUnsavedItems).ToList();
+            if (unsaved.Count > listed.Count) listed.Add($"...and {unsaved.Count - listed.Count} more");
+            unsavedList = string.Join(Environment.NewLine, listed);
+            return unsaved.Count > 0;
         }
 
         private static List<PlatformTarget> GetTargets(GameBuildSettings settings)

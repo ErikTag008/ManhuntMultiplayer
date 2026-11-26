@@ -17,6 +17,7 @@ MonoBehaviour:
   <DevelopmentLabel>k__BackingField: Dev
   <DirtyTreeSuffix>k__BackingField: -dirty
   <ReportFileName>k__BackingField: BuildReport.txt
+  <MaxListedUnsavedItems>k__BackingField: 10
   <IsWindowsBuilt>k__BackingField: 1
   <WindowsFolderName>k__BackingField: Windows
   <WindowsZipName>k__BackingField: ManhuntMultiplayerWindows.zip
@@ -29,4 +30,5 @@ MonoBehaviour:
   - _BackUpThisFolder_
   - _DoNotShip
   <UnixExecutableMode>k__BackingField: 33261
+  <ZipCompressionLevel>k__BackingField: 0
   <DevToolsAssemblyName>k__BackingField: Project.DevTools
