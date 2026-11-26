@@ -18,15 +18,16 @@ namespace Project.Assets._Project._Scripts.DevTools
         [SerializeField] private bool _isAutoConnectEnabled = true;
         [SerializeField] private float _clientJoinDelayInSeconds = 2f;
 
-#if UNITY_EDITOR
         private void Start()
         {
-            if (!_isAutoConnectEnabled) return;
+            // read in every build so development players don't warn about unused serialized fields
+            if (!_isAutoConnectEnabled || !Application.isEditor) return;
 
-            AutoConnect(this.GetCancellationTokenOnDestroy()).Forget();
+            AutoConnect(_clientJoinDelayInSeconds, this.GetCancellationTokenOnDestroy()).Forget();
         }
 
-        private async UniTaskVoid AutoConnect(CancellationToken token)
+#if UNITY_EDITOR
+        private async UniTaskVoid AutoConnect(float clientJoinDelayInSeconds, CancellationToken token)
         {
             // wait one frame so MainMenuStarter has subscribed to the UI events
             await UniTask.Yield(cancellationToken: token);
@@ -37,7 +38,7 @@ namespace Project.Assets._Project._Scripts.DevTools
             }
             else
             {
-                await UniTask.WaitForSeconds(_clientJoinDelayInSeconds, cancellationToken: token);
+                await UniTask.WaitForSeconds(clientJoinDelayInSeconds, cancellationToken: token);
                 _uiManager.RaiseClientStart();
             }
 
@@ -61,6 +62,8 @@ namespace Project.Assets._Project._Scripts.DevTools
                 $"samePrefabs {config.ForceSamePrefabs} sceneMgmt {config.EnableSceneManagement} " +
                 $"varSafety {config.EnsureNetworkVariableLengthSafety} rpcHash {config.RpcHashSize} | prefabs [{prefabHashes}]");
         }
+#else
+        private UniTaskVoid AutoConnect(float clientJoinDelayInSeconds, CancellationToken token) => default;
 #endif
     }
 }

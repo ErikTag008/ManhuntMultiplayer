@@ -8,6 +8,7 @@
   <Project Path="Project.SceneFlow.csproj" />
   <Project Path="DOTween.Modules.csproj" />
   <Project Path="Project.Managers.csproj" />
+  <Project Path="Project.Editor.csproj" />
   <Project Path="Project.Input.csproj" />
   <Project Path="SceneReference.csproj" />
   <Project Path="Project.DI.csproj" />
@@ -15,6 +16,5 @@
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Project.Weapons.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
-  <Project Path="Project.Editor.csproj" />
   <Project Path="SceneReference.Editor.csproj" />
 </Solution>

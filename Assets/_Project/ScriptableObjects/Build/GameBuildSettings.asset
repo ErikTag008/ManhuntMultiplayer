@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 441a4b9f5f8a5a249b900a33e9f0fd9d, type: 3}
+  m_Name: GameBuildSettings
+  m_EditorClassIdentifier: Project.Editor::Project.Assets._Project._Scripts.Editor.GameBuildSettings
+  <OutputRootFolder>k__BackingField: Builds
+  <ReleaseLabel>k__BackingField: Release
+  <DevelopmentLabel>k__BackingField: Dev
+  <DirtyTreeSuffix>k__BackingField: -dirty
+  <ReportFileName>k__BackingField: BuildReport.txt
+  <IsWindowsBuilt>k__BackingField: 1
+  <WindowsFolderName>k__BackingField: Windows
+  <WindowsZipName>k__BackingField: ManhuntMultiplayerWindows.zip
+  <WindowsScriptingBackend>k__BackingField: 1
+  <IsLinuxBuilt>k__BackingField: 1
+  <LinuxFolderName>k__BackingField: Linux
+  <LinuxZipName>k__BackingField: ManhuntMultiplayerLinux.zip
+  <LinuxScriptingBackend>k__BackingField: 0
+  <ExcludedFolderMarkers>k__BackingField:
+  - _BackUpThisFolder_
+  - _DoNotShip
+  <UnixExecutableMode>k__BackingField: 33261
+  <DevToolsAssemblyName>k__BackingField: Project.DevTools
