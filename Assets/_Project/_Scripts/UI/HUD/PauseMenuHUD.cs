@@ -2,11 +2,12 @@ using Project.Assets._Project._Scripts.Settings;
 using Project.Assets._Project._Scripts.UI.Shared;
 using Reflex.Attributes;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Project.Assets._Project._Scripts.UI.HUD
 {
-    // Pause menu: resume, settings, the host's player list, and leave behind a confirm. Hidden while settings or the player list cover it.
+    // Pause menu: resume, settings, the host's player list and round call-off, and leave behind a confirm. Hidden while settings or the player list cover it.
     public class PauseMenuHUD : MonoBehaviour
     {
         [Inject] private readonly PauseMenuState _state;
@@ -19,10 +20,15 @@ namespace Project.Assets._Project._Scripts.UI.HUD
         // host only: opens the player list with the kick buttons
         [SerializeField] private Button _playersButton;
         [SerializeField] private PlayersMenuHUD _playersMenu;
+        // host only, while a round runs: sends everyone back to the lobby behind a confirm
+        [SerializeField] private Button _returnToLobbyButton;
         [SerializeField] private Button _leaveButton;
         [SerializeField] private ConfirmDialog _confirmDialog;
         [SerializeField] private string _leaveMessage = "Leave the match and go back to the main menu?";
         [SerializeField] private string _hostLeaveMessage = "You are the host.\nLeaving ends the match for everyone.";
+        [SerializeField] private string _returnToLobbyMessage = "End this round for everyone and go back to the lobby?\nNobody wins it.";
+
+        private bool _isAskingToReturnToLobby;
 
         private void Start()
         {
@@ -33,6 +39,9 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _confirmDialog.OnClosed += HandleConfirmClosed;
             _playersMenuState.OnPlayersChanged += RefreshPlayersButton;
             _playersMenu.OnClosed += HandlePlayersMenuClosed;
+            _state.OnCanReturnToLobbyChanged += HandleCanReturnToLobbyChanged;
+            _returnToLobbyButton.onClick.AddListener(AskToReturnToLobby);
+            HandleCanReturnToLobbyChanged(_state.CanReturnToLobby);
             _resumeButton.onClick.AddListener(Resume);
             _settingsButton.onClick.AddListener(OpenSettings);
             _playersButton.onClick.AddListener(OpenPlayers);
@@ -71,8 +80,21 @@ namespace Project.Assets._Project._Scripts.UI.HUD
 
         private void HandleConfirmClosed()
         {
+            _isAskingToReturnToLobby = false;
             // the settings menu asks its own questions in this dialog, and refocuses itself
             if (_state.IsOpen && !_playersMenu.IsOpen && !_settingsMenuState.IsOpen) _leaveButton.Select();
+        }
+
+        // the round can end while the menu is open: the button and its question go, and a gamepad keeps a focused button
+        private void HandleCanReturnToLobbyChanged(bool canReturnToLobby)
+        {
+            var eventSystem = EventSystem.current;
+            bool wasSelected = eventSystem != null && eventSystem.currentSelectedGameObject == _returnToLobbyButton.gameObject;
+            _returnToLobbyButton.gameObject.SetActive(canReturnToLobby);
+            if (canReturnToLobby) return;
+
+            if (_isAskingToReturnToLobby) _confirmDialog.Close();
+            if (wasSelected && _panel.IsShown) _resumeButton.Select();
         }
 
         private void HandlePlayersMenuClosed()
@@ -114,6 +136,12 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             RefreshPanel();
         }
 
+        private void AskToReturnToLobby()
+        {
+            _confirmDialog.Open(_returnToLobbyMessage, _state.RequestReturnToLobby);
+            _isAskingToReturnToLobby = true;
+        }
+
         private void AskToLeave() => _confirmDialog.Open(_state.DoesLeavingEndSession ? _hostLeaveMessage : _leaveMessage, _state.RequestLeave);
 
         private void OnDestroy()
@@ -125,6 +153,8 @@ namespace Project.Assets._Project._Scripts.UI.HUD
             _confirmDialog.OnClosed -= HandleConfirmClosed;
             _playersMenuState.OnPlayersChanged -= RefreshPlayersButton;
             _playersMenu.OnClosed -= HandlePlayersMenuClosed;
+            _state.OnCanReturnToLobbyChanged -= HandleCanReturnToLobbyChanged;
+            _returnToLobbyButton.onClick.RemoveListener(AskToReturnToLobby);
             _resumeButton.onClick.RemoveListener(Resume);
             _settingsButton.onClick.RemoveListener(OpenSettings);
             _playersButton.onClick.RemoveListener(OpenPlayers);

@@ -99,7 +99,7 @@ namespace Project.Assets._Project._Scripts.Player
         private bool TryGetNameTag(Camera camera, PlayerController player, out NameTag tag)
         {
             tag = default;
-            if (player.LifeState.IsEliminated) return false;
+            if (player.LifeState.IsEliminated || player.IsAwaitingPlacement) return false;
             if (!_names.TryGetValue(player.OwnerClientId, out var name)) return false;
 
             Vector3 anchor = GetAnchor(player);

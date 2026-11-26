@@ -23,7 +23,7 @@ namespace Project.Assets._Project._Scripts.Player
     [RequireComponent(typeof(PlayerNetworkSync), typeof(PlayerCameraBinder), typeof(PlayerRescue))]
     [RequireComponent(typeof(PlayerSpectator), typeof(PlayerLobbyChoices))]
     [RequireComponent(typeof(PlayerPosture), typeof(PlayerDropEffects), typeof(PlayerGhost))]
-    [RequireComponent(typeof(PlayerEmote))]
+    [RequireComponent(typeof(PlayerEmote), typeof(PlayerRoundPlacement))]
     public class PlayerController : NetworkBehaviour, ISceneInitialized, IFirstPersonCameraTarget
     {
         [Inject] private readonly SceneLifecycleManager _sceneLifecycleManager;
@@ -50,6 +50,7 @@ namespace Project.Assets._Project._Scripts.Player
         [SerializeField, Self] private PlayerDropEffects _dropEffects;
         [SerializeField, Self] private PlayerGhost _ghost;
         [SerializeField, Self] private PlayerEmote _emote;
+        [SerializeField, Self] private PlayerRoundPlacement _roundPlacement;
         [SerializeField] private Transform _groundCheck;
         [SerializeField] private Transform _cameraTarget;
         [SerializeField] private Transform _cameraFollower;
@@ -68,6 +69,8 @@ namespace Project.Assets._Project._Scripts.Player
         public InputReader InputReader => _inputReader;
         public PlayerDropEffects DropEffects => _dropEffects;
         public bool IsGhost => _ghost.IsGhost;
+        // hidden from the round's map load until the server places the body at its round spawn
+        public bool IsAwaitingPlacement => _roundPlacement.IsHidden;
         // the current team's model; swapped when the team changes
         public Transform Model => _team.Model;
         // Where the player faces; the model's yaw is synced to every instance
@@ -78,8 +81,8 @@ namespace Project.Assets._Project._Scripts.Player
         public IPlayerMovement Movement => _movement;
         // owner only: the first-person camera this player looks through, null until a scene binds it
         public Camera ViewCamera => _cameraBinder.Camera;
-        // Eliminated players and anyone with a menu open stand still
-        private bool CanMove => _lifeState.CanMove && !(IsOwner && IsAnyMenuOpen);
+        // Eliminated players, anyone with a menu open and a body waiting for its round spawn stand still
+        private bool CanMove => _lifeState.CanMove && !(IsOwner && (IsAnyMenuOpen || _roundPlacement.IsHolding));
         private bool IsAnyMenuOpen => _lobbyMenuState.IsOpen || _pauseMenuState.IsOpen;
 
         private void OnValidate() => this.ValidateRefs();
@@ -106,6 +109,7 @@ namespace Project.Assets._Project._Scripts.Player
             _pauseMenuState.OnOpenChanged += HandleMenuOpenChanged;
             _emoteWheelState.OnOpenChanged += HandleLookBlockerChanged;
             _emote.OnThirdPersonChanged += HandleLookBlockerChanged;
+            _roundPlacement.OnHoldingChanged += HandleRoundPlacementHoldingChanged;
             _pauseMenuState.ChangeDoesLeavingEndSession(IsHost);
             _settings.OnChanged += HandleSettingsChanged;
             _sceneContextProvider.OnMapBoundsChanged += HandleMapBoundsChanged;
@@ -137,6 +141,19 @@ namespace Project.Assets._Project._Scripts.Player
             _ghost.HandleTeleported();
             _movement?.ToggleMovement(CanMove);
         }
+
+        // Server only: the round spawn; the body stays hidden until it arrives there
+        public void PlaceForRound(Vector3 position, Quaternion rotation)
+        {
+            TeleportRpc(position, rotation);
+            _roundPlacement.StopAwaitingPlacement(position);
+        }
+
+        // Server only
+        public void StartAwaitingPlacement() => _roundPlacement.StartAwaitingPlacement();
+
+        // Server only: the round started without a spawn for this player, so it shows where it stands
+        public void StopAwaitingPlacement() => _roundPlacement.StopAwaitingPlacement(transform.position);
 
         public void InitializeSceneReferences(SceneType sceneType)
         {
@@ -285,6 +302,8 @@ namespace Project.Assets._Project._Scripts.Player
 
         private void HandleLookBlockerChanged(bool _) => RefreshLook();
 
+        private void HandleRoundPlacementHoldingChanged(bool _) => _movement?.ToggleMovement(CanMove);
+
         // Owner only: the emote wheel aims with the look input, and the emote's third-person camera orbits with it
         private void RefreshLook() => _cameraBinder.ToggleLook(!IsAnyMenuOpen && !_emoteWheelState.IsOpen && !_emote.IsInThirdPerson);
 
@@ -354,6 +373,7 @@ namespace Project.Assets._Project._Scripts.Player
             _pauseMenuState.OnOpenChanged -= HandleMenuOpenChanged;
             _emoteWheelState.OnOpenChanged -= HandleLookBlockerChanged;
             _emote.OnThirdPersonChanged -= HandleLookBlockerChanged;
+            _roundPlacement.OnHoldingChanged -= HandleRoundPlacementHoldingChanged;
             _settings.OnChanged -= HandleSettingsChanged;
             _sceneContextProvider.OnMapBoundsChanged -= HandleMapBoundsChanged;
             _inputReader.OnPause -= HandlePausePressed;

@@ -950,6 +950,7 @@ GameObject:
   - component: {fileID: 2209090428821468905}
   - component: {fileID: 811559797858378869}
   - component: {fileID: 6047934319629858651}
+  - component: {fileID: 152318414317752432}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1037,6 +1038,7 @@ MonoBehaviour:
   _dropEffects: {fileID: 439525795068621114}
   _ghost: {fileID: 2243932752006811638}
   _emote: {fileID: 3238097376751934692}
+  _roundPlacement: {fileID: 152318414317752432}
   _groundCheck: {fileID: 7460693758395271466}
   _cameraTarget: {fileID: 4853491123650079907}
   _cameraFollower: {fileID: 3526512074580094625}
@@ -1932,6 +1934,26 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _inputReader: {fileID: 4851020409925496502}
   _refreshIntervalInSeconds: 0.5
+--- !u!114 &152318414317752432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003451599721298038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a976cae8bf3081341ba96ce4ebdda65d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Project.Player::Project.Assets._Project._Scripts.Player.PlayerRoundPlacement
+  ShowTopMostFoldoutHeaderGroup: 1
+  _rb: {fileID: 4515986925934261871}
+  _team: {fileID: 2895491558510482950}
+  _ghost: {fileID: 2243932752006811638}
+  _combat: {fileID: 91084392635682791}
+  _arrivedDistanceInMeters: 1
+  _revealMaxWaitInSeconds: 1
+  _holdMaxInSeconds: 60
 --- !u!1 &8770936375934030648
 GameObject:
   m_ObjectHideFlags: 0

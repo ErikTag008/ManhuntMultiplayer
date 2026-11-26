@@ -86,6 +86,7 @@ namespace Project.Assets._Project._Scripts.DI
             // Eager so it listens for disconnects from the first session on
             builder.RegisterType(typeof(SessionEndHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PauseMenuLeaveHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
+            builder.RegisterType(typeof(PauseMenuReturnToLobbyHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             builder.RegisterType(typeof(PlayerKickHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);
             // Eager so invites that arrive in the main menu are already caught
             builder.RegisterType(typeof(LobbyInviteHandler), Reflex.Enums.Lifetime.Singleton, Reflex.Enums.Resolution.Eager);

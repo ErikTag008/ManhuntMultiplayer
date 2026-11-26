@@ -15,5 +15,12 @@ namespace Project.Assets._Project._Scripts.Managers
             GameState.AssigningTeams or GameState.LoadingGameplay => false,
             _ => true
         };
+
+        // The host can call a round off once its map runs; while teams are picked and the map loads a scene load is in flight
+        public static bool CanReturnToLobby(GameState state) => state switch
+        {
+            GameState.WaitForRunnerHide or GameState.Playing or GameState.DeterminingWinner or GameState.Results => true,
+            _ => false
+        };
     }
 }

@@ -84,5 +84,20 @@ namespace Project.Assets._Project.Tests.EditMode
         {
             Assert.AreEqual(isAccepting, RoundProgress.AcceptsJoins(state));
         }
+
+        // the host can call a round off once its map runs, never while a scene load is in flight
+        [TestCase(GameState.Lobby, false)]
+        [TestCase(GameState.WaitingForPlayers, false)]
+        [TestCase(GameState.Countdown, false)]
+        [TestCase(GameState.AssigningTeams, false)]
+        [TestCase(GameState.LoadingGameplay, false)]
+        [TestCase(GameState.WaitForRunnerHide, true)]
+        [TestCase(GameState.Playing, true)]
+        [TestCase(GameState.DeterminingWinner, true)]
+        [TestCase(GameState.Results, true)]
+        public void RoundProgress_CanReturnToLobby_OnlyWhileTheMapRuns(GameState state, bool canReturn)
+        {
+            Assert.AreEqual(canReturn, RoundProgress.CanReturnToLobby(state));
+        }
     }
 }

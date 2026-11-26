@@ -17,5 +17,7 @@ namespace Project.Assets._Project._Scripts.Managers
         void StartGameLoop();
         void StopGameLoop();
         void RequestGameStart();
+        // Server only: ends the running round without a winner and loads the lobby for everyone
+        bool TryReturnToLobby();
     }
 }

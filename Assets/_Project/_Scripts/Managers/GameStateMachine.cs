@@ -114,10 +114,26 @@ namespace Project.Assets._Project._Scripts.Managers
             _countdownEndTime.Value = NetworkManager.ServerTime.Time;
         }
 
+        // Restarting the loop loads the lobby; no result is set, so the round awards no points
+        public bool TryReturnToLobby()
+        {
+            if (!IsServer || !RoundProgress.CanReturnToLobby(_state.Value)) return false;
+
+            EUtils.Logger.Log("[GameStateMachine] The host called the round off; back to the lobby.");
+            _chaseTracker.EndAll();
+            _countdownEndTime.Value = NetworkManager.ServerTime.Time;
+            // a call-off during the results stops their back-to-lobby countdown too
+            _resultsEndTime.Value = NetworkManager.ServerTime.Time;
+            StartGameLoop();
+            return true;
+        }
+
         private async UniTaskVoid GameLoop(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
+                // a failed map load or a called-off round can leave bodies waiting for a round spawn
+                ToggleAwaitingPlacement(false);
                 _state.Value = GameState.Lobby;
                 _playerRegistry.ResetForLobby();
                 await _networkCoordinator.LoadNetworkScene(_gameScenes.LobbySceneName, token);
@@ -155,6 +171,8 @@ namespace Project.Assets._Project._Scripts.Managers
                 _mapCatalog.SelectMap(map);
                 EUtils.Logger.Log($"[GameStateMachine] Map picked: {map.DisplayName} (index {mapIndex}, host map {config.MapIndex})");
 
+                // the bodies would stand at their lobby spots in the new map until the round spawns place them
+                ToggleAwaitingPlacement(true);
                 _state.Value = GameState.LoadingGameplay;
                 await _networkCoordinator.LoadNetworkScene(GetSceneName(map), token);
                 if (!await WaitForMapLoad(map, token))
@@ -241,10 +259,13 @@ namespace Project.Assets._Project._Scripts.Managers
             if (spawnDistributor == null)
             {
                 EUtils.Logger.LogError("[GameStateMachine] No ISpawnDistributor registered for the gameplay scene!");
+                ToggleAwaitingPlacement(false);
                 return;
             }
 
-            await spawnDistributor.DistributePlayersToSpawns(_playerRegistry.GetPlayers());
+            await spawnDistributor.DistributePlayersToSpawns(_playerRegistry.GetPlayers(), token);
+            // anyone the spawns ran out for shows where they stand
+            ToggleAwaitingPlacement(false);
             await WaitForCountdownEnd(token);
         }
 
@@ -262,6 +283,17 @@ namespace Project.Assets._Project._Scripts.Managers
             }, cancellationToken: token);
 
             return result;
+        }
+
+        private void ToggleAwaitingPlacement(bool isAwaiting)
+        {
+            foreach (var player in _playerRegistry.GetPlayers())
+            {
+                if (player == null || !player.IsSpawned) continue;
+
+                if (isAwaiting) player.StartAwaitingPlacement();
+                else player.StopAwaitingPlacement();
+            }
         }
 
         private static bool HasCatcher(IReadOnlyList<PlayerSession> sessions)

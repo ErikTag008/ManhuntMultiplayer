@@ -3,6 +3,7 @@ using Project.Assets._Project._Scripts.Player;
 using Reflex.Attributes;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 
 namespace Project.Assets._Project._Scripts.Managers
@@ -26,7 +27,7 @@ namespace Project.Assets._Project._Scripts.Managers
 
         
 
-        public async UniTask DistributePlayersToSpawns(List<PlayerController> players)
+        public async UniTask DistributePlayersToSpawns(List<PlayerController> players, CancellationToken token)
         {
             EUtils.Logger.Log("Distributing players to spawns...");
             var waitingSpawns = _waitingRoomSpawns.OrderBy(_ => Random.value).ToList();
@@ -65,8 +66,9 @@ namespace Project.Assets._Project._Scripts.Managers
                     spawn = gameSpawns[gameIndex++];
                 }
 
-                player.TeleportRpc(spawn.position, spawn.rotation);
-                await UniTask.Yield();
+                player.PlaceForRound(spawn.position, spawn.rotation);
+                // a called-off round stops placing bodies in a map that is being unloaded
+                await UniTask.Yield(cancellationToken: token);
             }
         }
 
